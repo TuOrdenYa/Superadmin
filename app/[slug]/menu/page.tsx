@@ -37,6 +37,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string }>
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch tenant by slug
   useEffect(() => {
@@ -48,10 +49,11 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string }>
           setTenantId(data.tenant.id);
           setTenantName(data.tenant.name);
         } else {
-          alert('Restaurant not found');
+          setError('Restaurant not found');
         }
       } catch (error) {
         console.error('Error fetching tenant:', error);
+        setError('Failed to load restaurant');
       } finally {
         setIsLoading(false);
       }
@@ -128,15 +130,22 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string }>
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Loading menu...</div>
+        <div className="text-center">
+          <div className="text-gray-600 text-lg mb-2">Loading menu...</div>
+          <div className="text-sm text-gray-400">Please wait</div>
+        </div>
       </div>
     );
   }
 
-  if (!tenantId) {
+  if (error || !tenantId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-red-600">Restaurant not found</div>
+        <div className="text-center">
+          <div className="text-red-600 text-xl font-bold mb-2">😕 {error || 'Restaurant not found'}</div>
+          <div className="text-gray-600">Please check the URL and try again</div>
+          <div className="mt-4 text-sm text-gray-500">URL: /{slug}/menu</div>
+        </div>
       </div>
     );
   }
