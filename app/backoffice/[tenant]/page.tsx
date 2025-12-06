@@ -58,6 +58,8 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     role: string;
     location_id: number | null;
     location_name?: string;
+    product_tier?: 'light' | 'plus' | 'pro';
+    subscription_status?: string;
   } | null>(null);
   
   // Form states
@@ -306,6 +308,16 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 {tenantName && ' • '}
                 {user?.full_name} • {user?.role === 'tenant_admin' ? 'Admin' : user?.role === 'manager' ? 'Manager' : 'Waiter'}
                 {user?.location_name && ` • ${user.location_name}`}
+                {user?.product_tier && (
+                  <>
+                    {' • '}
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-blue-800">
+                      {user.product_tier === 'light' && '✨ Light'}
+                      {user.product_tier === 'plus' && '⚡ Plus'}
+                      {user.product_tier === 'pro' && '🚀 Pro'}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
             <div className="flex gap-2">
@@ -354,26 +366,32 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 >
                   Categories
                 </button>
-                <button
-                  onClick={() => setView('tables')}
-                  className={`py-4 px-1 border-b-2 font-bold text-sm ${
-                    view === 'tables'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Tables
-                </button>
-                <button
-                  onClick={() => setView('variants')}
-                  className={`py-4 px-1 border-b-2 font-bold text-sm ${
-                    view === 'variants'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Variants
-                </button>
+                {/* Tables - Pro only */}
+                {user?.product_tier === 'pro' && (
+                  <button
+                    onClick={() => setView('tables')}
+                    className={`py-4 px-1 border-b-2 font-bold text-sm ${
+                      view === 'tables'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Tables
+                  </button>
+                )}
+                {/* Variants - Pro only */}
+                {user?.product_tier === 'pro' && (
+                  <button
+                    onClick={() => setView('variants')}
+                    className={`py-4 px-1 border-b-2 font-bold text-sm ${
+                      view === 'variants'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Variants
+                  </button>
+                )}
               </>
             )}
           </nav>
