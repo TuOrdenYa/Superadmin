@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import UserManagement from './UserManagement';
 
 interface Tenant {
   id: number;
@@ -317,6 +318,11 @@ export default function AdminClient() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* User Management Section */}
+        <div className="mt-6">
+          <UserManagement tenants={tenants} />
         </div>
 
         {/* Tenants List */}
