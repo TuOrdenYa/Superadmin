@@ -180,7 +180,7 @@ export default function AdminClient() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black font-semibold"
                 placeholder="Enter admin password"
                 required
               />
@@ -227,7 +227,7 @@ export default function AdminClient() {
                   type="text"
                   value={newTenantName}
                   onChange={(e) => handleTenantNameChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
                   placeholder="e.g., Pizza Roma"
                   required
                 />
@@ -240,7 +240,7 @@ export default function AdminClient() {
                   type="text"
                   value={newTenantSlug}
                   onChange={(e) => setNewTenantSlug(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
                   placeholder="e.g., pizza-roma"
                   pattern="[a-z0-9-]+"
                   required
@@ -270,7 +270,7 @@ export default function AdminClient() {
                 <select
                   value={selectedTenant || ''}
                   onChange={(e) => setSelectedTenant(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
                   required
                 >
                   <option value="">Choose a tenant...</option>
@@ -289,7 +289,7 @@ export default function AdminClient() {
                   type="text"
                   value={newLocationName}
                   onChange={(e) => setNewLocationName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
                   placeholder="e.g., Main Branch"
                   required
                 />
