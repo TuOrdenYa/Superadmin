@@ -1,11 +1,17 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
-// Create a single pool instance
+// Ensure DATABASE_URL has pgbouncer parameter for Vercel
+const connectionString = process.env.DATABASE_URL?.includes('?') 
+  ? `${process.env.DATABASE_URL}&pgbouncer=true`
+  : `${process.env.DATABASE_URL}?pgbouncer=true`;
+
+// Create a single pool instance optimized for serverless
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 3, // Reduced for Supabase pooler limits
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionString,
+  max: 1, // Serverless functions should use 1 connection
+  idleTimeoutMillis: 0, // Disable idle timeout for serverless
+  connectionTimeoutMillis: 10000, // Increase timeout to 10s
+  allowExitOnIdle: true, // Allow process to exit when idle
 });
 
 // Helper function for queries
