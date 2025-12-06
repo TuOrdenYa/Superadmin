@@ -186,14 +186,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     : items;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Backoffice</h1>
-              <p className="text-gray-600">Tenant ID: {tenantId}</p>
+              <h1 className="text-3xl font-bold text-white">Backoffice</h1>
+              <p className="text-blue-100">Tenant ID: {tenantId}</p>
             </div>
             <div className="flex gap-2">
               <a
@@ -219,30 +219,30 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <nav className="flex space-x-8">
             <button
               onClick={() => setView('items')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-4 px-1 border-b-2 font-bold text-sm ${
                 view === 'items'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               Menu Items
             </button>
             <button
               onClick={() => setView('categories')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-4 px-1 border-b-2 font-bold text-sm ${
                 view === 'categories'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               Categories
             </button>
             <button
               onClick={() => setView('variants')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-4 px-1 border-b-2 font-bold text-sm ${
                 view === 'variants'
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               Variants
@@ -257,7 +257,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         {view === 'categories' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
+              <h2 className="text-2xl font-bold text-black">Categories</h2>
               <button
                 onClick={() => setShowCategoryForm(!showCategoryForm)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -268,29 +268,29 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
             {showCategoryForm && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4">New Category</h3>
+                <h3 className="text-lg font-bold text-black mb-4">New Category</h3>
                 <form onSubmit={handleCreateCategory} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-black mb-2">
                       Name
                     </label>
                     <input
                       type="text"
                       value={newCategory.name}
                       onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-black mb-2">
                       Position
                     </label>
                     <input
                       type="number"
                       value={newCategory.position}
                       onChange={(e) => setNewCategory({ ...newCategory, position: parseInt(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -315,9 +315,9 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categories.map((category) => (
                 <div key={category.id} className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
-                  <p className="text-sm text-gray-600">Position: {category.position}</p>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="text-lg font-bold text-black">{category.name}</h3>
+                  <p className="text-sm text-black">Position: {category.position}</p>
+                  <p className="text-sm text-black">
                     Status: <span className={category.active ? 'text-green-600' : 'text-red-600'}>
                       {category.active ? 'Active' : 'Inactive'}
                     </span>
@@ -332,7 +332,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         {view === 'items' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Menu Items</h2>
+              <h2 className="text-2xl font-bold text-black">Menu Items</h2>
               <button
                 onClick={() => setShowItemForm(!showItemForm)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -370,29 +370,29 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
             {showItemForm && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4">New Menu Item</h3>
+                <h3 className="text-lg font-bold text-black mb-4">New Menu Item</h3>
                 <form onSubmit={handleCreateItem} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-bold text-black mb-2">
                         Name *
                       </label>
                       <input
                         type="text"
                         value={newItem.name}
                         onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-bold text-black mb-2">
                         Category *
                       </label>
                       <select
                         value={newItem.category_id}
                         onChange={(e) => setNewItem({ ...newItem, category_id: parseInt(e.target.value) })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                         required
                       >
                         <option value={0}>Select category</option>
@@ -405,18 +405,18 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-black mb-2">
                       Description
                     </label>
                     <textarea
                       value={newItem.description}
                       onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                       rows={3}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-black mb-2">
                       Price *
                     </label>
                     <input
@@ -424,7 +424,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       step="0.01"
                       value={newItem.price}
                       onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                       required
                     />
                   </div>
@@ -453,7 +453,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 <div key={item.id} className="bg-white rounded-lg shadow overflow-hidden">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                      <h3 className="text-lg font-bold text-black">{item.name}</h3>
                       <button
                         onClick={() => toggleItemActive(item.id, item.active)}
                         className={`px-3 py-1 rounded text-sm font-medium ${
@@ -466,11 +466,11 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       </button>
                     </div>
                     {item.description && (
-                      <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                      <p className="text-black text-sm mb-3">{item.description}</p>
                     )}
                     <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold text-gray-900">${item.price}</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-2xl font-bold text-black">${item.price}</span>
+                      <span className="text-sm text-black">
                         {categories.find(c => c.id === item.category_id)?.name}
                       </span>
                     </div>
@@ -480,7 +480,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             </div>
 
             {filteredItems.length === 0 && (
-              <p className="text-center text-gray-500 py-16">
+              <p className="text-center text-black py-16">
                 No items found. Create one above!
               </p>
             )}
@@ -490,8 +490,8 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         {/* VARIANTS VIEW */}
         {view === 'variants' && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Variants Management</h2>
-            <p className="text-gray-600">Variants configuration coming soon...</p>
+            <h2 className="text-2xl font-bold text-black mb-4">Variants Management</h2>
+            <p className="text-black">Variants configuration coming soon...</p>
           </div>
         )}
       </div>
