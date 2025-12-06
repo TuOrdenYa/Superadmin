@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      menu: result.rows,
+      items: result.rows,
       tenant_id: tenantId,
       location_id: locationId,
     });
