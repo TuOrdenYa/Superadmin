@@ -58,17 +58,17 @@ export default function BackofficeLoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-bold text-black mb-2">
-              Restaurant
+              Tenant ID
             </label>
-            <select
+            <input
+              type="number"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
+              placeholder="Enter your tenant ID"
               required
-            >
-              <option value="1">Pizza Paradise (Tenant 1)</option>
-              <option value="2">Burger Blast (Tenant 2)</option>
-            </select>
+              min="1"
+            />
           </div>
 
           <div>
@@ -82,7 +82,6 @@ export default function BackofficeLoginPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
               placeholder="admin@restaurant.com"
               required
-              autoFocus
             />
           </div>
 
