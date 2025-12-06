@@ -34,9 +34,15 @@ export async function GET(request: NextRequest) {
     const params = [Number(tenantId), locationId ? Number(locationId) : null];
     const result = await query(sql, params);
 
+    // Map effective_active to active for UI compatibility
+    const items = result.rows.map(row => ({
+      ...row,
+      active: row.effective_active
+    }));
+
     return NextResponse.json({
       ok: true,
-      items: result.rows,
+      items: items,
     });
   } catch (error) {
     console.error('[GET /api/backoffice/items] error:', error);

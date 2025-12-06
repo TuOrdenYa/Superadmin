@@ -26,11 +26,10 @@ export async function GET(request: NextRequest) {
       WHERE mi.tenant_id = $1
         AND mi.active = true
         AND (c.active = true OR c.active IS NULL)
-        ${locationId ? 'AND (mi.location_id IS NULL OR mi.location_id = $2)' : ''}
       ORDER BY c.name, mi.name
     `;
 
-    const params = locationId ? [tenantId, locationId] : [tenantId];
+    const params = [tenantId];
     const result = await query(sql, params);
 
     return NextResponse.json({
