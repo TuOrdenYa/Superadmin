@@ -5,8 +5,7 @@ import { query } from "@/lib/db";
 export async function GET(request: NextRequest) {
   try {
     const result = await query(
-      `SELECT id, name, slug, product_tier, subscription_status, 
-              subscription_start_date, subscription_end_date, created_at
+      `SELECT id, name, slug
        FROM tenants
        ORDER BY id DESC`
     );
@@ -28,7 +27,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, slug, product_tier = 'light' } = body;
+    const { id, name, slug } = body;
 
     if (!name || !slug) {
       return NextResponse.json(
@@ -37,30 +36,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate product tier
-    if (!['light', 'plus', 'pro'].includes(product_tier)) {
-      return NextResponse.json(
-        { error: "product_tier must be light, plus, or pro" },
-        { status: 400 }
-      );
-    }
-
     let result;
     if (id) {
       // Use custom ID (e.g., tax ID)
       result = await query(
-        `INSERT INTO tenants (id, name, slug, product_tier, subscription_status)
-         VALUES ($1, $2, $3, $4, 'active')
+        `INSERT INTO tenants (id, name, slug)
+         VALUES ($1, $2, $3)
          RETURNING *`,
-        [id, name, slug, product_tier]
+        [id, name, slug]
       );
     } else {
       // Auto-increment ID
       result = await query(
-        `INSERT INTO tenants (name, slug, product_tier, subscription_status)
-         VALUES ($1, $2, $3, 'active')
+        `INSERT INTO tenants (name, slug)
+         VALUES ($1, $2)
          RETURNING *`,
-        [name, slug, product_tier]
+        [name, slug]
       );
     }
 
