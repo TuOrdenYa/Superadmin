@@ -1,5 +1,12 @@
 # Database Seed Scripts
 
+## Quick Reference
+
+| Command | Purpose |
+|---------|---------|
+| `npm run seed:generate` | Generate complete seed data SQL with real bcrypt hashes |
+| `npm run seed:reset-passwords` | Generate SQL to reset existing user passwords |
+
 ## Automatic Seed Generation
 
 ### Usage
@@ -29,6 +36,27 @@ After generating:
 2. Copy the contents of `sql/seed_test_data.sql`
 3. Paste into Supabase SQL Editor
 4. Execute
+
+## Password Reset (Quick Fix)
+
+If you already have users in the database but login isn't working:
+
+```bash
+npm run seed:reset-passwords
+```
+
+This will:
+1. ✅ Generate a fresh bcrypt hash
+2. ✅ Output SQL to update all 10 test users
+3. ✅ Include verification query
+
+Just copy the output SQL and run it in Supabase!
+
+### When to use
+
+- ✅ Login shows "Invalid credentials" but you know the password is correct
+- ✅ You manually created users with a bad hash
+- ✅ You want to quickly reset all test passwords without re-seeding everything
 
 ### Test Credentials
 
