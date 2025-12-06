@@ -1,7 +1,28 @@
--- Seed Test Data for Tenants 1 and 2
+/**
+ * Generate seed data SQL with real bcrypt password hashes
+ * Usage: node scripts/generate-seed-data.js
+ */
+
+import bcrypt from 'bcrypt';
+import fs from 'fs';
+import path from 'path';
+
+const SALT_ROUNDS = 10;
+const DEFAULT_PASSWORD = 'password123';
+
+async function generateHash(password) {
+  return await bcrypt.hash(password, SALT_ROUNDS);
+}
+
+async function generateSeedSQL() {
+  console.log('🔐 Generating bcrypt hash for password...');
+  const passwordHash = await generateHash(DEFAULT_PASSWORD);
+  console.log(`✓ Hash generated: ${passwordHash}\n`);
+
+  const sql = `-- Seed Test Data for Tenants 1 and 2
 -- Generated automatically with real bcrypt hashes
 -- Run this in Supabase SQL Editor after running add_tenant_slug.sql
--- Password for all users: password123
+-- Password for all users: ${DEFAULT_PASSWORD}
 
 -- ========================================
 -- TENANT 1: Pizza Restaurant
@@ -17,11 +38,11 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 1
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(1, NULL, 'admin@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'John Admin', 'tenant_admin', true),
-(1, 1, 'manager.downtown@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Sarah Manager', 'manager', true),
-(1, 2, 'manager.westside@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Mike Manager', 'manager', true),
-(1, 1, 'waiter1@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Emma Waiter', 'waiter', true),
-(1, 2, 'waiter2@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Tom Waiter', 'waiter', true);
+(1, NULL, 'admin@pizzaparadise.com', '${passwordHash}', 'John Admin', 'tenant_admin', true),
+(1, 1, 'manager.downtown@pizzaparadise.com', '${passwordHash}', 'Sarah Manager', 'manager', true),
+(1, 2, 'manager.westside@pizzaparadise.com', '${passwordHash}', 'Mike Manager', 'manager', true),
+(1, 1, 'waiter1@pizzaparadise.com', '${passwordHash}', 'Emma Waiter', 'waiter', true),
+(1, 2, 'waiter2@pizzaparadise.com', '${passwordHash}', 'Tom Waiter', 'waiter', true);
 
 -- Categories for Tenant 1
 INSERT INTO categories (tenant_id, name, position, active) VALUES
@@ -86,11 +107,11 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 2
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(2, NULL, 'admin@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Lisa Admin', 'tenant_admin', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'David Manager', 'manager', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Rachel Manager', 'manager', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'waiter.main@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Chris Waiter', 'waiter', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'waiter.mall@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Amy Waiter', 'waiter', true);
+(2, NULL, 'admin@burgerblast.com', '${passwordHash}', 'Lisa Admin', 'tenant_admin', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '${passwordHash}', 'David Manager', 'manager', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '${passwordHash}', 'Rachel Manager', 'manager', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'waiter.main@burgerblast.com', '${passwordHash}', 'Chris Waiter', 'waiter', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'waiter.mall@burgerblast.com', '${passwordHash}', 'Amy Waiter', 'waiter', true);
 
 -- Categories for Tenant 2
 INSERT INTO categories (tenant_id, name, position, active) VALUES
@@ -150,3 +171,15 @@ SELECT
     (SELECT COUNT(*) FROM tables WHERE location_id IN (
         SELECT id FROM locations WHERE tenant_id IN (1,2)
     )) as tables;
+`;
+
+  const outputPath = path.join(process.cwd(), 'sql', 'seed_test_data.sql');
+  fs.writeFileSync(outputPath, sql, 'utf8');
+  
+  console.log('✅ Seed data SQL generated successfully!');
+  console.log(`📁 Saved to: ${outputPath}`);
+  console.log(`\n🔑 All users have password: ${DEFAULT_PASSWORD}`);
+  console.log(`🔐 Bcrypt hash: ${passwordHash}\n`);
+}
+
+generateSeedSQL().catch(console.error);

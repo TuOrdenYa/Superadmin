@@ -2,11 +2,13 @@
   "name": "restorder",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:generate": "node scripts/generate-seed-data.js"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
