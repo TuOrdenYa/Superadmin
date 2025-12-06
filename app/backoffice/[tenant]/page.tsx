@@ -45,6 +45,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [items, setItems] = useState<MenuItem[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [tenantName, setTenantName] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [view, setView] = useState<'categories' | 'items' | 'variants' | 'tables'>('items');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -56,6 +57,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     tenant_id: number;
     role: string;
     location_id: number | null;
+    location_name?: string;
   } | null>(null);
   
   // Form states
@@ -166,6 +168,20 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       fetchItems();
       fetchLocations();
       fetchTables();
+      
+      // Fetch tenant name
+      const fetchTenantName = async () => {
+        try {
+          const res = await fetch(`/api/tenant-by-slug?slug=pizza-paradise`);
+          const data = await res.json();
+          if (data.ok) {
+            setTenantName(data.tenant.name);
+          }
+        } catch (error) {
+          console.error('Error fetching tenant name:', error);
+        }
+      };
+      fetchTenantName();
     }
   }, [isAuthenticated, fetchCategories, fetchItems, fetchLocations, fetchTables]);
 
@@ -258,8 +274,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             <div>
               <h1 className="text-3xl font-bold text-white">Backoffice</h1>
               <p className="text-blue-100">
-                {user?.full_name} • {user?.role === 'tenant_admin' ? 'Admin' : user?.role === 'manager' ? 'Manager' : 'User'}
-                {user?.location_id && ` • Location ${user.location_id}`}
+                {tenantName && <span className="font-semibold">{tenantName}</span>}
+                {tenantName && ' • '}
+                {user?.full_name} • {user?.role === 'tenant_admin' ? 'Admin' : user?.role === 'manager' ? 'Manager' : 'Waiter'}
+                {user?.location_name && ` • ${user.location_name}`}
               </p>
             </div>
             <div className="flex gap-2">
