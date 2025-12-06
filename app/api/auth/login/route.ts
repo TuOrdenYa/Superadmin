@@ -17,9 +17,10 @@ export async function POST(request: NextRequest) {
 
     // Find user by tenant_id and email
     const result = await query(
-      `SELECT id, tenant_id, full_name, email, password_hash, role, is_active, location_id
-       FROM users 
-       WHERE tenant_id = $1 AND lower(email) = lower($2) 
+      `SELECT u.id, u.tenant_id, u.full_name, u.email, u.password_hash, u.role, u.is_active, u.location_id, l.name as location_name
+       FROM users u
+       LEFT JOIN locations l ON u.location_id = l.id
+       WHERE u.tenant_id = $1 AND lower(u.email) = lower($2) 
        LIMIT 1`,
       [Number(tenant_id), String(email).trim()]
     );
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
         tenant_id: user.tenant_id,
         role: user.role,
         location_id: user.location_id || null,
+        location_name: user.location_name || null,
       },
     });
   } catch (error) {
