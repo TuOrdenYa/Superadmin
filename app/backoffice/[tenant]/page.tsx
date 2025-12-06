@@ -261,8 +261,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       console.log('Toggle response:', data);
       
       if (res.ok) {
-        alert(`Item ${!currentActive ? 'activated' : 'deactivated'} successfully!`);
-        fetchItems();
+        // Update the local state immediately for instant UI feedback
+        setItems(prevItems => 
+          prevItems.map(item => 
+            item.id === itemId ? { ...item, active: !currentActive } : item
+          )
+        );
+        // Also refresh from server to ensure sync
+        await fetchItems();
       } else {
         alert(`Error: ${data.error || 'Failed to toggle item'}`);
       }
