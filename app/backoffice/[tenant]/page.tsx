@@ -45,6 +45,35 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     category_id: 0,
   });
 
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`/api/categories?tenant_id=${tenantId}`);
+      const data = await res.json();
+      if (data.ok) setCategories(data.categories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  // Fetch items
+  const fetchItems = async () => {
+    try {
+      const res = await fetch(`/api/backoffice/items?tenant_id=${tenantId}&location_id=1`);
+      const data = await res.json();
+      if (data.ok) setItems(data.items);
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
+  };
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    router.push('/backoffice/login');
+  };
+
   // Check authentication
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -71,12 +100,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     }
   }, [tenantId, router]);
 
-  // Logout function
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    router.push('/backoffice/login');
-  };
+  // Fetch data when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCategories();
+      fetchItems();
+    }
+  }, [tenantId, isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -89,33 +119,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   if (!isAuthenticated) {
     return null;
   }
-
-  // Fetch categories
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`/api/categories?tenant_id=${tenantId}`);
-      const data = await res.json();
-      if (data.ok) setCategories(data.categories);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
-
-  // Fetch items
-  const fetchItems = async () => {
-    try {
-      const res = await fetch(`/api/backoffice/items?tenant_id=${tenantId}&location_id=1`);
-      const data = await res.json();
-      if (data.ok) setItems(data.items);
-    } catch (error) {
-      console.error('Error fetching items:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-    fetchItems();
-  }, [tenantId]);
 
   // Create category
   const handleCreateCategory = async (e: React.FormEvent) => {
