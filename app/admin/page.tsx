@@ -25,17 +25,21 @@ export default function SuperAdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  const [mounted, setMounted] = useState(false);
   
   // Form states
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [newLocationName, setNewLocationName] = useState('');
 
-  // Check if already authenticated
+  // Check if already authenticated (only on client)
   useEffect(() => {
-    const authenticated = sessionStorage.getItem('admin_authenticated');
-    if (authenticated === 'true') {
-      setIsAuthenticated(true);
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      const authenticated = sessionStorage.getItem('admin_authenticated');
+      if (authenticated === 'true') {
+        setIsAuthenticated(true);
+      }
     }
   }, []);
 
@@ -50,6 +54,11 @@ export default function SuperAdminPage() {
       setAuthError('Invalid password');
     }
   };
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return null;
+  }
 
   // Show login form if not authenticated
   if (!isAuthenticated) {
