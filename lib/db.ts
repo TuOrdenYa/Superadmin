@@ -1,10 +1,14 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
-// Create a single pool instance
+// Create a single pool instance with minimal connections for Supabase
+// Using pgbouncer transaction mode for better connection handling
+const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 5,
-  idleTimeoutMillis: 30000,
+  connectionString: connectionString?.includes('?') 
+    ? `${connectionString}&pgbouncer=true` 
+    : `${connectionString}?pgbouncer=true`,
+  max: 1, // Single connection per instance for serverless
+  idleTimeoutMillis: 10000, // Release connections faster
   connectionTimeoutMillis: 5000,
 });
 
