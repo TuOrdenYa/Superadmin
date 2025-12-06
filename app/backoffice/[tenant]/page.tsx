@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -46,7 +46,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   });
 
   // Fetch categories
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const res = await fetch(`/api/categories?tenant_id=${tenantId}`);
       const data = await res.json();
@@ -54,10 +54,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  };
+  }, [tenantId]);
 
   // Fetch items
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       const res = await fetch(`/api/backoffice/items?tenant_id=${tenantId}&location_id=1`);
       const data = await res.json();
@@ -65,7 +65,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     } catch (error) {
       console.error('Error fetching items:', error);
     }
-  };
+  }, [tenantId]);
 
   // Logout function
   const handleLogout = () => {
@@ -106,7 +106,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       fetchCategories();
       fetchItems();
     }
-  }, [tenantId, isAuthenticated]);
+  }, [isAuthenticated, fetchCategories, fetchItems]);
 
   if (isLoading) {
     return (
