@@ -33,6 +33,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [view, setView] = useState<'categories' | 'items' | 'variants'>('items');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<{
+    id: number;
+    full_name: string;
+    email: string;
+    tenant_id: number;
+    role: string;
+    location_id: number | null;
+  } | null>(null);
   
   // Form states
   const [showCategoryForm, setShowCategoryForm] = useState(false);
@@ -59,13 +67,17 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   // Fetch items
   const fetchItems = useCallback(async () => {
     try {
-      const res = await fetch(`/api/backoffice/items?tenant_id=${tenantId}&location_id=1`);
+      // For managers, filter by their location. For admins, show all.
+      const locationParam = user?.role === 'manager' && user?.location_id 
+        ? `&location_id=${user.location_id}` 
+        : '';
+      const res = await fetch(`/api/backoffice/items?tenant_id=${tenantId}${locationParam}`);
       const data = await res.json();
       if (data.ok) setItems(data.items);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
-  }, [tenantId]);
+  }, [tenantId, user]);
 
   // Logout function
   const handleLogout = () => {
@@ -85,13 +97,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     }
 
     try {
-      const user = JSON.parse(userStr);
+      const userData = JSON.parse(userStr);
       // Verify user belongs to this tenant
-      if (user.tenant_id !== tenantId) {
+      if (userData.tenant_id !== tenantId) {
         alert('Access denied to this tenant');
         router.push('/backoffice/login');
         return;
       }
+      setUser(userData);
       setIsAuthenticated(true);
     } catch {
       router.push('/backoffice/login');
@@ -196,15 +209,20 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-white">Backoffice</h1>
-              <p className="text-blue-100">Tenant ID: {tenantId}</p>
+              <p className="text-blue-100">
+                {user?.full_name} • {user?.role === 'tenant_admin' ? 'Admin' : user?.role === 'manager' ? 'Manager' : 'User'}
+                {user?.location_id && ` • Location ${user.location_id}`}
+              </p>
             </div>
             <div className="flex gap-2">
-              <a
-                href="/admin"
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-              >
-                ← Back to Admin
-              </a>
+              {user?.role === 'tenant_admin' && (
+                <a
+                  href="/admin"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  ← Back to Admin
+                </a>
+              )}
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -230,26 +248,30 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             >
               Menu Items
             </button>
-            <button
-              onClick={() => setView('categories')}
-              className={`py-4 px-1 border-b-2 font-bold text-sm ${
-                view === 'categories'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Categories
-            </button>
-            <button
-              onClick={() => setView('variants')}
-              className={`py-4 px-1 border-b-2 font-bold text-sm ${
-                view === 'variants'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Variants
-            </button>
+            {user?.role === 'tenant_admin' && (
+              <>
+                <button
+                  onClick={() => setView('categories')}
+                  className={`py-4 px-1 border-b-2 font-bold text-sm ${
+                    view === 'categories'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Categories
+                </button>
+                <button
+                  onClick={() => setView('variants')}
+                  className={`py-4 px-1 border-b-2 font-bold text-sm ${
+                    view === 'variants'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Variants
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </div>
@@ -261,15 +283,17 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">Categories</h2>
-              <button
-                onClick={() => setShowCategoryForm(!showCategoryForm)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                + Add Category
-              </button>
+              {user?.role === 'tenant_admin' && (
+                <button
+                  onClick={() => setShowCategoryForm(!showCategoryForm)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  + Add Category
+                </button>
+              )}
             </div>
 
-            {showCategoryForm && (
+            {showCategoryForm && user?.role === 'tenant_admin' && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">New Category</h3>
                 <form onSubmit={handleCreateCategory} className="space-y-4">
@@ -336,12 +360,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">Menu Items</h2>
-              <button
-                onClick={() => setShowItemForm(!showItemForm)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                + Add Item
-              </button>
+              {user?.role === 'tenant_admin' && (
+                <button
+                  onClick={() => setShowItemForm(!showItemForm)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  + Add Item
+                </button>
+              )}
             </div>
 
             {/* Category Filter */}
@@ -371,7 +397,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               ))}
             </div>
 
-            {showItemForm && (
+            {showItemForm && user?.role === 'tenant_admin' && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">New Menu Item</h3>
                 <form onSubmit={handleCreateItem} className="space-y-4">
