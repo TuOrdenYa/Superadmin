@@ -160,10 +160,10 @@ export default function AdminClient() {
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Super Admin</h1>
-          <p className="text-gray-600 mb-6">Enter password to access admin panel</p>
+          <p className="text-gray-700 mb-6">Enter password to access admin panel</p>
           
           {authError && (
             <div className="bg-red-50 text-red-600 p-3 rounded mb-4">
@@ -198,13 +198,13 @@ export default function AdminClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-lg p-6 mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Super Admin Panel</h1>
-            <p className="text-gray-600 mt-1">Manage tenants and locations</p>
+            <h1 className="text-3xl font-bold text-white">Super Admin Panel</h1>
+            <p className="text-blue-100 mt-1">Manage tenants and locations</p>
           </div>
           <button
             onClick={handleLogout}
@@ -216,11 +216,11 @@ export default function AdminClient() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Create Tenant */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Create Tenant (Restaurant)</h2>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Create Tenant (Restaurant)</h2>
             <form onSubmit={handleCreateTenant} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
                   Restaurant Name
                 </label>
                 <input
@@ -233,7 +233,7 @@ export default function AdminClient() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
                   Subdomain Slug
                 </label>
                 <input
@@ -245,7 +245,7 @@ export default function AdminClient() {
                   pattern="[a-z0-9-]+"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   Preview: {newTenantSlug || 'your-slug'}.tuordenya.com
                 </p>
               </div>
@@ -260,11 +260,11 @@ export default function AdminClient() {
           </div>
 
           {/* Create Location */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Create Location</h2>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Create Location</h2>
             <form onSubmit={handleCreateLocation} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
                   Select Tenant
                 </label>
                 <select
@@ -282,7 +282,7 @@ export default function AdminClient() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
                   Location Name
                 </label>
                 <input
@@ -306,10 +306,10 @@ export default function AdminClient() {
             {/* Locations List */}
             {selectedTenant && locations.length > 0 && (
               <div className="mt-4 pt-4 border-t">
-                <h3 className="font-semibold mb-2">Locations:</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">Locations:</h3>
                 <ul className="space-y-1">
                   {locations.map((loc) => (
-                    <li key={loc.id} className="text-sm text-gray-700">
+                    <li key={loc.id} className="text-sm text-gray-800">
                       • {loc.name}
                     </li>
                   ))}
@@ -320,18 +320,18 @@ export default function AdminClient() {
         </div>
 
         {/* Tenants List */}
-        <div className="bg-white rounded-lg shadow p-6 mt-6">
-          <h2 className="text-xl font-bold mb-4">All Tenants</h2>
+        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">All Tenants</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tenants.map((tenant) => (
               <div
                 key={tenant.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 cursor-pointer"
+                className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-600 hover:shadow-md cursor-pointer transition-all"
                 onClick={() => setSelectedTenant(tenant.id)}
               >
-                <h3 className="font-semibold text-lg">{tenant.name}</h3>
-                <p className="text-sm text-gray-600">ID: {tenant.id}</p>
-                <p className="text-sm text-blue-600">{tenant.slug}.tuordenya.com</p>
+                <h3 className="font-semibold text-lg text-gray-900">{tenant.name}</h3>
+                <p className="text-sm text-gray-700">ID: {tenant.id}</p>
+                <p className="text-sm text-blue-700 font-medium">{tenant.slug}.tuordenya.com</p>
               </div>
             ))}
           </div>
