@@ -16,11 +16,11 @@ INSERT INTO locations (tenant_id, name) VALUES
 -- Users for Tenant 1
 -- Password for all: password123 (hashed)
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(1, NULL, 'admin@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'John Admin', 'tenant_admin', true),
-(1, 1, 'manager.downtown@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Sarah Manager', 'manager', true),
-(1, 2, 'manager.westside@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Mike Manager', 'manager', true),
-(1, 1, 'waiter1@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Emma Waiter', 'waiter', true),
-(1, 2, 'waiter2@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Tom Waiter', 'waiter', true);
+(1, NULL, 'admin@pizzaparadise.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'John Admin', 'tenant_admin', true),
+(1, 1, 'manager.downtown@pizzaparadise.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Sarah Manager', 'manager', true),
+(1, 2, 'manager.westside@pizzaparadise.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Mike Manager', 'manager', true),
+(1, 1, 'waiter1@pizzaparadise.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Emma Waiter', 'waiter', true),
+(1, 2, 'waiter2@pizzaparadise.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Tom Waiter', 'waiter', true);
 
 -- Categories for Tenant 1
 INSERT INTO categories (tenant_id, name, position, active) VALUES
@@ -85,11 +85,11 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 2
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(2, NULL, 'admin@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Lisa Admin', 'tenant_admin', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'David Manager', 'manager', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Rachel Manager', 'manager', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'waiter.main@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Chris Waiter', 'waiter', true),
-(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'waiter.mall@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Amy Waiter', 'waiter', true);
+(2, NULL, 'admin@burgerblast.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Lisa Admin', 'tenant_admin', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'David Manager', 'manager', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Rachel Manager', 'manager', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'waiter.main@burgerblast.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Chris Waiter', 'waiter', true),
+(2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'waiter.mall@burgerblast.com', '$2b$10$L0U0ZZqhYna/QmW7A4qdgeb6FKf/zRWKd1fRmG8IsNskuTe9FVl8C', 'Amy Waiter', 'waiter', true);
 
 -- Categories for Tenant 2
 INSERT INTO categories (tenant_id, name, position, active) VALUES
