@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function BackofficeLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [tenantId, setTenantId] = useState('1'); // Allow user to select
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function BackofficeLoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenant_id: 1, // Will be dynamic later
+          tenant_id: parseInt(tenantId),
           email,
           password,
         }),
@@ -55,6 +56,21 @@ export default function BackofficeLoginPage() {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-black mb-2">
+              Restaurant
+            </label>
+            <select
+              value={tenantId}
+              onChange={(e) => setTenantId(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
+              required
+            >
+              <option value="1">Pizza Paradise (Tenant 1)</option>
+              <option value="2">Burger Blast (Tenant 2)</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               Email
