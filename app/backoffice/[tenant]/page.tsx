@@ -22,6 +22,20 @@ interface MenuItem {
   location_active?: boolean;
 }
 
+interface Table {
+  id: number;
+  location_id: number;
+  number: string;
+  tenant_id: number;
+  location_name?: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  tenant_id: number;
+}
+
 export default function BackofficePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = use(params);
   const tenantId = parseInt(tenant);
@@ -29,8 +43,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [view, setView] = useState<'categories' | 'items' | 'variants'>('items');
+  const [view, setView] = useState<'categories' | 'items' | 'variants' | 'tables'>('items');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<{
@@ -45,12 +61,17 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   // Form states
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
+  const [showTableForm, setShowTableForm] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', position: 0 });
   const [newItem, setNewItem] = useState({
     name: '',
     description: '',
     price: '',
     category_id: 0,
+  });
+  const [newTable, setNewTable] = useState({
+    location_id: 0,
+    number: '',
   });
 
   // Fetch categories
@@ -63,6 +84,31 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       console.error('Error fetching categories:', error);
     }
   }, [tenantId]);
+
+  // Fetch locations
+  const fetchLocations = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/tenants/${tenantId}/locations`);
+      const data = await res.json();
+      if (data.ok) setLocations(data.locations);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  }, [tenantId]);
+
+  // Fetch tables
+  const fetchTables = useCallback(async () => {
+    try {
+      const locationParam = user?.role === 'manager' && user?.location_id 
+        ? `?location_id=${user.location_id}` 
+        : '';
+      const res = await fetch(`/api/tenants/${tenantId}/tables${locationParam}`);
+      const data = await res.json();
+      if (data.ok) setTables(data.tables);
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  }, [tenantId, user]);
 
   // Fetch items
   const fetchItems = useCallback(async () => {
@@ -118,8 +164,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     if (isAuthenticated) {
       fetchCategories();
       fetchItems();
+      fetchLocations();
+      fetchTables();
     }
-  }, [isAuthenticated, fetchCategories, fetchItems]);
+  }, [isAuthenticated, fetchCategories, fetchItems, fetchLocations, fetchTables]);
 
   if (isLoading) {
     return (
@@ -261,6 +309,16 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   Categories
                 </button>
                 <button
+                  onClick={() => setView('tables')}
+                  className={`py-4 px-1 border-b-2 font-bold text-sm ${
+                    view === 'tables'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Tables
+                </button>
+                <button
                   onClick={() => setView('variants')}
                   className={`py-4 px-1 border-b-2 font-bold text-sm ${
                     view === 'variants'
@@ -351,6 +409,148 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* TABLES VIEW */}
+        {view === 'tables' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-black">Tables Management</h2>
+              {user?.role === 'tenant_admin' && (
+                <button
+                  onClick={() => setShowTableForm(!showTableForm)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  + Add Table
+                </button>
+              )}
+            </div>
+
+            {/* Create Table Form */}
+            {showTableForm && (
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 className="text-lg font-bold text-black mb-4">Create New Table</h3>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                      const res = await fetch(`/api/tenants/${tenantId}/tables`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newTable),
+                      });
+                      const data = await res.json();
+                      if (data.ok) {
+                        alert('Table created!');
+                        setNewTable({ location_id: 0, number: '' });
+                        setShowTableForm(false);
+                        fetchTables();
+                      } else {
+                        alert(data.error);
+                      }
+                    } catch (error) {
+                      console.error('Error:', error);
+                      alert('Failed to create table');
+                    }
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-1">Location *</label>
+                      <select
+                        value={newTable.location_id}
+                        onChange={(e) => setNewTable({ ...newTable, location_id: parseInt(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+                        required
+                      >
+                        <option value="">Select location...</option>
+                        {locations.map((loc) => (
+                          <option key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-black mb-1">Table Number *</label>
+                      <input
+                        type="text"
+                        value={newTable.number}
+                        onChange={(e) => setNewTable({ ...newTable, number: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+                        placeholder="e.g., 1, 2, A1, B5"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                  >
+                    Create Table
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Tables List */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">Table #</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">QR Code URL</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {tables.map((table) => (
+                    <tr key={table.id}>
+                      <td className="px-6 py-4 text-sm font-bold text-black">{table.number}</td>
+                      <td className="px-6 py-4 text-sm text-black">{table.location_name || `Location ${table.location_id}`}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <code className="bg-gray-100 px-2 py-1 rounded text-xs text-blue-600">
+                          /menu?table={table.id}
+                        </code>
+                      </td>
+                      <td className="px-6 py-4 text-sm space-x-2">
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Delete table ${table.number}?`)) {
+                              try {
+                                const res = await fetch(`/api/tenants/${tenantId}/tables/${table.id}`, {
+                                  method: 'DELETE',
+                                });
+                                const data = await res.json();
+                                if (data.ok) {
+                                  alert('Table deleted!');
+                                  fetchTables();
+                                } else {
+                                  alert(data.error);
+                                }
+                              } catch (error) {
+                                alert('Failed to delete table');
+                              }
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-800 font-semibold"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {tables.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No tables found. Create one to get started.
+                </div>
+              )}
             </div>
           </div>
         )}
