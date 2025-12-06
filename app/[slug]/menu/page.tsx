@@ -43,7 +43,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string }>
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        const res = await fetch(`/api/tenants/by-slug/${slug}`);
+        const res = await fetch(`/api/tenant-by-slug?slug=${slug}`);
         const data = await res.json();
         if (data.ok) {
           setTenantId(data.tenant.id);
