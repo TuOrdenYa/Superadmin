@@ -1,6 +1,6 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
-// Create a single pool instance
+// Force rebuild - database connection pool for Supabase
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 3,
