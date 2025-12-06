@@ -9,9 +9,9 @@
 UPDATE tenants SET name = 'Pizza Paradise', slug = 'pizza-paradise' WHERE id = 1;
 
 -- Locations for Tenant 1
-INSERT INTO locations (tenant_id, name, address, phone, active) VALUES
-(1, 'Downtown Branch', '123 Main St, Downtown', '+1-555-0101', true),
-(1, 'Westside Branch', '456 West Ave, Westside', '+1-555-0102', true)
+INSERT INTO locations (tenant_id, name) VALUES
+(1, 'Downtown Branch'),
+(1, 'Westside Branch')
 ON CONFLICT DO NOTHING;
 
 -- Users for Tenant 1
@@ -85,9 +85,9 @@ INSERT INTO tenants (id, name, slug, active) VALUES
 ON CONFLICT (id) DO UPDATE SET name = 'Burger Blast', slug = 'burger-blast';
 
 -- Locations for Tenant 2
-INSERT INTO locations (tenant_id, name, address, phone, active) VALUES
-(2, 'Main Street', '789 Main St, City Center', '+1-555-0201', true),
-(2, 'Mall Location', '321 Shopping Mall, Level 2', '+1-555-0202', true)
+INSERT INTO locations (tenant_id, name) VALUES
+(2, 'Main Street'),
+(2, 'Mall Location')
 ON CONFLICT DO NOTHING;
 
 -- Users for Tenant 2
