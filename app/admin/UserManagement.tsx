@@ -38,6 +38,12 @@ export default function UserManagement({ tenants }: UserManagementProps) {
   const [showForm, setShowForm] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   
+  // Filter state
+  const [filterTenant, setFilterTenant] = useState<string>('');
+  const [filterRole, setFilterRole] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>('');
+  
   // Form state
   const [formData, setFormData] = useState({
     tenant_id: '',
@@ -176,6 +182,39 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   };
 
+  // Filter users based on criteria
+  const filteredUsers = users.filter(user => {
+    // Tenant filter
+    if (filterTenant && user.tenant_id !== parseInt(filterTenant)) {
+      return false;
+    }
+    
+    // Role filter
+    if (filterRole && user.role !== filterRole) {
+      return false;
+    }
+    
+    // Status filter
+    if (filterStatus === 'active' && !user.is_active) {
+      return false;
+    }
+    if (filterStatus === 'inactive' && user.is_active) {
+      return false;
+    }
+    
+    // Search by name or email
+    if (searchText) {
+      const search = searchText.toLowerCase();
+      const matchName = user.full_name.toLowerCase().includes(search);
+      const matchEmail = user.email.toLowerCase().includes(search);
+      if (!matchName && !matchEmail) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -187,6 +226,81 @@ export default function UserManagement({ tenants }: UserManagementProps) {
         >
           {showForm ? 'Cancel' : '+ Create User'}
         </button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Search Name/Email</label>
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Type to search..."
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Filter by Tenant</label>
+            <select
+              value={filterTenant}
+              onChange={(e) => setFilterTenant(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+            >
+              <option value="">All Tenants</option>
+              {tenants.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Filter by Role</label>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+            >
+              <option value="">All Roles</option>
+              <option value="tenant_admin">Tenant Admin</option>
+              <option value="manager">Manager</option>
+              <option value="waiter">Waiter</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Filter by Status</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </select>
+          </div>
+          
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                setSearchText('');
+                setFilterTenant('');
+                setFilterRole('');
+                setFilterStatus('');
+              }}
+              className="w-full px-3 py-2 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 font-semibold"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-2 text-sm text-gray-600">
+          Showing {filteredUsers.length} of {users.length} users
+        </div>
       </div>
 
       {/* Create User Form */}
@@ -314,7 +428,14 @@ export default function UserManagement({ tenants }: UserManagementProps) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                    No users found matching the filters
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => (
                 <tr key={user.id} className={!user.is_active ? 'opacity-50' : ''}>
                   <td className="px-4 py-3 text-sm text-black font-semibold">{user.full_name}</td>
                   <td className="px-4 py-3 text-sm text-black">{user.email}</td>
@@ -353,7 +474,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

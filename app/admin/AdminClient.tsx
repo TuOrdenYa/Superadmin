@@ -30,6 +30,7 @@ export default function AdminClient() {
   // Form states
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
+  const [newTenantId, setNewTenantId] = useState('');
   const [newLocationName, setNewLocationName] = useState('');
 
   // Check if already authenticated
@@ -118,13 +119,18 @@ export default function AdminClient() {
       const res = await fetch('/api/admin/tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newTenantName, slug: newTenantSlug }),
+        body: JSON.stringify({
+          id: newTenantId ? parseInt(newTenantId) : undefined,
+          name: newTenantName,
+          slug: newTenantSlug,
+        }),
       });
       const data = await res.json();
       if (data.ok) {
-        alert(`Tenant created! Access at: ${newTenantSlug}.tuordenya.com`);
+        alert('Tenant created successfully!');
         setNewTenantName('');
         setNewTenantSlug('');
+        setNewTenantId('');
         fetchTenants();
       }
     } catch (error) {
@@ -220,6 +226,19 @@ export default function AdminClient() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold text-black mb-4">Create Tenant (Restaurant)</h2>
             <form onSubmit={handleCreateTenant} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-black mb-1">
+                  Tenant ID (Optional - Tax ID/RUC)
+                </label>
+                <input
+                  type="number"
+                  value={newTenantId}
+                  onChange={(e) => setNewTenantId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+                  placeholder="e.g., 20601234567 (leave empty for auto-increment)"
+                />
+                <p className="text-xs text-gray-600 mt-1">Use client's tax ID for accounting alignment</p>
+              </div>
               <div>
                 <label className="block text-sm font-bold text-black mb-1">
                   Restaurant Name

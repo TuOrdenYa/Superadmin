@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, slug } = body;
+    const { id, name, slug } = body;
 
     if (!name || !slug) {
       return NextResponse.json(
@@ -36,12 +36,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await query(
-      `INSERT INTO tenants (name, slug)
-       VALUES ($1, $2)
-       RETURNING *`,
-      [name, slug]
-    );
+    let result;
+    if (id) {
+      // Use custom ID (e.g., tax ID)
+      result = await query(
+        `INSERT INTO tenants (id, name, slug)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [id, name, slug]
+      );
+    } else {
+      // Auto-increment ID
+      result = await query(
+        `INSERT INTO tenants (name, slug)
+         VALUES ($1, $2)
+         RETURNING *`,
+        [name, slug]
+      );
+    }
 
     return NextResponse.json({
       ok: true,
