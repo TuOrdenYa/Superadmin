@@ -702,12 +702,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-bold text-black">{item.name}</h3>
                       <button
-                        onClick={() => toggleItemActive(item.id, item.active)}
-                        className={`px-3 py-1 rounded text-sm font-medium ${
+                        onClick={() => user?.role === 'tenant_admin' && toggleItemActive(item.id, item.active)}
+                        disabled={user?.role !== 'tenant_admin'}
+                        className={`px-3 py-1 rounded text-sm font-medium cursor-pointer ${
                           item.active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                        } ${user?.role !== 'tenant_admin' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={user?.role !== 'tenant_admin' ? 'Only admins can toggle item status' : 'Click to toggle'}
                       >
                         {item.active ? 'Active' : 'Inactive'}
                       </button>
