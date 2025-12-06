@@ -8,7 +8,6 @@ export default function AdminPage() {
   return <AdminClient />;
 }
 
-interface Tenant {
   id: number;
   name: string;
   slug?: string;
