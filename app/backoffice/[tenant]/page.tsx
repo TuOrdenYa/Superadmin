@@ -247,6 +247,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   // Toggle item active
   const toggleItemActive = async (itemId: number, currentActive: boolean) => {
     try {
+      console.log('Toggling item:', itemId, 'from', currentActive, 'to', !currentActive);
       const res = await fetch(`/api/items/${itemId}/active`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -255,9 +256,19 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           active: !currentActive,
         }),
       });
-      if (res.ok) fetchItems();
+      
+      const data = await res.json();
+      console.log('Toggle response:', data);
+      
+      if (res.ok) {
+        alert(`Item ${!currentActive ? 'activated' : 'deactivated'} successfully!`);
+        fetchItems();
+      } else {
+        alert(`Error: ${data.error || 'Failed to toggle item'}`);
+      }
     } catch (error) {
       console.error('Error toggling item:', error);
+      alert('Network error - check console');
     }
   };
 
