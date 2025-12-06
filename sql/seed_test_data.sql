@@ -74,8 +74,8 @@ INSERT INTO tables (location_id, number, tenant_id) VALUES
 -- ========================================
 
 -- Create or update Tenant 2
-INSERT INTO tenants (id, name, slug, active) VALUES
-(2, 'Burger Blast', 'burger-blast', true)
+INSERT INTO tenants (id, name, slug) VALUES
+(2, 'Burger Blast', 'burger-blast')
 ON CONFLICT (id) DO UPDATE SET name = 'Burger Blast', slug = 'burger-blast';
 
 -- Locations for Tenant 2
