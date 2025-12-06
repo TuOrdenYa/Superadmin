@@ -248,6 +248,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const toggleItemActive = async (itemId: number, currentActive: boolean) => {
     try {
       console.log('Toggling item:', itemId, 'from', currentActive, 'to', !currentActive);
+      
+      // Update the local state immediately for instant UI feedback
+      setItems(prevItems => 
+        prevItems.map(item => 
+          item.id === itemId ? { ...item, active: !currentActive } : item
+        )
+      );
+      
       const res = await fetch(`/api/items/${itemId}/active`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -260,20 +268,23 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       const data = await res.json();
       console.log('Toggle response:', data);
       
-      if (res.ok) {
-        // Update the local state immediately for instant UI feedback
+      if (!res.ok) {
+        // Revert the optimistic update on error
         setItems(prevItems => 
           prevItems.map(item => 
-            item.id === itemId ? { ...item, active: !currentActive } : item
+            item.id === itemId ? { ...item, active: currentActive } : item
           )
         );
-        // Also refresh from server to ensure sync
-        await fetchItems();
-      } else {
         alert(`Error: ${data.error || 'Failed to toggle item'}`);
       }
     } catch (error) {
       console.error('Error toggling item:', error);
+      // Revert the optimistic update on error
+      setItems(prevItems => 
+        prevItems.map(item => 
+          item.id === itemId ? { ...item, active: currentActive } : item
+        )
+      );
       alert('Network error - check console');
     }
   };
