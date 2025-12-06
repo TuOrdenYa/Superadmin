@@ -16,7 +16,7 @@ ON CONFLICT DO NOTHING;
 
 -- Users for Tenant 1
 -- Password for all: password123 (hashed)
-INSERT INTO users (tenant_id, location_id, email, password_hash, name, role, active) VALUES
+INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
 (1, NULL, 'admin@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'John Admin', 'tenant_admin', true),
 (1, 1, 'manager.downtown@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Sarah Manager', 'manager', true),
 (1, 2, 'manager.westside@pizzaparadise.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Mike Manager', 'manager', true),
@@ -91,7 +91,7 @@ INSERT INTO locations (tenant_id, name) VALUES
 ON CONFLICT DO NOTHING;
 
 -- Users for Tenant 2
-INSERT INTO users (tenant_id, location_id, email, password_hash, name, role, active) VALUES
+INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
 (2, NULL, 'admin@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Lisa Admin', 'tenant_admin', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'David Manager', 'manager', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '$2b$10$rK8qh5x8VxJxqC5K5K5K5OEKxK5K5K5K5K5K5K5K5K5K5K5K5K5K5K', 'Rachel Manager', 'manager', true),
