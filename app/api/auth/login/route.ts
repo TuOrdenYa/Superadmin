@@ -15,33 +15,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by tenant_id and email
+    // Find user by tenant_id and email WITH tier info in one query
     const result = await query(
       `SELECT u.id, u.tenant_id, u.full_name, u.email, u.password_hash, u.role, u.is_active, u.location_id, 
-              l.name as location_name
+              l.name as location_name,
+              t.product_tier,
+              t.subscription_status
        FROM users u
        LEFT JOIN locations l ON u.location_id = l.id
+       LEFT JOIN tenants t ON u.tenant_id = t.id
        WHERE u.tenant_id = $1 AND lower(u.email) = lower($2) 
        LIMIT 1`,
       [Number(tenant_id), String(email).trim()]
     );
-    
-    // Try to get tenant tier info (optional, backward compatible)
-    let productTier = 'pro'; // Default to pro for existing tenants
-    let subscriptionStatus = 'active';
-    try {
-      const tierResult = await query(
-        `SELECT product_tier, subscription_status FROM tenants WHERE id = $1`,
-        [Number(tenant_id)]
-      );
-      if (tierResult.rows[0]) {
-        productTier = tierResult.rows[0].product_tier || 'pro';
-        subscriptionStatus = tierResult.rows[0].subscription_status || 'active';
-      }
-    } catch (err) {
-      // Columns don't exist yet, use defaults
-      console.log('Tier columns not yet migrated, using defaults');
-    }
 
     const user = result.rows[0];
 
@@ -86,8 +72,8 @@ export async function POST(request: NextRequest) {
         role: user.role,
         location_id: user.location_id || null,
         location_name: user.location_name || null,
-        product_tier: productTier,
-        subscription_status: subscriptionStatus,
+        product_tier: user.product_tier || 'pro',
+        subscription_status: user.subscription_status || 'active',
       },
     });
   } catch (error) {
