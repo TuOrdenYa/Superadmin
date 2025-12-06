@@ -1,6 +1,12 @@
-'use client';
+import dynamic from 'next/dynamic';
 
-import { useState, useEffect } from 'react';
+const AdminClient = dynamic(() => import('./AdminClient'), {
+  ssr: false,
+});
+
+export default function AdminPage() {
+  return <AdminClient />;
+}
 
 interface Tenant {
   id: number;
