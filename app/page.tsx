@@ -4,10 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import ThemeSwitcher from "@/app/components/ThemeSwitcher";
+import MobileMenu from "@/app/components/MobileMenu";
 import { useState } from "react";
 
 export default function LandingPage() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100">
@@ -25,6 +27,15 @@ export default function LandingPage() {
               />
               <h1 className="text-base font-bold text-gray-700 whitespace-nowrap md:text-lg">Menús y órdenes para restaurantes</h1>
             </Link>
+            {/* Hamburger for mobile */}
+            <button
+              className="md:hidden ml-auto text-3xl text-gray-700 p-2"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Abrir menú"
+            >
+              ☰
+            </button>
+            {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6 justify-end w-full">
               {/* Products Dropdown */}
               <div className="relative">
@@ -70,6 +81,9 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu */}
+      <MobileMenu open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
