@@ -17,7 +17,7 @@ export default function LandingPage() {
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3 min-w-0">
+            <Link href="/" className="flex items-center gap-3 min-w-0 w-0 flex-shrink">
               <Image 
                 src="/logo-tuordenya-orange.png" 
                 alt="TuOrdenYa Logo" 
@@ -26,8 +26,8 @@ export default function LandingPage() {
                 className="h-10 w-auto flex-shrink-0"
               />
               <h1
-                className="text-base font-bold text-gray-700 md:text-lg truncate min-w-0"
-                style={{maxWidth: '140px'}}
+                className="font-bold text-gray-700 min-w-0 w-full text-[clamp(0.85rem,4vw,1.1rem)] md:text-lg leading-tight whitespace-normal"
+                style={{wordBreak: 'break-word'}}
                 title="Menús y órdenes para restaurantes"
               >
                 Menús y órdenes para restaurantes
