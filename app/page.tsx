@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
+import { useState } from "react";
 
 export default function LandingPage() {
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100">
       {/* Header */}
@@ -21,8 +26,35 @@ export default function LandingPage() {
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <LanguageSwitcher />
-              <Link href="/pricing" className="text-gray-700 hover:text-orange-600 font-medium">
-                Precios
+              
+              {/* Products Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsProductsOpen(!isProductsOpen)}
+                  className="text-gray-700 hover:text-orange-600 font-medium flex items-center gap-1"
+                >
+                  Nuestros productos
+                  <svg className={`w-4 h-4 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isProductsOpen && (
+                  <div className="absolute top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px]">
+                    <Link href="/pricing#light" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                      Light — Menú + QR
+                    </Link>
+                    <Link href="/pricing#plus" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                      Plus — Pedidos y reportes
+                    </Link>
+                    <Link href="/pricing#pro" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                      Pro — Operación completa
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <Link href="#faq" className="text-gray-700 hover:text-orange-600 font-medium">
+                FAQs
               </Link>
               <Link href="/backoffice/login" className="text-gray-700 hover:text-orange-600 font-medium">
                 Iniciar Sesión
@@ -294,6 +326,91 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white py-8 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Company Info */}
+            <div className="col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <Image 
+                  src="/logo-tuordenya-orange.png" 
+                  alt="TuOrdenYa Logo" 
+                  width={32} 
+                  height={32}
+                  className="h-8 w-auto"
+                />
+                <span className="text-lg font-bold text-gray-900">TuOrdenYa</span>
+              </div>
+              <p className="text-gray-600 text-sm mb-4">
+                La plataforma de gestión de restaurantes más fácil de América Latina. 
+                Digitaliza tu negocio en minutos.
+              </p>
+            </div>
+
+            {/* Products */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-4">Productos</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/pricing#light" className="text-gray-600 hover:text-orange-600">
+                    Light — Gratis
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing#plus" className="text-gray-600 hover:text-orange-600">
+                    Plus — $29/mes
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing#pro" className="text-gray-600 hover:text-orange-600">
+                    Pro — $79/mes
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Links */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-4">Empresa</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="#faq" className="text-gray-600 hover:text-orange-600">
+                    FAQs
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/backoffice/login" className="text-gray-600 hover:text-orange-600">
+                    Iniciar Sesión
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/admin" className="text-gray-600 hover:text-orange-600">
+                    Registrarse
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="border-t border-gray-200 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+            <p>© {new Date().getFullYear()} TuOrdenYa. Todos los derechos reservados.</p>
+            <div className="flex gap-4">
+              <Link href="#productos" className="hover:text-orange-600">
+                Productos
+              </Link>
+              <Link href="#faq" className="hover:text-orange-600">
+                FAQ
+              </Link>
+              <Link href="#contacto" className="hover:text-orange-600">
+                Contacto
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
