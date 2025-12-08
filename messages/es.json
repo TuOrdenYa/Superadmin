@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "login": {
+    "title": "Inicio de Sesión",
+    "subtitle": "Ingresa para gestionar tu restaurante",
+    "tenantId": "ID de Tenant",
+    "email": "Email",
+    "password": "Contraseña",
+    "signIn": "Iniciar Sesión",
+    "signingIn": "Iniciando sesión...",
+    "demoCredentials": "Credenciales de demostración: admin@test.com / password123",
+    "emailPlaceholder": "admin@restaurante.com",
+    "passwordPlaceholder": "••••••••",
+    "tenantIdPlaceholder": "Ingresa tu ID de tenant"
+  },
+  "nav": {
+    "backoffice": "Backoffice",
+    "admin": "Administración",
+    "logout": "Cerrar Sesión",
+    "backToAdmin": "Volver al Admin",
+    "mySubscription": "Mi Suscripción"
+  },
+  "tabs": {
+    "menuItems": "Items de Menú",
+    "categories": "Categorías",
+    "tables": "Mesas",
+    "variants": "Variantes"
+  },
+  "roles": {
+    "admin": "Administrador",
+    "manager": "Gerente",
+    "waiter": "Camarero"
+  },
+  "tiers": {
+    "light": "Light",
+    "plus": "Plus",
+    "pro": "Pro"
+  },
+  "menuItems": {
+    "title": "Items de Menú",
+    "addItem": "Agregar Item",
+    "all": "Todos",
+    "name": "Nombre",
+    "description": "Descripción",
+    "price": "Precio",
+    "category": "Categoría",
+    "status": "Estado"
+  },
+  "categories": {
+    "title": "Categorías",
+    "addCategory": "Agregar Categoría",
+    "name": "Nombre",
+    "position": "Posición",
+    "customLimit": "Límite de categorías personalizadas alcanzado",
+    "customLimitMessage": "Tu plan permite {limit} categorías personalizadas. Actualiza para obtener más.",
+    "predefined": "Predefinida",
+    "custom": "Personalizada",
+    "names": {
+      "Appetizers": "Entradas",
+      "Entradas": "Entradas",
+      "Main Courses": "Platos Principales",
+      "Platos Principales": "Platos Principales",
+      "Desserts": "Postres",
+      "Postres": "Postres",
+      "Drinks": "Bebidas",
+      "Bebidas": "Bebidas",
+      "Pizzas": "Pizzas",
+      "Salads": "Ensaladas",
+      "Ensaladas": "Ensaladas"
+    }
+  },
+  "tables": {
+    "title": "Mesas",
+    "addTable": "Agregar Mesa",
+    "tableNumber": "Número de Mesa",
+    "location": "Ubicación"
+  },
+  "upgrade": {
+    "featureLocked": "Función Bloqueada",
+    "current": "Actual:",
+    "required": "Requerido:",
+    "viewOptions": "Ver Opciones de Actualización",
+    "tablesRequiresPro": "Mesas requiere el plan Pro",
+    "variantsRequiresPro": "Variantes requiere el plan Pro"
+  },
+  "pricing": {
+    "title": "Elige Tu Plan",
+    "subtitle": "Comienza gratis. Actualiza cuando estés listo.",
+    "getStarted": "Comenzar",
+    "contactSales": "Contactar Ventas",
+    "featuresIncluded": "Funciones incluidas:",
+    "needHelp": "¿Necesitas ayuda para elegir?",
+    "startWithLight": "Comienza con Light si:",
+    "upgradeToPlus": "Actualiza a Plus si:",
+    "choosePro": "Elige Pro si:",
+    "questions": "¿Preguntas?",
+    "contactAdmin": "Contacta a tu administrador para actualizar tu plan o discutir soluciones empresariales personalizadas."
+  },
+  "subscription": {
+    "title": "Tu Suscripción",
+    "subtitle": "Administra tu plan y mira análisis de uso",
+    "currentPlan": "Plan Actual",
+    "yourFeatures": "Tus Funciones:",
+    "viewAllPlans": "Ver Todos los Planes",
+    "upgradeRecommended": "Actualización Recomendada:",
+    "basedOnUsage": "Basado en tus patrones de uso:",
+    "requestUpgrade": "Solicitar Actualización a",
+    "usageAnalytics": "Análisis de Uso (Últimos 30 Días)",
+    "feature": "Función",
+    "action": "Acción",
+    "usageCount": "Cantidad de Uso"
+  }
+}

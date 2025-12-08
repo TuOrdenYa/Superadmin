@@ -7,6 +7,8 @@ interface Tenant {
   id: number;
   name: string;
   slug?: string;
+  product_tier?: string;
+  subscription_status?: string;
   created_at?: string;
 }
 
@@ -16,9 +18,20 @@ interface Location {
   name: string;
 }
 
+interface RateLimit {
+  tenant_id: number;
+  tenant_name: string;
+  product_tier: string;
+  window_start: string;
+  request_count: number;
+  rate_limit: number;
+  is_limited: boolean;
+}
+
 export default function AdminClient() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [rateLimits, setRateLimits] = useState<RateLimit[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   
@@ -31,7 +44,12 @@ export default function AdminClient() {
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [newTenantId, setNewTenantId] = useState('');
+  const [newTenantTier, setNewTenantTier] = useState<'light' | 'plus' | 'pro'>('light');
   const [newLocationName, setNewLocationName] = useState('');
+  
+  // Tier editing
+  const [editingTenantId, setEditingTenantId] = useState<number | null>(null);
+  const [editTier, setEditTier] = useState<'light' | 'plus' | 'pro'>('light');
 
   // Check if already authenticated
   useEffect(() => {
@@ -85,10 +103,27 @@ export default function AdminClient() {
     }
   };
 
+  // Fetch rate limits
+  const fetchRateLimits = async () => {
+    try {
+      const res = await fetch('/api/admin/rate-limits');
+      const data = await res.json();
+      if (data.ok) {
+        setRateLimits(data.rate_limits);
+      }
+    } catch (error) {
+      console.error('Error fetching rate limits:', error);
+    }
+  };
+
   // Load tenants on auth
   useEffect(() => {
     if (isAuthenticated) {
       fetchTenants();
+      fetchRateLimits();
+      // Refresh rate limits every 30 seconds
+      const interval = setInterval(fetchRateLimits, 30000);
+      return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
 
@@ -123,6 +158,7 @@ export default function AdminClient() {
           id: newTenantId ? parseInt(newTenantId) : undefined,
           name: newTenantName,
           slug: newTenantSlug,
+          product_tier: newTenantTier,
         }),
       });
       const data = await res.json();
@@ -131,6 +167,7 @@ export default function AdminClient() {
         setNewTenantName('');
         setNewTenantSlug('');
         setNewTenantId('');
+        setNewTenantTier('light');
         fetchTenants();
       }
     } catch (error) {
@@ -164,6 +201,40 @@ export default function AdminClient() {
     }
   };
 
+  // Update tenant tier
+  const handleUpdateTier = async (tenantId: number, newTier: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/tenants/${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          product_tier: newTier,
+          subscription_status: 'active'
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        alert(`Tier updated to ${newTier.toUpperCase()} successfully!`);
+        setEditingTenantId(null);
+        fetchTenants();
+      } else {
+        alert('Error updating tier: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating tier:', error);
+      alert('Error updating tier');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Start editing tier
+  const startEditingTier = (tenant: Tenant) => {
+    setEditingTenantId(tenant.id);
+    setEditTier((tenant.product_tier as 'light' | 'plus' | 'pro') || 'light');
+  };
+
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
@@ -194,7 +265,7 @@ export default function AdminClient() {
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+              className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition"
             >
               Access Admin Panel
             </button>
@@ -205,10 +276,10 @@ export default function AdminClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-lg p-6 mb-6 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-orange-600 to-indigo-700 rounded-lg shadow-lg p-6 mb-6 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-white">Super Admin Panel</h1>
             <p className="text-blue-100 mt-1">Manage tenants and locations</p>
@@ -269,10 +340,24 @@ export default function AdminClient() {
                   Preview: {newTenantSlug || 'your-slug'}.tuordenya.com
                 </p>
               </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-1">
+                  Product Tier
+                </label>
+                <select
+                  value={newTenantTier}
+                  onChange={(e) => setNewTenantTier(e.target.value as 'light' | 'plus' | 'pro')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
+                >
+                  <option value="light">Light - Menu + QR Code only</option>
+                  <option value="plus">Plus - Orders + Reports (no tables/variants)</option>
+                  <option value="pro">Pro - Full features (tables + variants)</option>
+                </select>
+              </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                className="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700 disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create Tenant'}
               </button>
@@ -344,6 +429,88 @@ export default function AdminClient() {
           <UserManagement tenants={tenants} />
         </div>
 
+        {/* Rate Limit Monitoring */}
+        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-black">API Rate Limit Monitoring</h2>
+            <button
+              onClick={fetchRateLimits}
+              className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
+            >
+              🔄 Refresh
+            </button>
+          </div>
+          
+          {rateLimits.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No active rate limit data (refreshes every 30s)</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-black font-bold">Tenant</th>
+                    <th className="px-4 py-2 text-left text-black font-bold">Tier</th>
+                    <th className="px-4 py-2 text-right text-black font-bold">Requests</th>
+                    <th className="px-4 py-2 text-right text-black font-bold">Limit</th>
+                    <th className="px-4 py-2 text-right text-black font-bold">Usage %</th>
+                    <th className="px-4 py-2 text-center text-black font-bold">Status</th>
+                    <th className="px-4 py-2 text-left text-black font-bold">Window Start</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rateLimits.map((rl) => {
+                    const usagePercent = (rl.request_count / rl.rate_limit) * 100;
+                    return (
+                      <tr key={`${rl.tenant_id}-${rl.window_start}`} className="border-b hover:bg-gray-50">
+                        <td className="px-4 py-2 text-black font-semibold">{rl.tenant_name}</td>
+                        <td className="px-4 py-2">
+                          <span className={`px-2 py-1 text-xs font-bold rounded ${
+                            rl.product_tier === 'pro' ? 'bg-purple-100 text-purple-700' :
+                            rl.product_tier === 'plus' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {rl.product_tier.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right text-black font-semibold">{rl.request_count}</td>
+                        <td className="px-4 py-2 text-right text-gray-600">{rl.rate_limit === 999999 ? '∞' : rl.rate_limit}</td>
+                        <td className="px-4 py-2 text-right">
+                          <span className={`font-bold ${
+                            usagePercent >= 100 ? 'text-red-600' :
+                            usagePercent >= 80 ? 'text-orange-600' :
+                            usagePercent >= 50 ? 'text-yellow-600' :
+                            'text-green-600'
+                          }`}>
+                            {usagePercent.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          {rl.is_limited ? (
+                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">
+                              🚫 LIMITED
+                            </span>
+                          ) : usagePercent >= 80 ? (
+                            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">
+                              ⚠️ WARNING
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
+                              ✓ OK
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-600">
+                          {new Date(rl.window_start).toLocaleTimeString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* Tenants List */}
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <h2 className="text-xl font-bold text-black mb-4">All Tenants</h2>
@@ -351,12 +518,85 @@ export default function AdminClient() {
             {tenants.map((tenant) => (
               <div
                 key={tenant.id}
-                className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-600 hover:shadow-md cursor-pointer transition-all"
-                onClick={() => setSelectedTenant(tenant.id)}
+                className="border-2 border-gray-200 rounded-lg p-4 hover:border-orange-600 hover:shadow-md transition-all"
               >
-                <h3 className="font-bold text-lg text-black">{tenant.name}</h3>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg text-black">{tenant.name}</h3>
+                  {editingTenantId === tenant.id ? (
+                    <select
+                      value={editTier}
+                      onChange={(e) => setEditTier(e.target.value as 'light' | 'plus' | 'pro')}
+                      className="px-2 py-1 text-xs font-bold rounded border-2 border-blue-500 bg-white text-black focus:ring-2 focus:ring-blue-500"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <option value="light">LIGHT</option>
+                      <option value="plus">PLUS</option>
+                      <option value="pro">PRO</option>
+                    </select>
+                  ) : (
+                    tenant.product_tier && (
+                      <span className={`px-2 py-1 text-xs font-bold rounded ${
+                        tenant.product_tier === 'pro' ? 'bg-purple-100 text-purple-700' :
+                        tenant.product_tier === 'plus' ? 'bg-orange-100 text-orange-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {tenant.product_tier.toUpperCase()}
+                      </span>
+                    )
+                  )}
+                </div>
                 <p className="text-sm text-black">ID: {tenant.id}</p>
                 <p className="text-sm text-blue-800 font-bold">{tenant.slug}.tuordenya.com</p>
+                {tenant.subscription_status && (
+                  <p className={`text-xs mt-2 ${
+                    tenant.subscription_status === 'active' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {tenant.subscription_status === 'active' ? '✓ Active' : '⚠ Inactive'}
+                  </p>
+                )}
+                
+                {/* Tier Management Buttons */}
+                <div className="mt-3 flex gap-2">
+                  {editingTenantId === tenant.id ? (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUpdateTier(tenant.id, editTier);
+                        }}
+                        disabled={loading}
+                        className="flex-1 bg-green-600 text-white text-xs py-1 px-2 rounded hover:bg-green-700 disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTenantId(null);
+                        }}
+                        className="flex-1 bg-gray-500 text-white text-xs py-1 px-2 rounded hover:bg-gray-600"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditingTier(tenant);
+                      }}
+                      className="flex-1 bg-orange-600 text-white text-xs py-1 px-2 rounded hover:bg-orange-700"
+                    >
+                      Change Tier
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedTenant(tenant.id)}
+                    className="flex-1 bg-orange-700 text-white text-xs py-1 px-2 rounded hover:bg-indigo-700"
+                  >
+                    View
+                  </button>
+                </div>
               </div>
             ))}
           </div>

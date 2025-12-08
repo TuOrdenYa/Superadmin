@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "login": {
+    "title": "Backoffice Login",
+    "subtitle": "Sign in to manage your restaurant",
+    "tenantId": "Tenant ID",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "demoCredentials": "Demo credentials: admin@test.com / password123",
+    "emailPlaceholder": "admin@restaurant.com",
+    "passwordPlaceholder": "••••••••",
+    "tenantIdPlaceholder": "Enter your tenant ID"
+  },
+  "nav": {
+    "backoffice": "Backoffice",
+    "admin": "Admin",
+    "logout": "Logout",
+    "backToAdmin": "Back to Admin",
+    "mySubscription": "My Subscription"
+  },
+  "tabs": {
+    "menuItems": "Menu Items",
+    "categories": "Categories",
+    "tables": "Tables",
+    "variants": "Variants"
+  },
+  "roles": {
+    "admin": "Admin",
+    "manager": "Manager",
+    "waiter": "Waiter"
+  },
+  "tiers": {
+    "light": "Light",
+    "plus": "Plus",
+    "pro": "Pro"
+  },
+  "menuItems": {
+    "title": "Menu Items",
+    "addItem": "Add Item",
+    "all": "All",
+    "name": "Name",
+    "description": "Description",
+    "price": "Price",
+    "category": "Category",
+    "status": "Status"
+  },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add Category",
+    "name": "Name",
+    "position": "Position",
+    "customLimit": "Custom category limit reached",
+    "customLimitMessage": "Your plan allows {limit} custom categories. Upgrade for more.",
+    "predefined": "Predefined",
+    "custom": "Custom",
+    "names": {
+      "Appetizers": "Appetizers",
+      "Entradas": "Appetizers",
+      "Main Courses": "Main Courses",
+      "Platos Principales": "Main Courses",
+      "Desserts": "Desserts",
+      "Postres": "Desserts",
+      "Drinks": "Drinks",
+      "Bebidas": "Drinks",
+      "Pizzas": "Pizzas",
+      "Salads": "Salads",
+      "Ensaladas": "Salads"
+    }
+  },
+  "tables": {
+    "title": "Tables",
+    "addTable": "Add Table",
+    "tableNumber": "Table Number",
+    "location": "Location"
+  },
+  "upgrade": {
+    "featureLocked": "Feature Locked",
+    "current": "Current:",
+    "required": "Required:",
+    "viewOptions": "View Upgrade Options",
+    "tablesRequiresPro": "Tables requires Pro tier",
+    "variantsRequiresPro": "Variants requires Pro tier"
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "subtitle": "Start free. Upgrade when you're ready.",
+    "getStarted": "Get Started",
+    "contactSales": "Contact Sales",
+    "featuresIncluded": "Features included:",
+    "needHelp": "Need help choosing?",
+    "startWithLight": "Start with Light if:",
+    "upgradeToPlus": "Upgrade to Plus if:",
+    "choosePro": "Choose Pro if:",
+    "questions": "Questions?",
+    "contactAdmin": "Contact your administrator to upgrade your plan or discuss custom enterprise solutions."
+  },
+  "subscription": {
+    "title": "Your Subscription",
+    "subtitle": "Manage your plan and see usage analytics",
+    "currentPlan": "Current Plan",
+    "yourFeatures": "Your Features:",
+    "viewAllPlans": "View All Plans",
+    "upgradeRecommended": "Upgrade Recommended:",
+    "basedOnUsage": "Based on your usage patterns:",
+    "requestUpgrade": "Request Upgrade to",
+    "usageAnalytics": "Usage Analytics (Last 30 Days)",
+    "feature": "Feature",
+    "action": "Action",
+    "usageCount": "Usage Count"
+  }
+}

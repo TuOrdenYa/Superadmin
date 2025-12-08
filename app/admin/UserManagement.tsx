@@ -222,7 +222,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
         <h2 className="text-2xl font-bold text-black">User Management</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
         >
           {showForm ? 'Cancel' : '+ Create User'}
         </button>
@@ -443,7 +443,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                       user.role === 'tenant_admin' ? 'bg-purple-100 text-purple-800' :
-                      user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                      user.role === 'manager' ? 'bg-orange-100 text-blue-800' :
                       'bg-green-100 text-green-800'
                     }`}>
                       {user.role}
@@ -460,7 +460,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   <td className="px-4 py-3 text-sm space-x-2">
                     <button
                       onClick={() => handleResetPassword(user.id, user.full_name)}
-                      className="text-blue-600 hover:text-blue-800 font-semibold"
+                      className="text-orange-600 hover:text-blue-800 font-semibold"
                     >
                       Reset Pwd
                     </button>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { checkFeatureAccess, createTierErrorResponse } from "@/lib/tier-access";
 
 // GET /api/items/:itemId/variants - Get all variant groups for an item
 export async function GET(
@@ -15,6 +16,15 @@ export async function GET(
       return NextResponse.json(
         { error: "tenant_id is required" },
         { status: 400 }
+      );
+    }
+
+    // Check tier access - Variants feature requires Pro tier
+    const access = await checkFeatureAccess(parseInt(tenant_id), 'product_variants');
+    if (!access.allowed) {
+      return NextResponse.json(
+        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
+        { status: 403 }
       );
     }
 

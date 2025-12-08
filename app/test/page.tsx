@@ -24,7 +24,7 @@ export default function TestPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-black">API Test Page</h1>
-      <div className="mb-4 p-4 bg-blue-100 border border-blue-300 rounded">
+      <div className="mb-4 p-4 bg-orange-100 border border-orange-300 rounded">
         <p className="text-sm text-black">Click buttons below to test API endpoints. Results will appear below each button.</p>
         <p className="text-xs text-gray-700 mt-1">Check browser console (F12) for detailed logs.</p>
       </div>
@@ -36,14 +36,14 @@ export default function TestPage() {
             <button
               onClick={() => testEndpoint('menu', '/api/menu?tenant_id=1')}
               disabled={loading === 'menu'}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+              className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 disabled:opacity-50"
             >
               Test GET /api/menu
             </button>
             <button
               onClick={() => testEndpoint('categories', '/api/categories?tenant_id=1')}
               disabled={loading === 'categories'}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+              className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 disabled:opacity-50"
             >
               Test GET /api/categories
             </button>
@@ -270,7 +270,7 @@ export default function TestPage() {
             </div>
           )}
           {(results.updateItemActive || results.updatePrice || results.updateAvailability) && (
-            <div className="mt-2 p-3 bg-blue-50 border-2 border-blue-500 rounded">
+            <div className="mt-2 p-3 bg-orange-50 border-2 border-blue-500 rounded">
               <div className="font-bold text-blue-800 mb-2">📝 Item Updates:</div>
               {results.updateItemActive && (
                 <div className="mb-2">
@@ -406,7 +406,7 @@ export default function TestPage() {
             <button
               onClick={() => testEndpoint('getVariantGroups', '/api/variant-group-templates')}
               disabled={loading === 'getVariantGroups'}
-              className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 disabled:opacity-50"
+              className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-orange-700 disabled:opacity-50"
             >
               Test GET /api/variant-group-templates
             </button>
@@ -422,7 +422,7 @@ export default function TestPage() {
                 })
               })}
               disabled={loading === 'createVariantGroup'}
-              className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 disabled:opacity-50"
+              className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-orange-700 disabled:opacity-50"
             >
               Test POST /api/variant-group-templates
             </button>

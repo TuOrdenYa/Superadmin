@@ -3,12 +3,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
+import UpgradePrompt from '@/app/components/UpgradePrompt';
+import LanguageSwitcher from '@/app/components/LanguageSwitcher';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface Category {
   id: number;
   name: string;
   position: number;
   active: boolean;
+  is_custom?: boolean;
 }
 
 interface MenuItem {
@@ -40,6 +44,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const { tenant } = use(params);
   const tenantId = parseInt(tenant);
   const router = useRouter();
+  const { t, locale } = useLanguage();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -209,6 +214,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         body: JSON.stringify({
           tenant_id: tenantId,
           ...newCategory,
+          is_custom: true, // New categories are always custom
         }),
       });
       const data = await res.json();
@@ -216,9 +222,15 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         fetchCategories();
         setNewCategory({ name: '', position: 0 });
         setShowCategoryForm(false);
+      } else if (res.status === 403) {
+        // Tier limit reached
+        alert(t('categories.customLimitMessage').replace('{limit}', data.limit || '0'));
+      } else {
+        alert(data.error || 'Error creating category');
       }
     } catch (error) {
       console.error('Error creating category:', error);
+      alert('Error creating category');
     }
   };
 
@@ -302,38 +314,47 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-white">Backoffice</h1>
+              <h1 className="text-3xl font-bold text-white">{t('nav.backoffice')}</h1>
               <p className="text-blue-100">
                 {tenantName && <span className="font-semibold">{tenantName}</span>}
                 {tenantName && ' • '}
-                {user?.full_name} • {user?.role === 'tenant_admin' ? 'Admin' : user?.role === 'manager' ? 'Manager' : 'Waiter'}
+                {user?.full_name} • {user?.role === 'tenant_admin' ? t('roles.admin') : user?.role === 'manager' ? t('roles.manager') : t('roles.waiter')}
                 {user?.location_name && ` • ${user.location_name}`}
                 {user?.product_tier && (
                   <>
                     {' • '}
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-blue-800">
-                      {user.product_tier === 'light' && '✨ Light'}
-                      {user.product_tier === 'plus' && '⚡ Plus'}
-                      {user.product_tier === 'pro' && '🚀 Pro'}
+                      {user.product_tier === 'light' && `✨ ${t('tiers.light')}`}
+                      {user.product_tier === 'plus' && `⚡ ${t('tiers.plus')}`}
+                      {user.product_tier === 'pro' && `🚀 ${t('tiers.pro')}`}
                     </span>
                   </>
                 )}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <LanguageSwitcher />
               {user?.role === 'tenant_admin' && (
-                <a
-                  href="/admin"
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                >
-                  ← Back to Admin
-                </a>
+                <>
+                  <a
+                    href="/subscription"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  >
+                    📊 {t('nav.mySubscription')}
+                  </a>
+                  <a
+                    href="/admin"
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  >
+                    ← {t('nav.backToAdmin')}
+                  </a>
+                </>
               )}
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           </div>
@@ -352,7 +373,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              Menu Items
+              {t('tabs.menuItems')}
             </button>
             {user?.role === 'tenant_admin' && (
               <>
@@ -364,34 +385,38 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  Categories
+                  {t('tabs.categories')}
                 </button>
                 {/* Tables - Pro only */}
-                {user?.product_tier === 'pro' && (
-                  <button
-                    onClick={() => setView('tables')}
-                    className={`py-4 px-1 border-b-2 font-bold text-sm ${
-                      view === 'tables'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Tables
-                  </button>
-                )}
+                <button
+                  onClick={() => setView('tables')}
+                  className={`py-4 px-1 border-b-2 font-bold text-sm relative ${
+                    view === 'tables'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                  title={user?.product_tier !== 'pro' ? t('upgrade.tablesRequiresPro') : ''}
+                >
+                  {t('tabs.tables')}
+                  {user?.product_tier !== 'pro' && (
+                    <span className="ml-1 text-xs">🔒</span>
+                  )}
+                </button>
                 {/* Variants - Pro only */}
-                {user?.product_tier === 'pro' && (
-                  <button
-                    onClick={() => setView('variants')}
-                    className={`py-4 px-1 border-b-2 font-bold text-sm ${
-                      view === 'variants'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Variants
-                  </button>
-                )}
+                <button
+                  onClick={() => setView('variants')}
+                  className={`py-4 px-1 border-b-2 font-bold text-sm relative ${
+                    view === 'variants'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-black hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                  title={user?.product_tier !== 'pro' ? t('upgrade.variantsRequiresPro') : ''}
+                >
+                  {t('tabs.variants')}
+                  {user?.product_tier !== 'pro' && (
+                    <span className="ml-1 text-xs">🔒</span>
+                  )}
+                </button>
               </>
             )}
           </nav>
@@ -404,13 +429,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         {view === 'categories' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-black">Categories</h2>
+              <h2 className="text-2xl font-bold text-black">{t('categories.title')}</h2>
               {user?.role === 'tenant_admin' && (
                 <button
                   onClick={() => setShowCategoryForm(!showCategoryForm)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  + Add Category
+                  + {t('categories.addCategory')}
                 </button>
               )}
             </div>
@@ -462,17 +487,35 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.map((category) => (
-                <div key={category.id} className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-bold text-black">{category.name}</h3>
-                  <p className="text-sm text-black">Position: {category.position}</p>
-                  <p className="text-sm text-black">
-                    Status: <span className={category.active ? 'text-green-600' : 'text-red-600'}>
-                      {category.active ? 'Active' : 'Inactive'}
-                    </span>
-                  </p>
-                </div>
-              ))}
+              {categories.map((category) => {
+                const displayName = category.is_custom 
+                  ? category.name 
+                  : (t(`categories.names.${category.name}`) || category.name);
+                
+                return (
+                  <div key={category.id} className="bg-white rounded-lg shadow p-6">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-lg font-bold text-black">{displayName}</h3>
+                      {category.is_custom && (
+                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded">
+                          {t('categories.custom')}
+                        </span>
+                      )}
+                      {!category.is_custom && (
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                          {t('categories.predefined')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-black">{t('categories.position')}: {category.position}</p>
+                    <p className="text-sm text-black">
+                      {t('menuItems.status')}: <span className={category.active ? 'text-green-600' : 'text-red-600'}>
+                        {category.active ? t('common.active') : t('common.inactive')}
+                      </span>
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -623,13 +666,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         {view === 'items' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-black">Menu Items</h2>
+              <h2 className="text-2xl font-bold text-black">{t('menuItems.title')}</h2>
               {user?.role === 'tenant_admin' && (
                 <button
                   onClick={() => setShowItemForm(!showItemForm)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  + Add Item
+                  + {t('menuItems.addItem')}
                 </button>
               )}
             </div>
@@ -644,31 +687,37 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                All
+                {t('menuItems.all')}
               </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-lg ${
-                    selectedCategory === cat.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+              {categories.map((cat) => {
+                const displayName = cat.is_custom 
+                  ? cat.name 
+                  : (t(`categories.names.${cat.name}`) || cat.name);
+                
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-4 py-2 rounded-lg ${
+                      selectedCategory === cat.id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {displayName}
+                  </button>
+                );
+              })}
             </div>
 
             {showItemForm && user?.role === 'tenant_admin' && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
-                <h3 className="text-lg font-bold text-black mb-4">New Menu Item</h3>
+                <h3 className="text-lg font-bold text-black mb-4">{t('menuItems.addItem')}</h3>
                 <form onSubmit={handleCreateItem} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-bold text-black mb-2">
-                        Name *
+                        {t('menuItems.name')} *
                       </label>
                       <input
                         type="text"
@@ -680,7 +729,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-black mb-2">
-                        Category *
+                        {t('menuItems.category')} *
                       </label>
                       <select
                         value={newItem.category_id}
@@ -688,18 +737,23 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                         required
                       >
-                        <option value={0}>Select category</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
+                        <option value={0}>{locale === 'es' ? 'Seleccionar categoría' : 'Select category'}</option>
+                        {categories.map((cat) => {
+                          const displayName = cat.is_custom 
+                            ? cat.name 
+                            : (t(`categories.names.${cat.name}`) || cat.name);
+                          return (
+                            <option key={cat.id} value={cat.id}>
+                              {displayName}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-black mb-2">
-                      Description
+                      {t('menuItems.description')}
                     </label>
                     <textarea
                       value={newItem.description}
@@ -710,7 +764,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-black mb-2">
-                      Price *
+                      {t('menuItems.price')} *
                     </label>
                     <input
                       type="number"
@@ -726,14 +780,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       type="submit"
                       className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
-                      Create Item
+                      {locale === 'es' ? 'Crear Item' : 'Create Item'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowItemForm(false)}
                       className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                   </div>
                 </form>
@@ -755,9 +809,9 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                             ? 'bg-green-100 text-green-800 hover:bg-green-200'
                             : 'bg-red-100 text-red-800 hover:bg-red-200'
                         } ${user?.role !== 'tenant_admin' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={user?.role !== 'tenant_admin' ? 'Only admins can toggle item status' : 'Click to toggle'}
+                        title={user?.role !== 'tenant_admin' ? (locale === 'es' ? 'Solo administradores pueden cambiar el estado' : 'Only admins can toggle item status') : (locale === 'es' ? 'Click para cambiar' : 'Click to toggle')}
                       >
-                        {item.active ? 'Active' : 'Inactive'}
+                        {item.active ? t('common.active') : t('common.inactive')}
                       </button>
                     </div>
                     {item.description && (
@@ -766,7 +820,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <div className="flex justify-between items-center">
                       <span className="text-2xl font-bold text-black">${item.price}</span>
                       <span className="text-sm text-black">
-                        {categories.find(c => c.id === item.category_id)?.name}
+                        {(() => {
+                          const category = categories.find(c => c.id === item.category_id);
+                          if (!category) return '';
+                          return category.is_custom 
+                            ? category.name 
+                            : (t(`categories.names.${category.name}`) || category.name);
+                        })()}
                       </span>
                     </div>
                   </div>
@@ -776,7 +836,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
             {filteredItems.length === 0 && (
               <p className="text-center text-black py-16">
-                No items found. Create one above!
+                {locale === 'es' ? 'No se encontraron items. ¡Crea uno arriba!' : 'No items found. Create one above!'}
               </p>
             )}
           </div>
@@ -784,9 +844,40 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
         {/* VARIANTS VIEW */}
         {view === 'variants' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-black mb-4">Variants Management</h2>
-            <p className="text-black">Variants configuration coming soon...</p>
+          <div className="max-w-4xl mx-auto mt-8">
+            {user?.product_tier === 'pro' ? (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-2xl font-bold text-black mb-4">Variants Management</h2>
+                <p className="text-black">Variants configuration coming soon...</p>
+              </div>
+            ) : (
+              <UpgradePrompt 
+                feature="Product Variants"
+                currentTier={user?.product_tier || 'light'}
+                requiredTier="pro"
+                message="Product Variants allow you to create options like size (Small, Medium, Large), add-ons (Extra Cheese, Bacon), and customizations for your menu items. This feature requires the Pro tier."
+              />
+            )}
+          </div>
+        )}
+
+        {/* TABLES VIEW */}
+        {view === 'tables' && (
+          <div className="max-w-4xl mx-auto mt-8">
+            {user?.product_tier === 'pro' ? (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-2xl font-bold text-black mb-4">Tables Management</h2>
+                {/* Table management UI will go here */}
+                <p className="text-black">Tables configuration coming soon...</p>
+              </div>
+            ) : (
+              <UpgradePrompt 
+                feature="Table Management"
+                currentTier={user?.product_tier || 'light'}
+                requiredTier="pro"
+                message="Table Management allows you to create and manage physical tables, assign orders to specific tables, and track table status in real-time. This feature requires the Pro tier."
+              />
+            )}
           </div>
         )}
       </div>

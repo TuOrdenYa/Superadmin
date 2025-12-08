@@ -1,16 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { checkFeatureAccess, createTierErrorResponse } from "@/lib/tier-access";
 
 // GET /api/tables - List all tables for a location
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const location_id = searchParams.get("location_id");
+    const tenant_id = searchParams.get("tenant_id");
 
-    if (!location_id) {
+    if (!location_id || !tenant_id) {
       return NextResponse.json(
-        { error: "location_id is required" },
+        { error: "location_id and tenant_id are required" },
         { status: 400 }
+      );
+    }
+
+    // Check tier access - Tables feature requires Pro tier
+    const access = await checkFeatureAccess(parseInt(tenant_id), 'table_management');
+    if (!access.allowed) {
+      return NextResponse.json(
+        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
+        { status: 403 }
       );
     }
 
@@ -39,12 +50,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { location_id, number } = body;
+    const { location_id, number, tenant_id } = body;
 
-    if (!location_id || !number) {
+    if (!location_id || !number || !tenant_id) {
       return NextResponse.json(
-        { error: "location_id and number are required" },
+        { error: "location_id, number, and tenant_id are required" },
         { status: 400 }
+      );
+    }
+
+    // Check tier access - Tables feature requires Pro tier
+    const access = await checkFeatureAccess(parseInt(tenant_id), 'table_management');
+    if (!access.allowed) {
+      return NextResponse.json(
+        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
+        { status: 403 }
       );
     }
 

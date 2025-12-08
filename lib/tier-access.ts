@@ -1,6 +1,7 @@
 // Middleware to check tenant product tier and feature access
 import { query } from '@/lib/db';
 import { ProductTier, hasFeature, isSubscriptionActive, getFeatureUpgradeMessage } from './product-tiers';
+import { trackUsage } from './usage-analytics';
 
 export interface TenantTierInfo {
   id: number;
@@ -63,6 +64,9 @@ export async function checkFeatureAccess(
   const allowed = hasFeature(tierInfo.product_tier, feature as any);
 
   if (!allowed) {
+    // Track that they tried to use a locked feature
+    trackUsage(tenantId, feature, 'api_call', undefined, { blocked: true, tier: tierInfo.product_tier }).catch(console.error);
+    
     // Determine which tier is required for this feature
     let requiredTier: ProductTier = 'pro';
     if (hasFeature('plus', feature as any)) {
@@ -75,6 +79,9 @@ export async function checkFeatureAccess(
       tier: tierInfo.product_tier,
     };
   }
+
+  // Track successful feature access
+  trackUsage(tenantId, feature, 'api_call', undefined, { allowed: true }).catch(console.error);
 
   return {
     allowed: true,

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { checkFeatureAccess, createTierErrorResponse } from '@/lib/tier-access';
+import { withRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +10,7 @@ function asValidId(v: any): number | null {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
@@ -32,6 +34,15 @@ export async function POST(request: NextRequest) {
           error: 'Faltan datos requeridos (tenant_id, location_id, items)',
         },
         { status: 400 }
+      );
+    }
+
+    // Check tier access - Order management requires Plus or Pro tier
+    const access = await checkFeatureAccess(tId, 'order_management');
+    if (!access.allowed) {
+      return NextResponse.json(
+        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
+        { status: 403 }
       );
     }
 
@@ -94,4 +105,8 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function POST(request: NextRequest) {
+  return withRateLimit(request, handlePOST);
 }

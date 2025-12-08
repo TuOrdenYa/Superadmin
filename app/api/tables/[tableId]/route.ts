@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { checkFeatureAccess, createTierErrorResponse } from "@/lib/tier-access";
 
 // PUT /api/tables/:tableId - Update table number
 export async function PUT(
@@ -9,12 +10,21 @@ export async function PUT(
   try {
     const { tableId } = await params;
     const body = await request.json();
-    const { number } = body;
+    const { number, tenant_id } = body;
 
-    if (!number) {
+    if (!number || !tenant_id) {
       return NextResponse.json(
-        { error: "number is required" },
+        { error: "number and tenant_id are required" },
         { status: 400 }
+      );
+    }
+
+    // Check tier access - Tables feature requires Pro tier
+    const access = await checkFeatureAccess(parseInt(tenant_id), 'table_management');
+    if (!access.allowed) {
+      return NextResponse.json(
+        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
+        { status: 403 }
       );
     }
 
@@ -53,6 +63,24 @@ export async function DELETE(
 ) {
   try {
     const { tableId } = await params;
+    const { searchParams } = new URL(request.url);
+    const tenant_id = searchParams.get("tenant_id");
+
+    if (!tenant_id) {
+      return NextResponse.json(
+        { error: "tenant_id is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check tier access - Tables feature requires Pro tier
+    const access = await checkFeatureAccess(parseInt(tenant_id), 'table_management');
+    if (!access.allowed) {
+      return NextResponse.json(
+        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
+        { status: 403 }
+      );
+    }
 
     const result = await query(
       `DELETE FROM tables

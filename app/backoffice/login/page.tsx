@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/LanguageContext';
+import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 
 export default function BackofficeLoginPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [tenantId, setTenantId] = useState('1'); // Allow user to select
@@ -50,22 +53,26 @@ export default function BackofficeLoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
+        
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black mb-2">Backoffice Login</h1>
-          <p className="text-black">Sign in to manage your restaurant</p>
+          <h1 className="text-3xl font-bold text-black mb-2">{t('login.title')}</h1>
+          <p className="text-black">{t('login.subtitle')}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-bold text-black mb-2">
-              Tenant ID
+              {t('login.tenantId')}
             </label>
             <input
               type="number"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
-              placeholder="Enter your tenant ID"
+              placeholder={t('login.tenantIdPlaceholder')}
               required
               min="1"
             />
@@ -73,28 +80,28 @@ export default function BackofficeLoginPage() {
 
           <div>
             <label className="block text-sm font-bold text-black mb-2">
-              Email
+              {t('login.email')}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
-              placeholder="admin@restaurant.com"
+              placeholder={t('login.emailPlaceholder')}
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-black mb-2">
-              Password
+              {t('login.password')}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
-              placeholder="••••••••"
+              placeholder={t('login.passwordPlaceholder')}
               required
             />
           </div>
@@ -108,15 +115,15 @@ export default function BackofficeLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('login.signingIn') : t('login.signIn')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-black font-semibold">
-            Demo credentials: admin@test.com / password123
+            {t('login.demoCredentials')}
           </p>
         </div>
       </div>
