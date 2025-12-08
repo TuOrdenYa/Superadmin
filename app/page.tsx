@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
+import ThemeSwitcher from "@/app/components/ThemeSwitcher";
 import { useState } from "react";
 
 export default function LandingPage() {
@@ -64,6 +65,7 @@ export default function LandingPage() {
                 Comenzar Gratis
               </Link>
               <LanguageSwitcher />
+              <ThemeSwitcher />
             </nav>
           </div>
         </div>
