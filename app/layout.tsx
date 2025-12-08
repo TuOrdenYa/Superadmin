@@ -28,10 +28,13 @@ export const metadata: Metadata = {
     locale: "es_ES",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" }
+    ],
     apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({

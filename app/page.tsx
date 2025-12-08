@@ -11,7 +11,7 @@ export default function LandingPage() {
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3">
               <Image 
-                src="/logo-tuordenya-white.png" 
+                src="/logo-tuordenya-orange.png" 
                 alt="TuOrdenYa Logo" 
                 width={40} 
                 height={40}
