@@ -26,13 +26,22 @@ export default function LandingPage() {
                   height={40}
                   className="h-10 w-auto flex-shrink-0"
                 />
-                <h1
-                  className="font-bold text-gray-700 text-base md:text-lg leading-tight whitespace-nowrap md:whitespace-normal min-w-0"
-                  style={{wordBreak: 'normal', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis'}}
-                  title="Menús y órdenes para restaurantes"
+                <span
+                  className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block"
+                  style={{
+                    wordBreak: 'keep-all',
+                    maxWidth: '100%',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'inline-block'
+                  }}
                 >
-                  Menús y órdenes para restaurantes
-                </h1>
+                  <span className="hidden md:inline">Menús y órdenes para restaurantes</span>
+                  <span className="md:hidden" style={{fontSize: '0.95rem', whiteSpace: 'normal'}}>
+                    Menús y órdenes para restaurantes
+                  </span>
+                </span>
               </Link>
             </div>
             <div className="flex items-center">
