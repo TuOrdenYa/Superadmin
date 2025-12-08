@@ -9,10 +9,14 @@ export default function LandingPage() {
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
+            <Link href="/" className="flex items-center gap-3">
+              <Image 
+                src="/logo-tuordenya-white.png" 
+                alt="TuOrdenYa Logo" 
+                width={40} 
+                height={40}
+                className="h-10 w-auto"
+              />
               <h1 className="text-2xl font-bold text-gray-900">TuOrdenYa</h1>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
