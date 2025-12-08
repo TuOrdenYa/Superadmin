@@ -17,45 +17,35 @@ export default function LandingPage() {
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Link href="/" className="flex items-center gap-3 min-w-0">
-                <Image 
-                  src="/logo-tuordenya-orange.png" 
-                  alt="TuOrdenYa Logo" 
-                  width={40} 
-                  height={40}
-                  className="h-10 w-auto flex-shrink-0"
-                />
-                <span
-                  className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block"
-                  style={{
-                    wordBreak: 'keep-all',
-                    maxWidth: '100%',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: 'inline-block'
-                  }}
-                >
-                  <span className="hidden md:inline">Menús y órdenes para restaurantes</span>
-                  <span className="md:hidden" style={{fontSize: '0.95rem', whiteSpace: 'normal'}}>
-                    Menús y órdenes para restaurantes
-                  </span>
-                </span>
-              </Link>
-            </div>
-            <div className="flex items-center">
-              {/* Hamburger for mobile */}
-              <button
-                className="md:hidden text-3xl text-gray-700 p-2"
-                onClick={() => setMobileMenuOpen(true)}
-                aria-label="Abrir menú"
+            {/* Logo and Tagline - always visible, left-aligned */}
+            <Link href="/" className="flex items-center gap-3 min-w-0">
+              <Image 
+                src="/logo-tuordenya-orange.png" 
+                alt="TuOrdenYa Logo" 
+                width={40} 
+                height={40}
+                className="h-10 w-auto flex-shrink-0"
+              />
+              <span
+                className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block"
+                style={{
+                  wordBreak: 'keep-all',
+                  maxWidth: '100%',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: 'inline-block'
+                }}
               >
-                ☰
-              </button>
-            </div>
-            {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-6 justify-end w-full">
+                <span className="hidden md:inline">Menús y órdenes para restaurantes</span>
+                <span className="md:hidden" style={{fontSize: '0.95rem', whiteSpace: 'normal'}}>
+                  Menús y órdenes para restaurantes
+                </span>
+              </span>
+            </Link>
+            {/* Desktop nav - right-aligned */}
+            <nav className="hidden md:flex items-center gap-6 justify-end">
+              {/* Products Dropdown */}
               {/* Products Dropdown */}
               <div className="relative">
                 <button
