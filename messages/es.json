@@ -139,6 +139,16 @@
     "featuresTitle": "Todo lo que Necesitas para Tu Restaurante",
     "featuresSubtitle": "Desde menús digitales hasta gestión completa de pedidos",
     "feature1Title": "Menú Digital con QR",
-    "feature1Desc": "Tus clientes escanean el código QR y ven tu menú actualizado al instante. Multi-idioma incluido."
+    "feature1Desc": "Tus clientes escanean el código QR y ven tu menú actualizado al instante. Multi-idioma incluido.",
+    "feature2Title": "Gestión de Pedidos",
+    "feature2Desc": "Recibe y gestiona pedidos en tiempo real. Notificaciones instantáneas para tu cocina y meseros.",
+    "feature3Title": "Análisis y Reportes",
+    "feature3Desc": "Dashboards en tiempo real con ventas, productos más vendidos, y métricas de rendimiento.",
+    "feature4Title": "Gestión de Mesas",
+    "feature4Desc": "Control completo de tus mesas y ubicaciones. Asigna pedidos y rastrea ocupación. (Plan Pro)",
+    "feature5Title": "Variantes de Productos",
+    "feature5Desc": "Tamaños, extras, personalizaciones. Gestiona todas las opciones de tus productos. (Plan Pro)",
+    "feature6Title": "Multi-idioma",
+    "feature6Desc": "Español e inglés incluidos. Tus clientes eligen su idioma preferido automáticamente."
   }
 }

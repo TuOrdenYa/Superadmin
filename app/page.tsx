@@ -154,9 +154,7 @@ export default function LandingPage() {
               <span className="text-white text-2xl">📱</span>
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature1Title')}</h4>
-            <p className="text-gray-600">
-              {t('landing.feature1Desc')}
-            </p>
+            <p className="text-gray-600">{t('landing.feature1Desc')}</p>
           </div>
 
           {/* Feature 2 */}
@@ -164,11 +162,8 @@ export default function LandingPage() {
             <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
               <span className="text-white text-2xl">🍽️</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-3">Gestión de Pedidos</h4>
-            <p className="text-gray-600">
-              Recibe y gestiona pedidos en tiempo real. Notificaciones instantáneas 
-              para tu cocina y meseros.
-            </p>
+            <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature2Title')}</h4>
+            <p className="text-gray-600">{t('landing.feature2Desc')}</p>
           </div>
 
           {/* Feature 3 */}
@@ -176,11 +171,8 @@ export default function LandingPage() {
             <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
               <span className="text-white text-2xl">📊</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-3">Análisis y Reportes</h4>
-            <p className="text-gray-600">
-              Dashboards en tiempo real con ventas, productos más vendidos, 
-              y métricas de rendimiento.
-            </p>
+            <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature3Title')}</h4>
+            <p className="text-gray-600">{t('landing.feature3Desc')}</p>
           </div>
 
           {/* Feature 4 */}
@@ -188,11 +180,8 @@ export default function LandingPage() {
             <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-4">
               <span className="text-white text-2xl">🪑</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-3">Gestión de Mesas</h4>
-            <p className="text-gray-600">
-              Control completo de tus mesas y ubicaciones. Asigna pedidos y 
-              rastrea ocupación. (Plan Pro)
-            </p>
+            <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature4Title')}</h4>
+            <p className="text-gray-600">{t('landing.feature4Desc')}</p>
           </div>
 
           {/* Feature 5 */}
@@ -200,11 +189,8 @@ export default function LandingPage() {
             <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center mb-4">
               <span className="text-white text-2xl">🎨</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-3">Variantes de Productos</h4>
-            <p className="text-gray-600">
-              Tamaños, extras, personalizaciones. Gestiona todas las opciones 
-              de tus productos. (Plan Pro)
-            </p>
+            <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature5Title')}</h4>
+            <p className="text-gray-600">{t('landing.feature5Desc')}</p>
           </div>
 
           {/* Feature 6 */}
@@ -212,11 +198,8 @@ export default function LandingPage() {
             <div className="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center mb-4">
               <span className="text-white text-2xl">🌎</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-3">Multi-idioma</h4>
-            <p className="text-gray-600">
-              Español e inglés incluidos. Tus clientes eligen su idioma 
-              preferido automáticamente.
-            </p>
+            <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature6Title')}</h4>
+            <p className="text-gray-600">{t('landing.feature6Desc')}</p>
           </div>
         </div>
       </section>

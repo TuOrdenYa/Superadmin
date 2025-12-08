@@ -139,6 +139,16 @@
     "featuresTitle": "Everything You Need for Your Restaurant",
     "featuresSubtitle": "From digital menus to complete order management",
     "feature1Title": "Digital Menu with QR",
-    "feature1Desc": "Your customers scan the QR code and see your menu instantly updated. Multi-language included."
+    "feature1Desc": "Your customers scan the QR code and see your menu instantly updated. Multi-language included.",
+    "feature2Title": "Order Management",
+    "feature2Desc": "Receive and manage orders in real time. Instant notifications for your kitchen and waiters.",
+    "feature3Title": "Analytics & Reports",
+    "feature3Desc": "Real-time dashboards with sales, top-selling products, and performance metrics.",
+    "feature4Title": "Table Management",
+    "feature4Desc": "Full control of your tables and locations. Assign orders and track occupancy. (Pro Plan)",
+    "feature5Title": "Product Variants",
+    "feature5Desc": "Sizes, extras, customizations. Manage all your product options. (Pro Plan)",
+    "feature6Title": "Multi-language",
+    "feature6Desc": "Spanish and English included. Your customers choose their preferred language automatically."
   }
 }
