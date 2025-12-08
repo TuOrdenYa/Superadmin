@@ -6,10 +6,12 @@ import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import ThemeSwitcher from "@/app/components/ThemeSwitcher";
 import MobileMenu from "@/app/components/MobileMenu";
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function LandingPage() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100">
@@ -37,9 +39,9 @@ export default function LandingPage() {
                   display: 'inline-block'
                 }}
               >
-                <span className="hidden md:inline">Menús y órdenes para restaurantes</span>
+                <span className="hidden md:inline">{t('landing.tagline')}</span>
                 <span className="md:hidden" style={{fontSize: '0.95rem', whiteSpace: 'normal'}}>
-                  Menús y órdenes para restaurantes
+                  {t('landing.tagline')}
                 </span>
               </span>
             </Link>
@@ -60,7 +62,7 @@ export default function LandingPage() {
                   onClick={() => setIsProductsOpen(!isProductsOpen)}
                   className="text-gray-700 hover:text-orange-600 font-medium flex items-center gap-1"
                 >
-                  Nuestros productos
+                  {t('landing.products')}
                   <svg className={`w-4 h-4 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -68,29 +70,29 @@ export default function LandingPage() {
                 {isProductsOpen && (
                   <div className="absolute top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px]">
                     <Link href="/pricing#light" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                      Light — Menú + QR
+                      {t('tiers.light')} — {t('landing.menuQR')}
                     </Link>
                     <Link href="/pricing#plus" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                      Plus — Pedidos y reportes
+                      {t('tiers.plus')} — {t('landing.ordersReports')}
                     </Link>
                     <Link href="/pricing#pro" className="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                      Pro — Operación completa
+                      {t('tiers.pro')} — {t('landing.fullOperation')}
                     </Link>
                   </div>
                 )}
               </div>
 
               <Link href="#faq" className="text-gray-700 hover:text-orange-600 font-medium">
-                FAQs
+                {t('landing.faqs')}
               </Link>
               <Link href="/backoffice/login" className="text-gray-700 hover:text-orange-600 font-medium">
-                Iniciar Sesión
+                {t('landing.login')}
               </Link>
               <Link 
                 href="/admin" 
                 className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
               >
-                Comenzar Gratis
+                {t('landing.startFree')}
               </Link>
               <LanguageSwitcher />
               <ThemeSwitcher />

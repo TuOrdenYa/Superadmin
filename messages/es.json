@@ -120,4 +120,15 @@
     "action": "Acción",
     "usageCount": "Cantidad de Uso"
   }
+  ,
+  "landing": {
+    "tagline": "Menús y órdenes para restaurantes",
+    "products": "Nuestros productos",
+    "menuQR": "Menú + QR",
+    "ordersReports": "Pedidos y reportes",
+    "fullOperation": "Operación completa",
+    "faqs": "FAQs",
+    "login": "Iniciar Sesión",
+    "startFree": "Comenzar Gratis"
+  }
 }
