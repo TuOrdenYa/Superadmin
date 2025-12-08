@@ -16,31 +16,35 @@ export default function LandingPage() {
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3 min-w-0 w-0 flex-shrink">
-              <Image 
-                src="/logo-tuordenya-orange.png" 
-                alt="TuOrdenYa Logo" 
-                width={40} 
-                height={40}
-                className="h-10 w-auto flex-shrink-0"
-              />
-              <h1
-                className="font-bold text-gray-700 min-w-0 w-full text-[clamp(0.85rem,4vw,1.1rem)] md:text-lg leading-tight whitespace-normal"
-                style={{wordBreak: 'break-word'}}
-                title="Menús y órdenes para restaurantes"
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Link href="/" className="flex items-center gap-3 min-w-0">
+                <Image 
+                  src="/logo-tuordenya-orange.png" 
+                  alt="TuOrdenYa Logo" 
+                  width={40} 
+                  height={40}
+                  className="h-10 w-auto flex-shrink-0"
+                />
+                <h1
+                  className="font-bold text-gray-700 min-w-0 text-base md:text-lg leading-tight whitespace-normal"
+                  style={{wordBreak: 'break-word'}}
+                  title="Menús y órdenes para restaurantes"
+                >
+                  Menús y órdenes para restaurantes
+                </h1>
+              </Link>
+            </div>
+            <div className="flex items-center">
+              {/* Hamburger for mobile */}
+              <button
+                className="md:hidden text-3xl text-gray-700 p-2"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Abrir menú"
               >
-                Menús y órdenes para restaurantes
-              </h1>
-            </Link>
-            {/* Hamburger for mobile */}
-            <button
-              className="md:hidden ml-auto text-3xl text-gray-700 p-2"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Abrir menú"
-            >
-              ☰
-            </button>
+                ☰
+              </button>
+            </div>
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6 justify-end w-full">
               {/* Products Dropdown */}
