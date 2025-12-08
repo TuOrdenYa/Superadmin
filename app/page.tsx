@@ -108,31 +108,30 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            La Plataforma de Gestión de Restaurantes
+            {t('landing.heroTitle')}
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-700">
-              Más Fácil de América Latina
+              {t('landing.heroSubtitle')}
             </span>
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Digitaliza tu restaurante en minutos. Menús digitales, gestión de pedidos, 
-            y análisis todo en un solo lugar.
+            {t('landing.heroDesc')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/admin"
               className="px-8 py-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-lg font-semibold"
             >
-              Comenzar Gratis →
+              {t('landing.startFreeCTA')}
             </Link>
             <Link 
               href="/pricing"
               className="px-8 py-4 bg-white text-orange-600 border-2 border-orange-600 rounded-lg hover:bg-orange-50 transition text-lg font-semibold"
             >
-              Ver Planes
+              {t('landing.viewPlans')}
             </Link>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            ✓ Sin tarjeta de crédito requerida  ✓ Gratis para siempre con el plan Light
+            {t('landing.heroNote')}
           </p>
         </div>
       </section>
@@ -141,10 +140,10 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-white rounded-3xl shadow-xl my-12">
         <div className="text-center mb-16">
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            Todo lo que Necesitas para Tu Restaurante
+            {t('landing.featuresTitle')}
           </h3>
           <p className="text-xl text-gray-600">
-            Desde menús digitales hasta gestión completa de pedidos
+            {t('landing.featuresSubtitle')}
           </p>
         </div>
 
@@ -154,10 +153,9 @@ export default function LandingPage() {
             <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-4">
               <span className="text-white text-2xl">📱</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-3">Menú Digital con QR</h4>
+            <h4 className="text-xl font-bold text-gray-900 mb-3">{t('landing.feature1Title')}</h4>
             <p className="text-gray-600">
-              Tus clientes escanean el código QR y ven tu menú actualizado al instante. 
-              Multi-idioma incluido.
+              {t('landing.feature1Desc')}
             </p>
           </div>
 
