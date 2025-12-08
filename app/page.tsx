@@ -23,7 +23,7 @@ export default function LandingPage() {
                 height={40}
                 className="h-10 w-auto"
               />
-              <h1 className="text-base font-medium text-gray-700 whitespace-nowrap md:text-lg">Menús y órdenes para restaurantes</h1>
+              <h1 className="text-base font-bold text-gray-700 whitespace-nowrap md:text-lg">Menús y órdenes para restaurantes</h1>
             </Link>
             <nav className="hidden md:flex items-center gap-6 justify-end w-full">
               {/* Products Dropdown */}
