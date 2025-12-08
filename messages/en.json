@@ -10,9 +10,9 @@
     "active": "Active",
     "inactive": "Inactive"
   },
-  ...existing code...
+  
   "landing": {
-    ...existing landing keys...
+    
     "pricingTitle": "Plans for Every Stage of Your Business",
     "lightPrice": "Free",
     "lightForever": "Forever",
@@ -37,7 +37,6 @@
     "comparePlans": "View full plan comparison →"
   }
 }
-{
   "common": {
     "loading": "Loading...",
     "save": "Save",
