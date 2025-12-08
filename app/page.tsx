@@ -43,6 +43,14 @@ export default function LandingPage() {
                 </span>
               </span>
             </Link>
+            {/* Hamburger for mobile - visible only on mobile */}
+            <button
+              className="md:hidden text-3xl text-gray-700 p-2 ml-auto"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Abrir menú"
+            >
+              ☰
+            </button>
             {/* Desktop nav - right-aligned */}
             <nav className="hidden md:flex items-center gap-6 justify-end">
               {/* Products Dropdown */}
