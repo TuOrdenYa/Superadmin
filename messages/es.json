@@ -37,17 +37,6 @@
     "comparePlans": "Ver comparación completa de planes →"
   }
 }
-  "common": {
-    "loading": "Cargando...",
-    "save": "Guardar",
-    "cancel": "Cancelar",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "add": "Agregar",
-    "search": "Buscar",
-    "active": "Activo",
-    "inactive": "Inactivo"
-  },
   "login": {
     "title": "Inicio de Sesión",
     "subtitle": "Ingresa para gestionar tu restaurante",

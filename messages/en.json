@@ -37,17 +37,6 @@
     "comparePlans": "View full plan comparison →"
   }
 }
-  "common": {
-    "loading": "Loading...",
-    "save": "Save",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "add": "Add",
-    "search": "Search",
-    "active": "Active",
-    "inactive": "Inactive"
-  },
   "login": {
     "title": "Backoffice Login",
     "subtitle": "Sign in to manage your restaurant",
