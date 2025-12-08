@@ -17,7 +17,7 @@ export default function LandingPage() {
                 height={40}
                 className="h-10 w-auto"
               />
-              <h1 className="text-2xl font-bold text-gray-900">TuOrdenYa</h1>
+              <h1 className="text-xl font-semibold text-gray-700">Menús y órdenes para restaurantes</h1>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <LanguageSwitcher />
