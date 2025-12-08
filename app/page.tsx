@@ -11,7 +11,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 export default function LandingPage() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100">
