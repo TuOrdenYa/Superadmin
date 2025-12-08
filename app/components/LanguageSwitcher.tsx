@@ -6,26 +6,26 @@ export default function LanguageSwitcher() {
   const { locale, setLocale } = useLanguage();
 
   return (
-    <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+    <div className="flex items-center gap-1 rounded-full border border-gray-300 bg-white p-1">
       <button
         onClick={() => setLocale('es')}
-        className={`px-3 py-1 rounded font-semibold text-sm transition ${
+        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
           locale === 'es'
-            ? 'bg-orange-600 text-white'
-            : 'text-gray-600 hover:bg-gray-100'
+            ? 'bg-[#FF6F3C] text-white'
+            : 'text-gray-600 hover:text-gray-900'
         }`}
       >
-        🇪🇸 ES
+        ES
       </button>
       <button
         onClick={() => setLocale('en')}
-        className={`px-3 py-1 rounded font-semibold text-sm transition ${
+        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
           locale === 'en'
-            ? 'bg-orange-600 text-white'
-            : 'text-gray-600 hover:bg-gray-100'
+            ? 'bg-[#FF6F3C] text-white'
+            : 'text-gray-600 hover:text-gray-900'
         }`}
       >
-        🇬🇧 EN
+        EN
       </button>
     </div>
   );
