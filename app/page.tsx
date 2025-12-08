@@ -27,8 +27,8 @@ export default function LandingPage() {
                   className="h-10 w-auto flex-shrink-0"
                 />
                 <h1
-                  className="font-bold text-gray-700 min-w-0 text-base md:text-lg leading-tight whitespace-normal"
-                  style={{wordBreak: 'break-word'}}
+                  className="font-bold text-gray-700 text-base md:text-lg leading-tight whitespace-nowrap md:whitespace-normal min-w-0"
+                  style={{wordBreak: 'normal', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis'}}
                   title="Menús y órdenes para restaurantes"
                 >
                   Menús y órdenes para restaurantes
