@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import esMessages from '@/messages/es.json';
-import enMessages from '@/messages/en.json';
+import esMessages from '../messages/es.json';
+import enMessages from '../messages/en.json';
 
 type Locale = 'es' | 'en';
 type Messages = typeof esMessages;
