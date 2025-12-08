@@ -129,6 +129,16 @@
     "fullOperation": "Full operation",
     "faqs": "FAQs",
     "login": "Login",
-    "startFree": "Start Free"
+    "startFree": "Start Free",
+    "heroTitle": "The Restaurant Management Platform",
+    "heroSubtitle": "Easiest in Latin America",
+    "heroDesc": "Digitize your restaurant in minutes. Digital menus, order management, and analytics all in one place.",
+    "startFreeCTA": "Start Free →",
+    "viewPlans": "View Plans",
+    "heroNote": "✓ No credit card required  ✓ Free forever with the Light plan",
+    "featuresTitle": "Everything You Need for Your Restaurant",
+    "featuresSubtitle": "From digital menus to complete order management",
+    "feature1Title": "Digital Menu with QR",
+    "feature1Desc": "Your customers scan the QR code and see your menu instantly updated. Multi-language included."
   }
 }
