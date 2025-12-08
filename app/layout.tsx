@@ -27,13 +27,6 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_ES",
   },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.png", type: "image/png" }
-    ],
-    apple: "/apple-touch-icon.png",
-  },
   manifest: "/site.webmanifest",
 };
 
