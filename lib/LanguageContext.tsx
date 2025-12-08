@@ -22,36 +22,37 @@ const messages: Record<Locale, Messages> = {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('es');
+  const [currentMessages, setCurrentMessages] = useState<Messages>(esMessages);
 
   useEffect(() => {
     // Check localStorage first
     const saved = localStorage.getItem('locale') as Locale;
+    let detectedLocale: Locale = 'es';
     if (saved && (saved === 'es' || saved === 'en')) {
-      setLocaleState(saved);
+      detectedLocale = saved;
     } else {
       // Detect browser language
       const browserLang = navigator.language.toLowerCase();
       if (browserLang.startsWith('en')) {
-        setLocaleState('en');
-      } else {
-        setLocaleState('es'); // Default to Spanish
+        detectedLocale = 'en';
       }
     }
+    setLocaleState(detectedLocale);
+    setCurrentMessages(detectedLocale === 'en' ? enMessages : esMessages);
   }, []);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
+    setCurrentMessages(newLocale === 'en' ? enMessages : esMessages);
     localStorage.setItem('locale', newLocale);
   };
 
   const t = (key: string): string => {
     const keys = key.split('.');
-    let value: any = messages[locale];
-    
+    let value: any = currentMessages;
     for (const k of keys) {
       value = value?.[k];
     }
-    
     return value || key;
   };
 
