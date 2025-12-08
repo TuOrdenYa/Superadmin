@@ -208,108 +208,108 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-12">
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            Planes para Cada Etapa de Tu Negocio
+            {t('landing.pricingTitle')}
           </h3>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Light */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">Light</h4>
+            <h4 className="text-2xl font-bold text-gray-900 mb-2">{t('tiers.light')}</h4>
             <p className="text-4xl font-bold text-gray-900 mb-4">
-              Gratis
+              {t('landing.lightPrice')}
             </p>
-            <p className="text-gray-600 mb-6">Para siempre</p>
+            <p className="text-gray-600 mb-6">{t('landing.lightForever')}</p>
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Menú digital ilimitado</span>
+                <span className="text-gray-700">{t('landing.lightFeature1')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Códigos QR por ubicación</span>
+                <span className="text-gray-700">{t('landing.lightFeature2')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Multi-idioma</span>
+                <span className="text-gray-700">{t('landing.lightFeature3')}</span>
               </li>
             </ul>
             <Link 
               href="/admin"
               className="block w-full text-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
             >
-              Comenzar Gratis
+              {t('landing.startFree')}
             </Link>
           </div>
 
           {/* Plus */}
           <div className="bg-orange-600 p-8 rounded-2xl shadow-xl border-2 border-orange-700 transform scale-105">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-2xl font-bold text-white">Plus</h4>
+              <h4 className="text-2xl font-bold text-white">{t('tiers.plus')}</h4>
               <span className="px-3 py-1 bg-white text-orange-600 text-xs font-bold rounded-full">
-                Popular
+                {t('landing.popular')}
               </span>
             </div>
             <p className="text-4xl font-bold text-white mb-4">
-              $29<span className="text-xl">/mes</span>
+              {t('landing.plusPrice')}
             </p>
-            <p className="text-orange-100 mb-6">Facturación mensual</p>
+            <p className="text-orange-100 mb-6">{t('landing.monthlyBilling')}</p>
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-2">
                 <span className="text-white mt-1">✓</span>
-                <span className="text-white">Todo de Light, más:</span>
+                <span className="text-white">{t('landing.plusFeature1')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-white mt-1">✓</span>
-                <span className="text-white">Gestión de pedidos</span>
+                <span className="text-white">{t('landing.plusFeature2')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-white mt-1">✓</span>
-                <span className="text-white">Reportes básicos</span>
+                <span className="text-white">{t('landing.plusFeature3')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-white mt-1">✓</span>
-                <span className="text-white">Soporte prioritario</span>
+                <span className="text-white">{t('landing.plusFeature4')}</span>
               </li>
             </ul>
             <Link 
               href="/pricing"
               className="block w-full text-center px-6 py-3 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition font-semibold"
             >
-              Elegir Plus
+              {t('landing.choosePlus')}
             </Link>
           </div>
 
           {/* Pro */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">Pro</h4>
+            <h4 className="text-2xl font-bold text-gray-900 mb-2">{t('tiers.pro')}</h4>
             <p className="text-4xl font-bold text-gray-900 mb-4">
-              $79<span className="text-xl">/mes</span>
+              {t('landing.proPrice')}
             </p>
-            <p className="text-gray-600 mb-6">Facturación mensual</p>
+            <p className="text-gray-600 mb-6">{t('landing.monthlyBilling')}</p>
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Todo de Plus, más:</span>
+                <span className="text-gray-700">{t('landing.proFeature1')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Gestión de mesas</span>
+                <span className="text-gray-700">{t('landing.proFeature2')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Variantes de productos</span>
+                <span className="text-gray-700">{t('landing.proFeature3')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">Reportes avanzados</span>
+                <span className="text-gray-700">{t('landing.proFeature4')}</span>
               </li>
             </ul>
             <Link 
               href="/pricing"
               className="block w-full text-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
             >
-              Elegir Pro
+              {t('landing.choosePro')}
             </Link>
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function LandingPage() {
             href="/pricing"
             className="text-orange-600 hover:text-orange-700 font-semibold"
           >
-            Ver comparación completa de planes →
+            {t('landing.comparePlans')}
           </Link>
         </div>
       </section>
