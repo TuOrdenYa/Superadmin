@@ -24,9 +24,7 @@ export default function LandingPage() {
               />
               <h1 className="text-xl font-semibold text-gray-700">Menús y órdenes para restaurantes</h1>
             </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <LanguageSwitcher />
-              
+            <nav className="hidden md:flex items-center gap-6 justify-end w-full">
               {/* Products Dropdown */}
               <div className="relative">
                 <button
@@ -65,6 +63,7 @@ export default function LandingPage() {
               >
                 Comenzar Gratis
               </Link>
+              <LanguageSwitcher />
             </nav>
           </div>
         </div>
@@ -333,7 +332,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             {/* Company Info */}
             <div className="col-span-2">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center mb-4">
                 <Image 
                   src="/logo-tuordenya-orange.png" 
                   alt="TuOrdenYa Logo" 
@@ -341,7 +340,6 @@ export default function LandingPage() {
                   height={32}
                   className="h-8 w-auto"
                 />
-                <span className="text-lg font-bold text-gray-900">TuOrdenYa</span>
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 La plataforma de gestión de restaurantes más fácil de América Latina. 
