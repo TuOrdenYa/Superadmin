@@ -10,7 +10,7 @@ export async function GET(
     const { id } = await params;
     
     const result = await query(
-      `SELECT id, name, slug, product_tier, subscription_status
+      `SELECT id, name, slug, product_tier, subscription_status, ad_free
        FROM tenants
        WHERE id = $1`,
       [Number(id)]
@@ -44,7 +44,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { product_tier, subscription_status } = body;
+    const { product_tier, subscription_status, ad_free } = body;
 
     // Validate tier
     const validTiers = ['light', 'plus', 'pro'];
@@ -70,6 +70,11 @@ export async function PUT(
       values.push(subscription_status);
     }
 
+    if (typeof ad_free === 'boolean') {
+      updates.push(`ad_free = $${paramCount++}`);
+      values.push(ad_free);
+    }
+
     updates.push(`updated_at = NOW()`);
     values.push(Number(id));
 
@@ -77,7 +82,7 @@ export async function PUT(
       `UPDATE tenants 
        SET ${updates.join(', ')}
        WHERE id = $${paramCount}
-       RETURNING id, name, slug, product_tier, subscription_status`,
+       RETURNING id, name, slug, product_tier, subscription_status, ad_free`,
       values
     );
 

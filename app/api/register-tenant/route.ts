@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       subscription_status: 'active',
       subscription_start_date: now,
       subscription_end_date: null,
+      ad_free: false,
       // created_at, updated_at are handled by Supabase
     };
 

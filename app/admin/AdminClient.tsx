@@ -10,6 +10,7 @@ interface Tenant {
   product_tier?: string;
   subscription_status?: string;
   created_at?: string;
+  ad_free?: boolean;
 }
 
 interface Location {
@@ -547,6 +548,7 @@ export default function AdminClient() {
                 </div>
                 <p className="text-sm text-black">ID: {tenant.id}</p>
                 <p className="text-sm text-blue-800 font-bold">{tenant.slug}.tuordenya.com</p>
+                <p className={`text-xs mt-2 font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>Ad-Free: {tenant.ad_free ? 'Yes' : 'No'}</p>
                 {tenant.subscription_status && (
                   <p className={`text-xs mt-2 ${
                     tenant.subscription_status === 'active' ? 'text-green-600' : 'text-red-600'
@@ -554,7 +556,36 @@ export default function AdminClient() {
                     {tenant.subscription_status === 'active' ? '✓ Active' : '⚠ Inactive'}
                   </p>
                 )}
-                
+                {/* Ad-Free Toggle */}
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-700">Ad-Free:</span>
+                  <input
+                    type="checkbox"
+                    checked={!!tenant.ad_free}
+                    onChange={async (e) => {
+                      setLoading(true);
+                      try {
+                        const res = await fetch(`/api/admin/tenants/${tenant.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ ad_free: e.target.checked }),
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                          fetchTenants();
+                        } else {
+                          alert('Error updating ad-free status: ' + (data.error || 'Unknown error'));
+                        }
+                      } catch (error) {
+                        alert('Error updating ad-free status');
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    className="form-checkbox h-4 w-4 text-orange-600"
+                  />
+                  <span className={`text-xs font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>{tenant.ad_free ? 'Yes' : 'No'}</span>
+                </div>
                 {/* Tier Management Buttons */}
                 <div className="mt-3 flex gap-2">
                   {editingTenantId === tenant.id ? (

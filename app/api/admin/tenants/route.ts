@@ -5,7 +5,7 @@ import { query } from "@/lib/db";
 export async function GET(request: NextRequest) {
   try {
     const result = await query(
-      `SELECT id, name, slug
+      `SELECT id, name, slug, ad_free
        FROM tenants
        ORDER BY id DESC`
     );

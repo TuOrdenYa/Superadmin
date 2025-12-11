@@ -309,57 +309,44 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-white">{t('nav.backoffice')}</h1>
-              <p className="text-blue-100">
-                {tenantName && <span className="font-semibold">{tenantName}</span>}
+      {/* Header - styled like landing page */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between w-full">
+            {/* Logo and Backoffice title - left-aligned */}
+            <div className="flex items-center gap-3 min-w-0">
+              <img src="/logo-tuordenya-orange.png" alt="TuOrdenYa Logo" width={40} height={40} className="h-10 w-auto flex-shrink-0" />
+              <span className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block" style={{ wordBreak: 'keep-all', maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block' }}>{t('nav.backoffice')}</span>
+            </div>
+            {/* User info and controls - right-aligned */}
+            <div className="flex gap-2 items-center">
+              <span className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block" style={{ wordBreak: 'keep-all', maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block' }}>
+                {tenantName && <span className="font-bold">{tenantName}</span>}
                 {tenantName && ' • '}
-                {user?.full_name} • {user?.role}
+                <span className="font-bold">{user?.full_name}</span> • <span className="font-bold">{user?.role}</span>
                 {user?.location_name && ` • ${user.location_name}`}
                 {user?.product_tier && (
                   <>
                     {' • '}
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-blue-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
                       {user.product_tier === 'light' && `✨ ${t('tiers.light')}`}
                       {user.product_tier === 'plus' && `⚡ ${t('tiers.plus')}`}
                       {user.product_tier === 'pro' && `🚀 ${t('tiers.pro')}`}
                     </span>
                   </>
                 )}
-              </p>
-            </div>
-            <div className="flex gap-2 items-center">
+              </span>
               <LanguageSwitcher />
               {user?.role === 'admin' && (
                 <>
-                  <a
-                    href="/subscription"
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                  >
-                    📊 {t('nav.mySubscription')}
-                  </a>
-                  <a
-                    href="/admin"
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                  >
-                    ← {t('nav.backToAdmin')}
-                  </a>
+                  <a href="/subscription" className="px-4 py-2 bg-gradient-to-r from-orange-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition">📊 {t('nav.mySubscription')}</a>
                 </>
               )}
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                {t('nav.logout')}
-              </button>
+              <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">{t('nav.logout')}</button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Navigation Tabs */}
       <div className="bg-white border-b">
