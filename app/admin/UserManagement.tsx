@@ -50,7 +50,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     location_id: '',
     email: '',
     full_name: '',
-    role: 'tenant_admin',
+    role: 'admin',
   });
 
   // Fetch all users
@@ -124,7 +124,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
           location_id: '',
           email: '',
           full_name: '',
-          role: 'tenant_admin',
+          role: 'admin',
         });
         fetchUsers();
       } else {
@@ -264,7 +264,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 text-black font-semibold"
             >
               <option value="">All Roles</option>
-              <option value="tenant_admin">Tenant Admin</option>
+              <option value="admin">Admin</option>
               <option value="manager">Manager</option>
               <option value="waiter">Waiter</option>
             </select>
@@ -338,7 +338,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
                   required
                 >
-                  <option value="tenant_admin">Tenant Admin (Full Access)</option>
+                  <option value="admin">Admin (Full Access)</option>
                   <option value="manager">Manager (Single Location)</option>
                   <option value="waiter">Waiter (Orders Only)</option>
                 </select>
@@ -442,7 +442,7 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   <td className="px-4 py-3 text-sm text-black">{user.tenant_name || `ID: ${user.tenant_id}`}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      user.role === 'tenant_admin' ? 'bg-purple-100 text-purple-800' :
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
                       user.role === 'manager' ? 'bg-orange-100 text-blue-800' :
                       'bg-green-100 text-green-800'
                     }`}>

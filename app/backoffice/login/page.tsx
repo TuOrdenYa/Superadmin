@@ -1,15 +1,16 @@
-'use client';
+
+"use client";
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/lib/LanguageContext';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
+import { useLanguage } from '@/lib/LanguageContext';
 
-export default function BackofficeLoginPage() {
+export default function LoginPage() {
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [tenantId, setTenantId] = useState('1'); // Allow user to select
+  const [tenantId, setTenantId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function BackofficeLoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenant_id: parseInt(tenantId),
+          tenant_tax_id: tenantId,
           email,
           password,
         }),
@@ -56,28 +57,24 @@ export default function BackofficeLoginPage() {
         <div className="flex justify-end mb-4">
           <LanguageSwitcher />
         </div>
-        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-black mb-2">{t('login.title')}</h1>
           <p className="text-black">{t('login.subtitle')}</p>
         </div>
-
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               {t('login.tenantId')}
             </label>
             <input
-              type="number"
+              type="text"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
               placeholder={t('login.tenantIdPlaceholder')}
               required
-              min="1"
             />
           </div>
-
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               {t('login.email')}
@@ -91,7 +88,6 @@ export default function BackofficeLoginPage() {
               required
             />
           </div>
-
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               {t('login.password')}
@@ -105,13 +101,11 @@ export default function BackofficeLoginPage() {
               required
             />
           </div>
-
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
-
           <button
             type="submit"
             disabled={loading}
@@ -120,7 +114,6 @@ export default function BackofficeLoginPage() {
             {loading ? t('login.signingIn') : t('login.signIn')}
           </button>
         </form>
-
         <div className="mt-6 text-center">
           <p className="text-sm text-black font-semibold">
             {t('login.demoCredentials')}

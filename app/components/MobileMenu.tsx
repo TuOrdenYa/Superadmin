@@ -2,6 +2,7 @@
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import ThemeSwitcher from "@/app/components/ThemeSwitcher";
+import { useLanguage } from "@/lib/LanguageContext";
 
 type MobileMenuProps = {
   open: boolean;
@@ -9,6 +10,7 @@ type MobileMenuProps = {
 };
 
 export default function MobileMenu({ open, onClose }: MobileMenuProps) {
+  const { t } = useLanguage();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex justify-end">
@@ -16,27 +18,27 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
         <button
           className="self-end text-2xl text-gray-500 mb-4"
           onClick={onClose}
-          aria-label="Cerrar menú"
+          aria-label={t('landing.closeMenu')}
         >
           ×
         </button>
         <Link href="/pricing#light" className="text-gray-700 font-medium py-2" onClick={onClose}>
-          Light — Menú + QR
+          {t('tiers.light')} — {t('landing.menuQR')}
         </Link>
         <Link href="/pricing#plus" className="text-gray-700 font-medium py-2" onClick={onClose}>
-          Plus — Pedidos y reportes
+          {t('tiers.plus')} — {t('landing.ordersReports')}
         </Link>
         <Link href="/pricing#pro" className="text-gray-700 font-medium py-2" onClick={onClose}>
-          Pro — Operación completa
+          {t('tiers.pro')} — {t('landing.fullOperation')}
         </Link>
         <Link href="#faq" className="text-gray-700 font-medium py-2" onClick={onClose}>
-          FAQs
+          {t('landing.faqs')}
         </Link>
         <Link href="/backoffice/login" className="text-gray-700 font-medium py-2" onClick={onClose}>
-          Iniciar Sesión
+          {t('landing.login')}
         </Link>
-        <Link href="/admin" className="text-white bg-orange-600 rounded-lg px-4 py-2 font-semibold text-center" onClick={onClose}>
-          Comenzar Gratis
+        <Link href="https://app.tuordenya.com/backoffice" className="text-white bg-orange-600 rounded-lg px-4 py-2 font-semibold text-center" onClick={onClose}>
+          {t('landing.startFree')}
         </Link>
         <div className="flex gap-2 mt-4">
           <LanguageSwitcher />

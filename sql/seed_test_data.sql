@@ -17,7 +17,7 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 1
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(1, NULL, 'admin@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'John Admin', 'tenant_admin', true),
+(1, NULL, 'admin@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'John Admin', 'admin', true),
 (1, 1, 'manager.downtown@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Sarah Manager', 'manager', true),
 (1, 2, 'manager.westside@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Mike Manager', 'manager', true),
 (1, 1, 'waiter1@pizzaparadise.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Emma Waiter', 'waiter', true),
@@ -86,7 +86,7 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 2
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(2, NULL, 'admin@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Lisa Admin', 'tenant_admin', true),
+(2, NULL, 'admin@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Lisa Admin', 'admin', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'David Manager', 'manager', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Rachel Manager', 'manager', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'waiter.main@burgerblast.com', '$2b$10$WJXQA.upvCFMC2U0xJ0i..U0ls2R2xTA5eG2hSO83LoUi5WFYdeni', 'Chris Waiter', 'waiter', true),

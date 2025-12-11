@@ -38,7 +38,7 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 1
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(1, NULL, 'admin@pizzaparadise.com', '${passwordHash}', 'John Admin', 'tenant_admin', true),
+(1, NULL, 'admin@pizzaparadise.com', '${passwordHash}', 'John Admin', 'admin', true),
 (1, 1, 'manager.downtown@pizzaparadise.com', '${passwordHash}', 'Sarah Manager', 'manager', true),
 (1, 2, 'manager.westside@pizzaparadise.com', '${passwordHash}', 'Mike Manager', 'manager', true),
 (1, 1, 'waiter1@pizzaparadise.com', '${passwordHash}', 'Emma Waiter', 'waiter', true),
@@ -107,7 +107,7 @@ INSERT INTO locations (tenant_id, name) VALUES
 
 -- Users for Tenant 2
 INSERT INTO users (tenant_id, location_id, email, password_hash, full_name, role, is_active) VALUES
-(2, NULL, 'admin@burgerblast.com', '${passwordHash}', 'Lisa Admin', 'tenant_admin', true),
+(2, NULL, 'admin@burgerblast.com', '${passwordHash}', 'Lisa Admin', 'admin', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'manager.main@burgerblast.com', '${passwordHash}', 'David Manager', 'manager', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Mall Location'), 'manager.mall@burgerblast.com', '${passwordHash}', 'Rachel Manager', 'manager', true),
 (2, (SELECT id FROM locations WHERE tenant_id = 2 AND name = 'Main Street'), 'waiter.main@burgerblast.com', '${passwordHash}', 'Chris Waiter', 'waiter', true),

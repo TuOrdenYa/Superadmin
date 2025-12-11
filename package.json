@@ -12,6 +12,7 @@
     "seed:reset-passwords": "node scripts/reset-passwords.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.87.1",
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/pg": "^8.15.6",

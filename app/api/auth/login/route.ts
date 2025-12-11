@@ -5,15 +5,28 @@ import { verifyPassword, generateToken } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tenant_id, email, password } = body;
+    const { tenant_tax_id, email, password } = body;
 
     // Validate required fields
-    if (!tenant_id || !email || !password) {
+    if (!tenant_tax_id || !email || !password) {
       return NextResponse.json(
-        { ok: false, error: 'tenant_id, email y password son requeridos' },
+        { ok: false, error: 'tenant_tax_id, email y password son requeridos' },
         { status: 400 }
       );
     }
+
+    // Look up tenant by tax_id
+    const tenantResult = await query(
+      'SELECT id, tax_id FROM tenants WHERE tax_id = $1 LIMIT 1',
+      [String(tenant_tax_id)]
+    );
+    if (!tenantResult.rows.length) {
+      return NextResponse.json(
+        { ok: false, error: 'Tenant not found' },
+        { status: 404 }
+      );
+    }
+    const tenant_id = tenantResult.rows[0].id;
 
     // Find user by tenant_id and email WITH tier info in one query
     const result = await query(
@@ -69,6 +82,7 @@ export async function POST(request: NextRequest) {
         full_name: user.full_name,
         email: user.email,
         tenant_id: user.tenant_id,
+        tenant_tax_id: user.tenant_tax_id,
         role: user.role,
         location_id: user.location_id || null,
         location_name: user.location_name || null,

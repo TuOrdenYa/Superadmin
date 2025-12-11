@@ -318,7 +318,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               <p className="text-blue-100">
                 {tenantName && <span className="font-semibold">{tenantName}</span>}
                 {tenantName && ' • '}
-                {user?.full_name} • {user?.role === 'tenant_admin' ? t('roles.admin') : user?.role === 'manager' ? t('roles.manager') : t('roles.waiter')}
+                {user?.full_name} • {user?.role}
                 {user?.location_name && ` • ${user.location_name}`}
                 {user?.product_tier && (
                   <>
@@ -334,7 +334,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             </div>
             <div className="flex gap-2 items-center">
               <LanguageSwitcher />
-              {user?.role === 'tenant_admin' && (
+              {user?.role === 'admin' && (
                 <>
                   <a
                     href="/subscription"
@@ -375,7 +375,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             >
               {t('tabs.menuItems')}
             </button>
-            {user?.role === 'tenant_admin' && (
+            {user?.role === 'admin' && (
               <>
                 <button
                   onClick={() => setView('categories')}
@@ -430,7 +430,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">{t('categories.title')}</h2>
-              {user?.role === 'tenant_admin' && (
+              {user?.role === 'admin' && (
                 <button
                   onClick={() => setShowCategoryForm(!showCategoryForm)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -440,7 +440,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               )}
             </div>
 
-            {showCategoryForm && user?.role === 'tenant_admin' && (
+            {showCategoryForm && user?.role === 'admin' && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">New Category</h3>
                 <form onSubmit={handleCreateCategory} className="space-y-4">
@@ -525,7 +525,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">Tables Management</h2>
-              {user?.role === 'tenant_admin' && (
+              {user?.role === 'admin' && (
                 <button
                   onClick={() => setShowTableForm(!showTableForm)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -667,7 +667,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">{t('menuItems.title')}</h2>
-              {user?.role === 'tenant_admin' && (
+              {user?.role === 'admin' && (
                 <button
                   onClick={() => setShowItemForm(!showItemForm)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -710,7 +710,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               })}
             </div>
 
-            {showItemForm && user?.role === 'tenant_admin' && (
+            {showItemForm && user?.role === 'admin' && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">{t('menuItems.addItem')}</h3>
                 <form onSubmit={handleCreateItem} className="space-y-4">
@@ -802,14 +802,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-bold text-black">{item.name}</h3>
                       <button
-                        onClick={() => user?.role === 'tenant_admin' && toggleItemActive(item.id, item.active)}
-                        disabled={user?.role !== 'tenant_admin'}
+                        onClick={() => user?.role === 'admin' && toggleItemActive(item.id, item.active)}
+                        disabled={user?.role !== 'admin'}
                         className={`px-3 py-1 rounded text-sm font-medium cursor-pointer ${
                           item.active
                             ? 'bg-green-100 text-green-800 hover:bg-green-200'
                             : 'bg-red-100 text-red-800 hover:bg-red-200'
-                        } ${user?.role !== 'tenant_admin' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={user?.role !== 'tenant_admin' ? (locale === 'es' ? 'Solo administradores pueden cambiar el estado' : 'Only admins can toggle item status') : (locale === 'es' ? 'Click para cambiar' : 'Click to toggle')}
+                        } ${user?.role !== 'admin' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={user?.role !== 'admin' ? (locale === 'es' ? 'Solo administradores pueden cambiar el estado' : 'Only admins can toggle item status') : (locale === 'es' ? 'Click para cambiar' : 'Click to toggle')}
                       >
                         {item.active ? t('common.active') : t('common.inactive')}
                       </button>

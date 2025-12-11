@@ -1,4 +1,23 @@
 {
+  "registration": {
+    "title": "Create Restaurant Account",
+    "subtitle": "Fill out the form to register your restaurant.",
+    "success": "Registration successful!",
+    "goToLogin": "Go to Login",
+    "tenantId": "ID Number",
+    "tenantIdPlaceholder": "Enter your tenant ID",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "admin@restaurant.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "restaurant": "Restaurant Name",
+    "restaurantPlaceholder": "Restaurant name",
+    "mobile": "Mobile Number",
+    "mobilePlaceholder": "e.g. +1 555 123 4567",
+    "register": "Register"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -12,7 +31,6 @@
   },
   
   "landing": {
-    
     "pricingTitle": "Plans for Every Stage of Your Business",
     "lightPrice": "Free",
     "lightForever": "Forever",
@@ -34,7 +52,51 @@
     "proFeature3": "Product variants",
     "proFeature4": "Advanced reports",
     "choosePro": "Choose Pro",
-    "comparePlans": "View full plan comparison →"
+    "comparePlans": "View full plan comparison →",
+    "tagline": "Menus and orders for restaurants",
+    "products": "Our products",
+    "menuQR": "Menu + QR",
+    "ordersReports": "Orders and reports",
+    "fullOperation": "Full operation",
+    "faqs": "FAQs",
+    "login": "Login",
+    "heroTitle": "The Restaurant Management Platform",
+    "heroSubtitle": "Easiest in Latin America",
+    "heroDesc": "Digitize your restaurant in minutes. Digital menus, order management, and analytics all in one place.",
+    "startFreeCTA": "Start Free →",
+    "viewPlans": "View Plans",
+    "heroNote": "✓ No credit card required  ✓ Free forever with the Light plan",
+    "featuresTitle": "Everything You Need for Your Restaurant",
+    "featuresSubtitle": "From digital menus to complete order management",
+    "feature1Title": "Digital Menu with QR",
+    "feature1Desc": "Your customers scan the QR code and see your menu instantly updated. Multi-language included.",
+    "feature2Title": "Order Management",
+    "feature2Desc": "Receive and manage orders in real time. Instant notifications for your kitchen and waiters.",
+    "feature3Title": "Analytics & Reports",
+    "feature3Desc": "Real-time dashboards with sales, top-selling products, and performance metrics.",
+    "feature4Title": "Table Management",
+    "feature4Desc": "Full control of your tables and locations. Assign orders and track occupancy. (Pro Plan)",
+    "feature5Title": "Product Variants",
+    "feature5Desc": "Sizes, extras, customizations. Manage all your product options. (Pro Plan)",
+    "feature6Title": "Multi-language",
+    "feature6Desc": "Spanish and English included. Your customers choose their preferred language automatically."
+    ,"comparePlansButton": "Compare Plans"
+    ,"finalCtaTitle": "Ready to Transform Your Restaurant?"
+    ,"finalCtaDesc": "Join hundreds of restaurants that have already digitized their operations"
+    ,"finalCtaButton": "Start Free Now"
+    ,"footerProducts": "Products"
+    ,"footerFaq": "FAQ"
+    ,"footerContact": "Contact"
+    ,"footerCopyright": "All rights reserved."
+    ,"footerCompany": "Company"
+    ,"footerLight": "Light — Free"
+    ,"footerPlus": "Plus — $29/mo"
+    ,"footerPro": "Pro — $79/mo"
+    ,"footerFaqs": "FAQs"
+    ,"footerLogin": "Login"
+    ,"footerRegister": "Register",
+      "companyInfo": "The easiest restaurant management platform in Latin America. Digitize your business in minutes.",
+      "closeMenu": "Close menu"
   },
   "login": {
     "title": "Backoffice Login",
@@ -146,35 +208,6 @@
     "action": "Action",
     "usageCount": "Usage Count"
   }
-  ,
-  "landing": {
-    "tagline": "Menus and orders for restaurants",
-    "products": "Our products",
-    "menuQR": "Menu + QR",
-    "ordersReports": "Orders and reports",
-    "fullOperation": "Full operation",
-    "faqs": "FAQs",
-    "login": "Login",
-    "startFree": "Start Free",
-    "heroTitle": "The Restaurant Management Platform",
-    "heroSubtitle": "Easiest in Latin America",
-    "heroDesc": "Digitize your restaurant in minutes. Digital menus, order management, and analytics all in one place.",
-    "startFreeCTA": "Start Free →",
-    "viewPlans": "View Plans",
-    "heroNote": "✓ No credit card required  ✓ Free forever with the Light plan",
-    "featuresTitle": "Everything You Need for Your Restaurant",
-    "featuresSubtitle": "From digital menus to complete order management",
-    "feature1Title": "Digital Menu with QR",
-    "feature1Desc": "Your customers scan the QR code and see your menu instantly updated. Multi-language included.",
-    "feature2Title": "Order Management",
-    "feature2Desc": "Receive and manage orders in real time. Instant notifications for your kitchen and waiters.",
-    "feature3Title": "Analytics & Reports",
-    "feature3Desc": "Real-time dashboards with sales, top-selling products, and performance metrics.",
-    "feature4Title": "Table Management",
-    "feature4Desc": "Full control of your tables and locations. Assign orders and track occupancy. (Pro Plan)",
-    "feature5Title": "Product Variants",
-    "feature5Desc": "Sizes, extras, customizations. Manage all your product options. (Pro Plan)",
-    "feature6Title": "Multi-language",
-    "feature6Desc": "Spanish and English included. Your customers choose their preferred language automatically."
-  }
+  
+ 
 }

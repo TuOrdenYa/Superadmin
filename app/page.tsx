@@ -89,7 +89,7 @@ export default function LandingPage() {
                 {t('landing.login')}
               </Link>
               <Link 
-                href="/admin" 
+                href="/backoffice" 
                 className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
               >
                 {t('landing.startFree')}
@@ -117,12 +117,12 @@ export default function LandingPage() {
             {t('landing.heroDesc')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/admin"
-              className="px-8 py-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-lg font-semibold"
-            >
-              {t('landing.startFreeCTA')}
-            </Link>
+              <Link 
+                href="/backoffice"
+                className="px-8 py-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-lg font-semibold"
+              >
+                {t('landing.startFreeCTA')}
+              </Link>
             <Link 
               href="/pricing"
               className="px-8 py-4 bg-white text-orange-600 border-2 border-orange-600 rounded-lg hover:bg-orange-50 transition text-lg font-semibold"
@@ -204,8 +204,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Teaser */}
+      {/* Pricing Teaser - reverted to hardcoded bilingual content */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                {/* Debug log for translation function and locale */}
+                {(() => {
+                  if (typeof window !== 'undefined') {
+                    console.log('DEBUG pricingTitle:', t('landing.pricingTitle'));
+                    console.log('DEBUG locale:', locale);
+                  }
+                  return null;
+                })()}
         <div className="text-center mb-12">
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
             {t('landing.pricingTitle')}
@@ -214,103 +222,109 @@ export default function LandingPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Light */}
-          <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">{t('tiers.light')}</h4>
-            <p className="text-4xl font-bold text-gray-900 mb-4">
-              {t('landing.lightPrice')}
-            </p>
-            <p className="text-gray-600 mb-6">{t('landing.lightForever')}</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.lightFeature1')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.lightFeature2')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.lightFeature3')}</span>
-              </li>
-            </ul>
-            <Link 
-              href="/admin"
-              className="block w-full text-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
-            >
-              {t('landing.startFree')}
-            </Link>
+          <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200 flex flex-col h-full">
+            <div>
+              <h4 className="text-2xl font-bold text-gray-900 mb-2">{t('tiers.light')}</h4>
+              <p className="text-4xl font-bold text-gray-900 mb-4">{t('landing.lightPrice')}</p>
+              <p className="text-gray-600 mb-6">{t('pricing.startWithLight')}</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.lightFeature1')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.lightFeature2')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.lightFeature3')}</span>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-auto">
+              <Link 
+                href="https://app.tuordenya.com/backoffice"
+                className="block w-full text-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
+              >
+                {t('landing.startFree')}
+              </Link>
+            </div>
           </div>
 
           {/* Plus */}
-          <div className="bg-orange-600 p-8 rounded-2xl shadow-xl border-2 border-orange-700 transform scale-105">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-2xl font-bold text-white">{t('tiers.plus')}</h4>
-              <span className="px-3 py-1 bg-white text-orange-600 text-xs font-bold rounded-full">
-                {t('landing.popular')}
-              </span>
+          <div className="bg-orange-600 p-8 rounded-2xl shadow-xl border-2 border-orange-700 transform scale-105 flex flex-col h-full">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-2xl font-bold text-white">{t('tiers.plus')}</h4>
+                <span className="px-3 py-1 bg-white text-orange-600 text-xs font-bold rounded-full">
+                  {t('landing.popular')}
+                </span>
+              </div>
+              <p className="text-4xl font-bold text-white mb-4">{t('landing.plusPrice')}</p>
+              <p className="text-orange-100 mb-6">{t('pricing.upgradeToPlus')}</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-2">
+                  <span className="text-white mt-1">✓</span>
+                  <span className="text-white">{t('landing.plusFeature1')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-white mt-1">✓</span>
+                  <span className="text-white">{t('landing.plusFeature2')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-white mt-1">✓</span>
+                  <span className="text-white">{t('landing.plusFeature3')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-white mt-1">✓</span>
+                  <span className="text-white">{t('landing.plusFeature4')}</span>
+                </li>
+              </ul>
             </div>
-            <p className="text-4xl font-bold text-white mb-4">
-              {t('landing.plusPrice')}
-            </p>
-            <p className="text-orange-100 mb-6">{t('landing.monthlyBilling')}</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <span className="text-white mt-1">✓</span>
-                <span className="text-white">{t('landing.plusFeature1')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-white mt-1">✓</span>
-                <span className="text-white">{t('landing.plusFeature2')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-white mt-1">✓</span>
-                <span className="text-white">{t('landing.plusFeature3')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-white mt-1">✓</span>
-                <span className="text-white">{t('landing.plusFeature4')}</span>
-              </li>
-            </ul>
-            <Link 
-              href="/pricing"
-              className="block w-full text-center px-6 py-3 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition font-semibold"
-            >
-              {t('landing.choosePlus')}
-            </Link>
+            <div className="mt-auto">
+              <Link 
+                href="/pricing"
+                className="block w-full text-center px-6 py-3 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition font-semibold"
+              >
+                {t('landing.choosePlus')}
+              </Link>
+            </div>
           </div>
 
           {/* Pro */}
-          <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">{t('tiers.pro')}</h4>
-            <p className="text-4xl font-bold text-gray-900 mb-4">
-              {t('landing.proPrice')}
-            </p>
-            <p className="text-gray-600 mb-6">{t('landing.monthlyBilling')}</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.proFeature1')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.proFeature2')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.proFeature3')}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-1">✓</span>
-                <span className="text-gray-700">{t('landing.proFeature4')}</span>
-              </li>
-            </ul>
-            <Link 
-              href="/pricing"
-              className="block w-full text-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
-            >
-              {t('landing.choosePro')}
-            </Link>
+          <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200 flex flex-col h-full">
+            <div>
+              <h4 className="text-2xl font-bold text-gray-900 mb-2">{t('tiers.pro')}</h4>
+              <p className="text-4xl font-bold text-gray-900 mb-4">{t('landing.proPrice')}</p>
+              <p className="text-gray-600 mb-6">{t('pricing.choosePro')}</p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.proFeature1')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.proFeature2')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.proFeature3')}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 mt-1">✓</span>
+                  <span className="text-gray-700">{t('landing.proFeature4')}</span>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-auto">
+              <Link 
+                href="/pricing"
+                className="block w-full text-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
+              >
+                {t('landing.choosePro')}
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -319,26 +333,28 @@ export default function LandingPage() {
             href="/pricing"
             className="text-orange-600 hover:text-orange-700 font-semibold"
           >
-            {t('landing.comparePlans')}
+            {t('landing.comparePlansButton')}
           </Link>
         </div>
       </section>
 
       {/* Final CTA */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="bg-gradient-to-r from-orange-600 to-orange-700 rounded-3xl p-12 text-center text-white shadow-2xl">
+        <div className="bg-gradient-to-r from-orange-600 to-orange-700 rounded-3xl p-12 text-center text-white shadow-2xl flex flex-col h-full">
           <h3 className="text-3xl font-bold mb-4">
-            ¿Listo para Transformar Tu Restaurante?
+            {t('landing.finalCtaTitle')}
           </h3>
           <p className="text-xl mb-8 text-orange-100">
-            Únete a cientos de restaurantes que ya digitalizaron su operación
+            {t('landing.finalCtaDesc')}
           </p>
-          <Link 
-            href="/admin"
-            className="inline-block px-8 py-4 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition text-lg font-semibold"
-          >
-            Comenzar Gratis Ahora
-          </Link>
+          <div className="mt-auto">
+            <Link 
+              href="https://app.tuordenya.com/backoffice"
+              className="inline-block px-8 py-4 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition text-lg font-semibold"
+            >
+              {t('landing.finalCtaButton')}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -358,28 +374,27 @@ export default function LandingPage() {
                 />
               </div>
               <p className="text-gray-600 text-sm mb-4">
-                La plataforma de gestión de restaurantes más fácil de América Latina. 
-                Digitaliza tu negocio en minutos.
+                {t('landing.companyInfo')}
               </p>
             </div>
 
             {/* Products */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Productos</h4>
+              <h4 className="font-semibold text-gray-900 mb-4">{t('landing.footerProducts')}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="/pricing#light" className="text-gray-600 hover:text-orange-600">
-                    Light — Gratis
+                    {t('landing.footerLight')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/pricing#plus" className="text-gray-600 hover:text-orange-600">
-                    Plus — $29/mes
+                    {t('landing.footerPlus')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/pricing#pro" className="text-gray-600 hover:text-orange-600">
-                    Pro — $79/mes
+                    {t('landing.footerPro')}
                   </Link>
                 </li>
               </ul>
@@ -387,21 +402,21 @@ export default function LandingPage() {
 
             {/* Links */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Empresa</h4>
+              <h4 className="font-semibold text-gray-900 mb-4">{t('landing.footerCompany')}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#faq" className="text-gray-600 hover:text-orange-600">
-                    FAQs
+                    {t('landing.footerFaqs')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/backoffice/login" className="text-gray-600 hover:text-orange-600">
-                    Iniciar Sesión
+                    {t('landing.footerLogin')}
                   </Link>
                 </li>
                 <li>
-                  <Link href="/admin" className="text-gray-600 hover:text-orange-600">
-                    Registrarse
+                  <Link href="/backoffice" className="text-gray-600 hover:text-orange-600">
+                    {t('landing.footerRegister')}
                   </Link>
                 </li>
               </ul>
@@ -410,17 +425,17 @@ export default function LandingPage() {
 
           {/* Copyright */}
           <div className="border-t border-gray-200 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} TuOrdenYa. Todos los derechos reservados.</p>
+              <p>© {new Date().getFullYear()} TuOrdenYa. {t('landing.footerCopyright')}</p>
             <div className="flex gap-4">
-              <Link href="#productos" className="hover:text-orange-600">
-                Productos
-              </Link>
-              <Link href="#faq" className="hover:text-orange-600">
-                FAQ
-              </Link>
-              <Link href="#contacto" className="hover:text-orange-600">
-                Contacto
-              </Link>
+                <Link href="#productos" className="hover:text-orange-600">
+                  {t('landing.footerProducts')}
+                </Link>
+                <Link href="#faq" className="hover:text-orange-600">
+                  {t('landing.footerFaq')}
+                </Link>
+                <Link href="#contacto" className="hover:text-orange-600">
+                  {t('landing.footerContact')}
+                </Link>
             </div>
           </div>
         </div>

@@ -1,0 +1,24 @@
+{
+  "landing": {
+    "tagline": "Menús y órdenes para restaurantes",
+    "products": "Nuestros productos",
+    "menuQR": "Menú + QR",
+    "ordersReports": "Pedidos y reportes",
+    "fullOperation": "Operación completa",
+    "faqs": "FAQs",
+    "login": "Iniciar Sesión",
+    "startFree": "Comenzar Gratis"
+  }
+}
+{
+  "landing": {
+    "tagline": "Menus and orders for restaurants",
+    "products": "Our products",
+    "menuQR": "Menu + QR",
+    "ordersReports": "Orders and reports",
+    "fullOperation": "Full operation",
+    "faqs": "FAQs",
+    "login": "Login",
+    "startFree": "Start Free"
+  }
+}
