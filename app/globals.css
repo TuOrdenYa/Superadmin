@@ -1,3 +1,13 @@
+@keyframes bannerAdMarquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.banner-ad-marquee {
+  animation: bannerAdMarquee 12s linear infinite;
+  white-space: nowrap;
+  display: block;
+}
 @import "tailwindcss";
 
 :root {

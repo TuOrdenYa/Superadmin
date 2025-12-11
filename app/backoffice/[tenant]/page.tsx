@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import UpgradePrompt from '@/app/components/UpgradePrompt';
+import BannerAd from '@/app/components/BannerAd';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/LanguageContext';
 
@@ -51,6 +52,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [tables, setTables] = useState<Table[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [tenantName, setTenantName] = useState<string>('');
+  const [tenantAdFree, setTenantAdFree] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [view, setView] = useState<'categories' | 'items' | 'variants' | 'tables'>('items');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -177,18 +179,19 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       fetchTables();
       
       // Fetch tenant name
-      const fetchTenantName = async () => {
+      const fetchTenantInfo = async () => {
         try {
           const res = await fetch(`/api/admin/tenants/${tenantId}`);
           const data = await res.json();
           if (data.ok) {
             setTenantName(data.tenant.name);
+            setTenantAdFree(!!data.tenant.ad_free);
           }
         } catch (error) {
-          console.error('Error fetching tenant name:', error);
+          console.error('Error fetching tenant info:', error);
         }
       };
-      fetchTenantName();
+      fetchTenantInfo();
     }
   }, [isAuthenticated, fetchCategories, fetchItems, fetchLocations, fetchTables]);
 
@@ -309,6 +312,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Banner Ad for free light tier tenants */}
+      {user?.product_tier === 'light' && !tenantAdFree && (
+        <BannerAd
+          text="Upgrade to remove ads and unlock more features!"
+          linkUrl="/subscription"
+          marquee
+        />
+      )}
       {/* Header - styled like landing page */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -348,6 +359,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         </div>
       </header>
 
+      {/* Second Banner Ad between header and main content */}
+      {user?.product_tier === 'light' && !tenantAdFree && (
+        <BannerAd
+          text="Try our partner services for restaurants!"
+          linkUrl="https://partner.example.com"
+        />
+      )}
       {/* Navigation Tabs */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
