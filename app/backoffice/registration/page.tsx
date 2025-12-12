@@ -14,7 +14,8 @@ export default function RegistrationPage() {
     password: "",
     restaurant: "",
     tenantId: "",
-    mobile: ""
+    mobile: "",
+    turnstileToken: ""
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -24,6 +25,10 @@ export default function RegistrationPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.turnstileToken) {
+      alert('Please complete the Turnstile challenge.');
+      return;
+    }
     const res = await fetch('/api/register-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -129,7 +134,7 @@ export default function RegistrationPage() {
             </div>
             {/* Cloudflare Turnstile */}
             <div className="mb-4">
-              <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => { /* Optionally handle token */ }} />
+              <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => setForm(f => ({ ...f, turnstileToken: token }))} />
             </div>
             <button
               type="submit"

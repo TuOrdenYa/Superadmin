@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [tenantId, setTenantId] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -20,6 +21,12 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
+    if (!turnstileToken) {
+      setError('Please complete the Turnstile challenge.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -28,6 +35,7 @@ export default function LoginPage() {
           tenant_tax_id: tenantId,
           email,
           password,
+          turnstileToken,
         }),
       });
 
@@ -109,7 +117,7 @@ export default function LoginPage() {
           )}
           {/* Cloudflare Turnstile */}
           <div className="mb-4">
-            <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => { /* Optionally handle token */ }} />
+            <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={setTurnstileToken} />
           </div>
           <button
             type="submit"

@@ -20,7 +20,25 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KE
 export async function POST(req: NextRequest) {
   return withRateLimit(req, async (request) => {
     const data = await request.json();
-    const { name, email, password, restaurant } = data;
+    const { name, email, password, restaurant, turnstileToken } = data;
+
+    // Verify Turnstile token with Cloudflare
+    if (!turnstileToken) {
+      return NextResponse.json({ error: 'Missing Turnstile token.' }, { status: 400 });
+    }
+    const cfSecret = process.env.TURNSTILE_SECRET_KEY;
+    if (!cfSecret) {
+      return NextResponse.json({ error: 'Server misconfiguration: missing Turnstile secret.' }, { status: 500 });
+    }
+    const cfRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `secret=${encodeURIComponent(cfSecret)}&response=${encodeURIComponent(turnstileToken)}`,
+    });
+    const cfData = await cfRes.json();
+    if (!cfData.success) {
+      return NextResponse.json({ error: 'Turnstile verification failed.' }, { status: 400 });
+    }
 
     // Prepare values for required columns
     const now = new Date().toISOString();
