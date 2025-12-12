@@ -52,14 +52,15 @@ export async function POST(request: NextRequest) {
 
       // Find user by tenant_id and email WITH tier info in one query
       const result = await query(
-        `SELECT u.id, u.tenant_id, u.full_name, u.email, u.password_hash, u.role, u.is_active, u.location_id, 
+        `SELECT u.id, u.tenant_id, u.full_name, u.email, u.password_hash, u.role, u.is_active, u.location_id,
+                u.failed_login_attempts, u.lockout_until,
                 l.name as location_name,
                 t.product_tier,
                 t.subscription_status
          FROM users u
          LEFT JOIN locations l ON u.location_id = l.id
          LEFT JOIN tenants t ON u.tenant_id = t.id
-         WHERE u.tenant_id = $1 AND lower(u.email) = lower($2) 
+         WHERE u.tenant_id = $1 AND lower(u.email) = lower($2)
          LIMIT 1`,
         [Number(tenant_id), String(email).trim()]
       );
@@ -74,6 +75,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Check for lockout
+      if (user.lockout_until && new Date(user.lockout_until) > new Date()) {
+        return NextResponse.json(
+          { ok: false, error: 'Cuenta bloqueada por demasiados intentos fallidos. Intenta nuevamente más tarde.' },
+          { status: 403 }
+        );
+      }
+
       // Verify password
       const isValidPassword = await verifyPassword(
         String(password),
@@ -81,10 +90,29 @@ export async function POST(request: NextRequest) {
       );
 
       if (!isValidPassword) {
-        return NextResponse.json(
-          { ok: false, error: 'Credenciales inválidas' },
-          { status: 401 }
+        // Increment failed attempts
+        let failedAttempts = (user.failed_login_attempts || 0) + 1;
+        let lockoutUntil = null;
+        if (failedAttempts >= 5) {
+          // Lock for 15 minutes
+          lockoutUntil = new Date(Date.now() + 15 * 60 * 1000);
+        }
+        await query(
+          'UPDATE users SET failed_login_attempts = $1, lockout_until = $2 WHERE id = $3',
+          [failedAttempts, lockoutUntil, user.id]
         );
+        return NextResponse.json(
+          { ok: false, error: failedAttempts >= 5 ? 'Cuenta bloqueada por demasiados intentos fallidos. Intenta nuevamente en 15 minutos.' : 'Credenciales inválidas' },
+          { status: failedAttempts >= 5 ? 403 : 401 }
+        );
+      } else {
+        // Reset failed attempts and lockout
+        if (user.failed_login_attempts > 0 || user.lockout_until) {
+          await query(
+            'UPDATE users SET failed_login_attempts = 0, lockout_until = NULL WHERE id = $1',
+            [user.id]
+          );
+        }
       }
 
       // Generate JWT token
