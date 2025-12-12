@@ -5,7 +5,6 @@ import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 import Turnstile, { TurnstileHandle } from '@/app/components/Turnstile';
-  const turnstileRef = useRef<TurnstileHandle>(null);
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -16,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [tenantId, setTenantId] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef<TurnstileHandle>(null);
   // Memoize the callback so Turnstile is not reset on every render
   const handleTurnstileSuccess = useCallback((token: string) => {
     setTurnstileToken(token);
