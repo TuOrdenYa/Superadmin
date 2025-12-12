@@ -8,17 +8,21 @@ function slugify(text: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { hashPassword } from '@/lib/auth';
+import { withRateLimit } from '@/lib/rate-limit';
+
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 
-export async function POST(req: Request) {
-  const data = await req.json();
-  const { name, email, password, restaurant } = data;
 
-  // Prepare values for required columns
+export async function POST(req: NextRequest) {
+  return withRateLimit(req, async (request) => {
+    const data = await request.json();
+    const { name, email, password, restaurant } = data;
+
+    // Prepare values for required columns
     const now = new Date().toISOString();
     const slug = slugify(restaurant);
     if (!data.tenantId) {
@@ -68,4 +72,5 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true });
+  });
 }
