@@ -1,3 +1,4 @@
+"use client";
 // Fix for window.turnstile type
 declare global {
   interface Window {
