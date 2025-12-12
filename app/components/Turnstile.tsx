@@ -1,3 +1,9 @@
+// Fix for window.turnstile type
+declare global {
+  interface Window {
+    turnstile?: any;
+  }
+}
 import React, { useEffect, useRef } from 'react';
 
 interface TurnstileProps {
