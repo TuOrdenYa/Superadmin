@@ -4,15 +4,30 @@ declare global {
     turnstile?: any;
   }
 }
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+
 
 interface TurnstileProps {
   siteKey: string;
   onSuccess?: (token: string) => void;
 }
 
-const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onSuccess }) => {
+export interface TurnstileHandle {
+  reset: () => void;
+}
+
+const Turnstile = forwardRef<TurnstileHandle, TurnstileProps>(({ siteKey, onSuccess }, refHandle) => {
   const ref = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(refHandle, () => ({
+    reset: () => {
+      if (window.turnstile && ref.current) {
+        try {
+          window.turnstile.reset(ref.current);
+        } catch (e) {}
+      }
+    },
+  }));
 
   useEffect(() => {
     // Clean up any previous widget before rendering a new one
@@ -55,6 +70,6 @@ const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onSuccess }) => {
   }, [siteKey, onSuccess]);
 
   return <div ref={ref} className="cf-turnstile" />;
-};
+});
 
 export default Turnstile;

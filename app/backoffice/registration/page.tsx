@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import Turnstile from "@/app/components/Turnstile";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export default function RegistrationPage() {
@@ -134,7 +136,7 @@ export default function RegistrationPage() {
             </div>
             {/* Cloudflare Turnstile */}
             <div className="mb-4">
-              <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => setForm(f => ({ ...f, turnstileToken: token }))} />
+              <Turnstile siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setForm(f => ({ ...f, turnstileToken: token }))} />
             </div>
             <button
               type="submit"

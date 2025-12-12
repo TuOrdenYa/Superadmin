@@ -322,16 +322,16 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       )}
       {/* Header - styled like landing page */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between w-full">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2">
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-between w-full gap-2 min-w-0">
             {/* Logo and Backoffice title - left-aligned */}
-            <div className="flex items-center gap-3 min-w-0">
-              <img src="/logo-tuordenya-orange.png" alt="TuOrdenYa Logo" width={40} height={40} className="h-10 w-auto flex-shrink-0" />
-              <span className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block" style={{ wordBreak: 'keep-all', maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block' }}>{t('nav.backoffice')}</span>
+            <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
+              <img src="/logo-tuordenya-orange.png" alt="TuOrdenYa Logo" width={36} height={36} className="h-9 w-auto flex-shrink-0" />
+              <span className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block truncate" style={{ wordBreak: 'keep-all' }}>{t('nav.backoffice')}</span>
             </div>
-            {/* User info and controls - right-aligned */}
-            <div className="flex gap-2 items-center">
-              <span className="font-bold text-gray-700 text-base md:text-lg leading-tight min-w-0 block" style={{ wordBreak: 'keep-all', maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block' }}>
+            {/* User info and controls - right-aligned, stack on mobile */}
+            <div className="flex flex-wrap md:flex-nowrap gap-2 items-center justify-end w-full md:w-auto min-w-0">
+              <span className="font-bold text-gray-700 text-sm md:text-lg leading-tight min-w-0 block truncate">
                 {tenantName && <span className="font-bold">{tenantName}</span>}
                 {tenantName && ' • '}
                 <span className="font-bold">{user?.full_name}</span> • <span className="font-bold">{user?.role}</span>
@@ -349,11 +349,9 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               </span>
               <LanguageSwitcher />
               {user?.role === 'admin' && (
-                <>
-                  <a href="/subscription" className="px-4 py-2 bg-gradient-to-r from-orange-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition">📊 {t('nav.mySubscription')}</a>
-                </>
+                <a href="/subscription" className="px-3 py-2 bg-gradient-to-r from-orange-600 to-purple-600 text-white rounded-lg font-semibold text-xs md:text-base hover:from-blue-700 hover:to-purple-700 transition whitespace-nowrap">📊 {t('nav.mySubscription')}</a>
               )}
-              <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">{t('nav.logout')}</button>
+              <button onClick={handleLogout} className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs md:text-base font-semibold hover:bg-red-700 whitespace-nowrap">{t('nav.logout')}</button>
             </div>
           </div>
         </div>

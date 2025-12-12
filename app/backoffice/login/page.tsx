@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
-import Turnstile from '@/app/components/Turnstile';
+import Turnstile, { TurnstileHandle } from '@/app/components/Turnstile';
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -30,6 +31,7 @@ export default function LoginPage() {
     if (!turnstileToken) {
       setError('Please complete the Turnstile challenge.');
       setLoading(false);
+      if (turnstileRef.current) turnstileRef.current.reset();
       return;
     }
 
@@ -51,15 +53,18 @@ export default function LoginPage() {
         // Store token
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
         // Redirect to backoffice
         const tenantId = data.user.tenant_id;
         router.push(`/backoffice/${tenantId}`);
       } else {
         setError(data.error || 'Login failed');
+        if (turnstileRef.current) turnstileRef.current.reset();
+        setTurnstileToken('');
       }
     } catch (err) {
       setError('Network error. Please try again.');
+      if (turnstileRef.current) turnstileRef.current.reset();
+      setTurnstileToken('');
     } finally {
       setLoading(false);
     }
@@ -123,7 +128,7 @@ export default function LoginPage() {
           )}
           {/* Cloudflare Turnstile */}
           <div className="mb-4">
-            <Turnstile siteKey={TURNSTILE_SITE_KEY} onSuccess={handleTurnstileSuccess} />
+            <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} onSuccess={handleTurnstileSuccess} />
           </div>
           <button
             type="submit"
