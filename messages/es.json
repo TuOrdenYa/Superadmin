@@ -109,7 +109,9 @@
     "demoCredentials": "Credenciales de demostración: admin@test.com / password123",
     "emailPlaceholder": "admin@restaurante.com",
     "passwordPlaceholder": "••••••••",
-    "tenantIdPlaceholder": "Ingresa tu ID de tenant"
+    "tenantIdPlaceholder": "Ingresa tu ID de tenant",
+    "forgotPassword": "Recuperar contraseña",
+    "register": "Registrarse"
   },
   "nav": {
     "backoffice": "Backoffice",

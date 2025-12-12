@@ -15,6 +15,14 @@ const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onSuccess }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Clean up any previous widget before rendering a new one
+    if (window.turnstile && ref.current) {
+      try {
+        window.turnstile.remove(ref.current);
+      } catch (e) {
+        // ignore if not rendered yet
+      }
+    }
     if (!window.turnstile) {
       const script = document.createElement('script');
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
@@ -36,6 +44,14 @@ const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onSuccess }) => {
         },
       });
     }
+    // Clean up on unmount
+    return () => {
+      if (window.turnstile && ref.current) {
+        try {
+          window.turnstile.remove(ref.current);
+        } catch (e) {}
+      }
+    };
   }, [siteKey, onSuccess]);
 
   return <div ref={ref} className="cf-turnstile" />;

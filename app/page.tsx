@@ -89,7 +89,7 @@ export default function LandingPage() {
                 {t('landing.login')}
               </Link>
               <Link 
-                href="/backoffice" 
+                href="/backoffice/registration"
                 className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
               >
                 {t('landing.startFree')}

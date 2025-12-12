@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -64,10 +63,6 @@ export default function LoginPage() {
           <p className="text-black">{t('login.subtitle')}</p>
         </div>
         <form onSubmit={handleLogin} className="space-y-6">
-                    {/* Cloudflare Turnstile */}
-                    <div className="mb-4">
-                      <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => { /* Optionally handle token */ }} />
-                    </div>
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               {t('login.tenantId')}
@@ -112,6 +107,10 @@ export default function LoginPage() {
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
+          {/* Cloudflare Turnstile */}
+          <div className="mb-4">
+            <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => { /* Optionally handle token */ }} />
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -121,9 +120,22 @@ export default function LoginPage() {
           </button>
         </form>
         <div className="mt-6 text-center">
-          <p className="text-sm text-black font-semibold">
-            {t('login.demoCredentials')}
-          </p>
+          <div className="flex flex-col gap-2 mt-6">
+            <button
+              type="button"
+              className="w-full px-6 py-2 bg-gray-100 text-blue-700 rounded-lg hover:bg-blue-50 font-medium transition-colors"
+              // TODO: Add forgot password logic here
+            >
+              {t('login.forgotPassword')}
+            </button>
+            <button
+              type="button"
+              className="w-full px-6 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 font-medium transition-colors"
+              onClick={() => router.push('/backoffice/registration')}
+            >
+              {t('login.register')}
+            </button>
+          </div>
         </div>
       </div>
     </div>
