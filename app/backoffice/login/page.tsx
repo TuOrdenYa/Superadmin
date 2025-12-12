@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 import Turnstile from '@/app/components/Turnstile';
@@ -12,6 +12,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [tenantId, setTenantId] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
+  // Memoize the callback so Turnstile is not reset on every render
+  const handleTurnstileSuccess = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -117,7 +121,7 @@ export default function LoginPage() {
           )}
           {/* Cloudflare Turnstile */}
           <div className="mb-4">
-            <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={setTurnstileToken} />
+            <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={handleTurnstileSuccess} />
           </div>
           <button
             type="submit"
