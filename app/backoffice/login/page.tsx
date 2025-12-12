@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
+import Turnstile from '@/app/components/Turnstile';
 import { useLanguage } from '@/lib/LanguageContext';
 
 export default function LoginPage() {
@@ -54,7 +55,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
-        <div className="flex justify-end mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <img src="/logo-tuordenya-orange.png" alt="TuOrdenYa Logo" className="h-12 w-auto" />
           <LanguageSwitcher />
         </div>
         <div className="text-center mb-8">
@@ -62,6 +64,10 @@ export default function LoginPage() {
           <p className="text-black">{t('login.subtitle')}</p>
         </div>
         <form onSubmit={handleLogin} className="space-y-6">
+                    {/* Cloudflare Turnstile */}
+                    <div className="mb-4">
+                      <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => { /* Optionally handle token */ }} />
+                    </div>
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               {t('login.tenantId')}

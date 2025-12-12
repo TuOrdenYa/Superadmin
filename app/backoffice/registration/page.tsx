@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
+import Turnstile from "@/app/components/Turnstile";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export default function RegistrationPage() {
@@ -54,6 +55,10 @@ export default function RegistrationPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+                          {/* Cloudflare Turnstile */}
+                          <div className="mb-4">
+                            <Turnstile siteKey="0x4AAAAAACF8ADIKXca1zxCC" onSuccess={(token) => { /* Optionally handle token */ }} />
+                          </div>
               <div>
                 <label className="block text-sm font-bold text-black mb-2">{t('registration.tenantId')}</label>
                 <input
