@@ -1,3 +1,14 @@
+// Password policy: min 8 chars, at least 1 uppercase, 1 lowercase, 1 number, 1 special char
+export function isPasswordStrong(password: string): boolean {
+  return (
+    typeof password === 'string' &&
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 

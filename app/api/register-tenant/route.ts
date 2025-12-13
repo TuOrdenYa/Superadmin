@@ -10,7 +10,7 @@ function slugify(text: string) {
 }
 import { NextResponse, NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, isPasswordStrong } from '@/lib/auth';
 import { withRateLimit } from '@/lib/rate-limit';
 
 
@@ -38,6 +38,11 @@ export async function POST(req: NextRequest) {
     const cfData = await cfRes.json();
     if (!cfData.success) {
       return NextResponse.json({ error: 'Turnstile verification failed.' }, { status: 400 });
+    }
+
+    // Enforce strong password policy
+    if (!isPasswordStrong(password)) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.' }, { status: 400 });
     }
 
     // Prepare values for required columns
