@@ -2,7 +2,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import Turnstile, { TurnstileHandle } from "@/app/components/Turnstile";
@@ -22,9 +22,9 @@ export default function RegistrationPage() {
     password: "",
     restaurant: "",
     tenantId: "",
-    mobile: "",
-    turnstileToken: ""
+    mobile: ""
   });
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const turnstileRef = useRef<TurnstileHandle>(null);
@@ -33,10 +33,15 @@ export default function RegistrationPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
+  // Memoized callback for Turnstile
+  const handleTurnstileSuccess = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (!form.turnstileToken) {
+    if (!turnstileToken) {
       setError('Please complete the Turnstile challenge.');
       if (turnstileRef.current) turnstileRef.current.reset();
       return;
@@ -44,7 +49,7 @@ export default function RegistrationPage() {
     const res = await fetch('/api/register-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, turnstileToken }),
     });
     if (res.ok) {
       setSubmitted(true);
@@ -153,7 +158,7 @@ export default function RegistrationPage() {
             </div>
             {/* Cloudflare Turnstile */}
             <div className="mb-4">
-              <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setForm(f => ({ ...f, turnstileToken: token }))} />
+              <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} onSuccess={handleTurnstileSuccess} />
             </div>
             <button
               type="submit"
