@@ -1,3 +1,4 @@
+
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -5,10 +6,9 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import Turnstile, { TurnstileHandle } from "@/app/components/Turnstile";
-  const turnstileRef = useRef<TurnstileHandle>(null);
+import { useLanguage } from "@/lib/LanguageContext";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
-import { useLanguage } from "@/lib/LanguageContext";
 
 export default function RegistrationPage() {
   const { t } = useLanguage();
@@ -23,6 +23,7 @@ export default function RegistrationPage() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
