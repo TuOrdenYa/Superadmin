@@ -1,3 +1,29 @@
+// Log suspicious activity (failed logins, rate limits, etc.)
+export async function logSuspiciousActivity({
+  user_id = null,
+  tenant_id = null,
+  email = null,
+  ip_address = null,
+  event_type,
+  event_details = null,
+}: {
+  user_id?: number | null;
+  tenant_id?: number | null;
+  email?: string | null;
+  ip_address?: string | null;
+  event_type: string;
+  event_details?: any;
+}) {
+  try {
+    await query(
+      `INSERT INTO suspicious_activity_log (user_id, tenant_id, email, ip_address, event_type, event_details)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [user_id, tenant_id, email, ip_address, event_type, event_details ? JSON.stringify(event_details) : null]
+    );
+  } catch (err) {
+    console.error('Failed to log suspicious activity:', err);
+  }
+}
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 // Force rebuild - database connection pool for Supabase
