@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
           user_id: null,
           tenant_id,
           email,
-          ip_address: req.headers.get('x-forwarded-for') || req.ip || null,
+          ip_address: req.headers.get('x-forwarded-for') || null,
           event_type: 'failed_login',
           event_details: { reason: 'user_not_found_or_inactive' }
         });
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           user_id: user.id,
           tenant_id,
           email,
-          ip_address: req.headers.get('x-forwarded-for') || req.ip || null,
+          ip_address: req.headers.get('x-forwarded-for') || null,
           event_type: 'login_attempt_locked',
           event_details: { lockout_until: user.lockout_until }
         });
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
           user_id: user.id,
           tenant_id,
           email,
-          ip_address: req.headers.get('x-forwarded-for') || req.ip || null,
+          ip_address: req.headers.get('x-forwarded-for') || null,
           event_type: lockoutTriggered ? 'account_lockout' : 'failed_login',
           event_details: {
             failedAttempts,
