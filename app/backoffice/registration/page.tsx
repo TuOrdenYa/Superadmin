@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
-import Turnstile from "@/app/components/Turnstile";
+import Turnstile, { TurnstileHandle } from "@/app/components/Turnstile";
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -31,6 +32,7 @@ export default function RegistrationPage() {
     setError("");
     if (!form.turnstileToken) {
       setError('Please complete the Turnstile challenge.');
+      if (turnstileRef.current) turnstileRef.current.reset();
       return;
     }
     const res = await fetch('/api/register-tenant', {
@@ -43,6 +45,8 @@ export default function RegistrationPage() {
     } else {
       const data = await res.json().catch(() => ({}));
       setError(data.error || 'Registration failed. Please try again.');
+      if (turnstileRef.current) turnstileRef.current.reset();
+      setForm(f => ({ ...f, turnstileToken: "" }));
     }
   }
 
@@ -143,7 +147,7 @@ export default function RegistrationPage() {
             </div>
             {/* Cloudflare Turnstile */}
             <div className="mb-4">
-              <Turnstile siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setForm(f => ({ ...f, turnstileToken: token }))} />
+              <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setForm(f => ({ ...f, turnstileToken: token }))} />
             </div>
             <button
               type="submit"
