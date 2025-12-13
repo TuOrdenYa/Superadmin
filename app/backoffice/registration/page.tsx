@@ -20,6 +20,7 @@ export default function RegistrationPage() {
     turnstileToken: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,8 +28,9 @@ export default function RegistrationPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     if (!form.turnstileToken) {
-      alert('Please complete the Turnstile challenge.');
+      setError('Please complete the Turnstile challenge.');
       return;
     }
     const res = await fetch('/api/register-tenant', {
@@ -39,8 +41,8 @@ export default function RegistrationPage() {
     if (res.ok) {
       setSubmitted(true);
     } else {
-      // Optionally handle error
-      alert('Registration failed. Please try again.');
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Registration failed. Please try again.');
     }
   }
 
@@ -55,6 +57,11 @@ export default function RegistrationPage() {
           <h2 className="text-3xl font-bold text-black mb-2">{t('registration.title')}</h2>
           <p className="text-black">{t('registration.subtitle')}</p>
         </div>
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
         {submitted ? (
           <div className="text-center">
             <p className="mb-4 text-green-600 font-semibold">{t('registration.success')}</p>
