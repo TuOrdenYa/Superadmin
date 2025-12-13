@@ -11,6 +11,9 @@ import { useLanguage } from "@/lib/LanguageContext";
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 export default function RegistrationPage() {
+  if (!TURNSTILE_SITE_KEY || typeof TURNSTILE_SITE_KEY !== 'string') {
+    console.warn('Turnstile site key is missing or not a string! Check NEXT_PUBLIC_TURNSTILE_SITE_KEY in your environment.');
+  }
   const { t } = useLanguage();
   const [form, setForm] = useState({
     name: "",
