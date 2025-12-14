@@ -11,6 +11,7 @@ interface LanguageContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string) => string;
+  t: (key: string, fallback?: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -47,13 +48,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('locale', newLocale);
   };
 
-  const t = (key: string): string => {
+  const t = (key: string, fallback?: string): string => {
     const keys = key.split('.');
     let value: any = currentMessages;
     for (const k of keys) {
       value = value?.[k];
     }
-    return value || key;
+    return value || (fallback !== undefined ? fallback : key);
   };
 
   return (
