@@ -144,7 +144,7 @@ export default function LoginPage() {
             <button
               type="button"
               className="w-full px-6 py-2 bg-gray-100 text-blue-700 rounded-lg hover:bg-blue-50 font-medium transition-colors"
-              // TODO: Add forgot password logic here
+              onClick={() => router.push('/backoffice/forgot-password')}
             >
               {t('login.forgotPassword')}
             </button>

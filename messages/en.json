@@ -1,4 +1,13 @@
 {
+  "resetPassword": {
+    "title": "Reset Password",
+    "submit": "Reset Password",
+    "confirm": "Confirm Password",
+    "confirmPlaceholder": "Re-enter your new password",
+    "noMatch": "Passwords do not match",
+    "success": "Your password has been reset. You may now log in.",
+    "failed": "Failed to reset password."
+  },
   "registration": {
     "title": "Create Restaurant Account",
     "subtitle": "Fill out the form to register your restaurant.",
@@ -113,6 +122,10 @@
     "forgotPassword": "Forgot password",
     "register": "Register"
   },
+  "forgotPassword": {
+    "sendLink": "Send Reset Link",
+    "sentMessage": "If an account exists for that email, a reset link has been sent."
+  },
   "nav": {
     "backoffice": "Backoffice",
     "admin": "Admin",
@@ -210,6 +223,4 @@
     "action": "Action",
     "usageCount": "Usage Count"
   }
-  
- 
 }

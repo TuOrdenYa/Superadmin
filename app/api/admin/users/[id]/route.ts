@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
+import { isPasswordStrong } from '@/lib/auth';
 
 // PUT - Update user or reset password
 export async function PUT(
@@ -13,8 +14,11 @@ export async function PUT(
     const { full_name, role, location_id, is_active, reset_password } = body;
 
     if (reset_password) {
-      // Reset password
-      const newPassword = Math.random().toString(36).slice(-8);
+      // Reset password (must be strong)
+      let newPassword = Math.random().toString(36).slice(-8) + 'Aa!1'; // ensure strong
+      while (!isPasswordStrong(newPassword)) {
+        newPassword = Math.random().toString(36).slice(-8) + 'Aa!1';
+      }
       const passwordHash = await bcrypt.hash(newPassword, 10);
 
       await query(

@@ -1,4 +1,11 @@
 {
+  "resetPassword": {
+    "confirm": "Confirmar Contraseña",
+    "confirmPlaceholder": "Vuelve a ingresar tu nueva contraseña",
+    "noMatch": "Las contraseñas no coinciden",
+    "success": "Tu contraseña ha sido restablecida. Ahora puedes iniciar sesión.",
+    "failed": "No se pudo restablecer la contraseña."
+  },
   "registration": {
     "title": "Crear cuenta de restaurante",
     "subtitle": "Completa el formulario para registrar tu restaurante.",
@@ -112,6 +119,10 @@
     "tenantIdPlaceholder": "Ingresa tu ID de tenant",
     "forgotPassword": "Recuperar contraseña",
     "register": "Registrarse"
+  },
+  "forgotPassword": {
+    "sendLink": "Enviar enlace de restablecimiento",
+    "sentMessage": "Si existe una cuenta para ese correo, se ha enviado un enlace de restablecimiento."
   },
   "nav": {
     "backoffice": "Backoffice",

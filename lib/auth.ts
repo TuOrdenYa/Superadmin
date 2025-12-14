@@ -11,6 +11,96 @@ export function isPasswordStrong(password: string): boolean {
 }
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import { query } from './db';
+// Get user by email (case-insensitive, trims)
+export async function getUserByEmail(email: string) {
+  const res = await query(
+    `SELECT * FROM users WHERE lower(btrim(email)) = lower(btrim($1)) LIMIT 1`,
+    [email]
+  );
+  return res.rows[0] || null;
+}
+
+// Create a password reset token for a user (expires in 1 hour)
+export async function createPasswordResetToken(user_id: number): Promise<string> {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  await query(
+    `INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)`,
+    [user_id, token, expires]
+  );
+  return token;
+}
+
+// Send password reset email using Brevo REST API (no SDK)
+export async function sendPasswordResetEmail(email: string, token: string) {
+  const apiKey = process.env.BREVO_API_KEY;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  if (!apiKey) throw new Error('Missing BREVO_API_KEY');
+  const resetUrl = `${baseUrl}/backoffice/reset-password?token=${token}`;
+  const sender = { email: 'no-reply@tuordenya.com', name: 'TuOrdenYa' };
+  const subject = 'Reset your TuOrdenYa password';
+  const htmlContent = `
+    <p>Hello,</p>
+    <p>We received a request to reset your password. Click the link below to set a new password:</p>
+    <p><a href="${resetUrl}">${resetUrl}</a></p>
+    <p>If you did not request this, you can ignore this email.</p>
+    <p>Thank you,<br/>TuOrdenYa Team</p>
+  `;
+  const payload = {
+    sender,
+    to: [{ email }],
+    subject,
+    htmlContent
+  };
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+      'accept': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(`Brevo email failed: ${error}`);
+  }
+}
+
+// Verify a password reset token and return user_id if valid
+export async function verifyPasswordResetToken(token: string): Promise<number | null> {
+  const res = await query(
+    `SELECT user_id, expires_at, used FROM password_reset_tokens WHERE token = $1 LIMIT 1`,
+    [token]
+  );
+  const row = res.rows[0];
+  if (!row || row.used || new Date(row.expires_at) < new Date()) return null;
+  return row.user_id;
+}
+
+// Invalidate a password reset token after use
+export async function invalidatePasswordResetToken(token: string) {
+  await query(
+    `UPDATE password_reset_tokens SET used = TRUE WHERE token = $1`,
+    [token]
+  );
+}
+
+// Update user password (hashes new password)
+export async function updateUserPassword(user_id: number, password: string) {
+  const hash = await hashPassword(password);
+  await query(
+    `UPDATE users SET password_hash = $1 WHERE id = $2`,
+    [hash, user_id]
+  );
+}
+
+// Alias for password policy
+export function passwordMeetsPolicy(password: string): boolean {
+  return isPasswordStrong(password);
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const SALT_ROUNDS = 10;

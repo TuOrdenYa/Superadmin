@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
+import { isPasswordStrong } from '@/lib/auth';
 
 // GET - List all users (super admin only)
 export async function GET(request: NextRequest) {
@@ -92,8 +93,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate password hash (use provided password or generate random one)
-    const userPassword = password || Math.random().toString(36).slice(-8);
+    // Enforce strong password policy if password is provided
+    let userPassword = password;
+    if (userPassword) {
+      if (!isPasswordStrong(userPassword)) {
+        return NextResponse.json(
+          { ok: false, error: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.' },
+          { status: 400 }
+        );
+      }
+    } else {
+      userPassword = Math.random().toString(36).slice(-8);
+    }
     const passwordHash = await bcrypt.hash(userPassword, 10);
 
     // Insert user
