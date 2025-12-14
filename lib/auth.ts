@@ -36,8 +36,11 @@ export async function createPasswordResetToken(user_id: number): Promise<string>
 // Send password reset email using Brevo REST API (no SDK)
 export async function sendPasswordResetEmail(email: string, token: string) {
   const apiKey = process.env.BREVO_API_KEY;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   if (!apiKey) throw new Error('Missing BREVO_API_KEY');
+  if (!baseUrl || (process.env.NODE_ENV === 'production' && baseUrl.includes('localhost'))) {
+    throw new Error('Invalid NEXT_PUBLIC_BASE_URL: must be set to your production domain in production.');
+  }
   const resetUrl = `${baseUrl}/backoffice/reset-password?token=${token}`;
   const sender = { email: 'no-reply@tuordenya.com', name: 'TuOrdenYa' };
   const subject = 'Reset your TuOrdenYa password';
