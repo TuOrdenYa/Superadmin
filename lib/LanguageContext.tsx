@@ -10,7 +10,6 @@ type Messages = typeof esMessages;
 interface LanguageContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
   t: (key: string, fallback?: string) => string;
 }
 
