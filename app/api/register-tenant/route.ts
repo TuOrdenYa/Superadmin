@@ -10,7 +10,7 @@ function slugify(text: string) {
 }
 import { NextResponse, NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { hashPassword, isPasswordStrong } from '@/lib/auth';
+import { hashPassword, isPasswordStrong, sendWelcomeEmail } from '@/lib/auth';
 import { withRateLimit } from '@/lib/rate-limit';
 
 
@@ -95,6 +95,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: userError.message, userData }, { status: 400 });
     }
 
+    // Send welcome email (ignore errors, don't block registration)
+    try {
+      const loginLink = `${process.env.NEXT_PUBLIC_BASE_URL}/backoffice/login`;
+      await sendWelcomeEmail({
+        email,
+        name,
+        restaurant,
+        loginLink
+      });
+    } catch (e) {
+      console.error('Failed to send welcome email:', e);
+    }
     return NextResponse.json({ success: true });
   });
 }

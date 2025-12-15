@@ -1,3 +1,47 @@
+// Send welcome email using Brevo REST API (templateId: 3)
+export async function sendWelcomeEmail({
+  email,
+  name,
+  restaurant,
+  loginLink
+}: {
+  email: string;
+  name: string;
+  restaurant: string;
+  loginLink: string;
+}) {
+  const apiKey = process.env.BREVO_API_KEY;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!apiKey) throw new Error('Missing BREVO_API_KEY');
+  if (!baseUrl || (process.env.NODE_ENV === 'production' && baseUrl.includes('localhost'))) {
+    throw new Error('Invalid NEXT_PUBLIC_BASE_URL: must be set to your production domain in production.');
+  }
+  const sender = { email: 'no-reply@tuordenya.com', name: 'TuOrdenYa' };
+  const payload = {
+    sender,
+    to: [{ email }],
+    templateId: 3,
+    params: {
+      NAME: name,
+      RESTAURANT: restaurant,
+      EMAIL: email,
+      LOGIN_LINK: loginLink
+    }
+  };
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+      'accept': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(`Brevo welcome email failed: ${error}`);
+  }
+}
 // Password policy: min 8 chars, at least 1 uppercase, 1 lowercase, 1 number, 1 special char
 export function isPasswordStrong(password: string): boolean {
   return (
