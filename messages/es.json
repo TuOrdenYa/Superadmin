@@ -23,7 +23,9 @@
     "restaurantPlaceholder": "Nombre del restaurante",
     "mobile": "Número de móvil",
     "mobilePlaceholder": "Ejemplo: +34 600 123 456",
-    "register": "Registrar"
+    "register": "Registrar",
+    "language": "Idioma",
+    "languageScript": "Idioma preferido para comunicaciones"
   },
   "common": {
     "loading": "Cargando...",

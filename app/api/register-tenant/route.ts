@@ -20,7 +20,7 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KE
 export async function POST(req: NextRequest) {
   return withRateLimit(req, async (request) => {
     const data = await request.json();
-    const { name, email, password, restaurant, turnstileToken } = data;
+    const { name, email, password, restaurant, turnstileToken, preferred_language } = data;
 
     // Verify Turnstile token with Cloudflare
     if (!turnstileToken) {
@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
       is_active: true,
       location_id: null,
       created_at: now,
+      preferred_language: preferred_language || 'es',
     };
     const { error: userError } = await supabase
       .from('users')

@@ -25,7 +25,9 @@
     "restaurantPlaceholder": "Restaurant name",
     "mobile": "Mobile Number",
     "mobilePlaceholder": "e.g. +1 555 123 4567",
-    "register": "Register"
+    "register": "Register",
+    "language": "Language",
+    "languageScript": "Preferred language for communications"
   },
   "common": {
     "loading": "Loading...",

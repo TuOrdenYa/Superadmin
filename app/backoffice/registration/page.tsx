@@ -22,14 +22,15 @@ export default function RegistrationPage() {
     password: "",
     restaurant: "",
     tenantId: "",
-    mobile: ""
+    mobile: "",
+    preferred_language: "es"
   });
   const [turnstileToken, setTurnstileToken] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const turnstileRef = useRef<TurnstileHandle>(null);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
@@ -155,6 +156,18 @@ export default function RegistrationPage() {
                 placeholder={t('registration.mobilePlaceholder')}
                 required
               />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">{t('registration.language')}</label>
+              <select
+                name="preferred_language"
+                value={form.preferred_language}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black font-semibold"
+              >
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
             </div>
             {/* Cloudflare Turnstile */}
             <div className="mb-4">
