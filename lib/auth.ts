@@ -41,14 +41,20 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   if (!baseUrl || (process.env.NODE_ENV === 'production' && baseUrl.includes('localhost'))) {
     throw new Error('Invalid NEXT_PUBLIC_BASE_URL: must be set to your production domain in production.');
   }
-  // Fetch user info for personalization (optional, fallback to email if not found)
+  // Fetch user info for personalization (fallback to email if not found)
   let userName = email, restaurantName = '', userEmail = email;
   try {
     const user = await getUserByEmail(email);
     if (user) {
       userName = user.full_name || email;
-      restaurantName = user.restaurant_name || user.restaurant || '';
       userEmail = user.email;
+      // Fetch tenant name using tenant_id
+      if (user.tenant_id) {
+        const tenantRes = await query('SELECT name FROM tenants WHERE id = $1 LIMIT 1', [user.tenant_id]);
+        if (tenantRes.rows && tenantRes.rows.length > 0) {
+          restaurantName = tenantRes.rows[0].name;
+        }
+      }
     }
   } catch {}
   const resetUrl = `${baseUrl}/backoffice/reset-password?token=${token}`;
