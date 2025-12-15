@@ -41,21 +41,28 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   if (!baseUrl || (process.env.NODE_ENV === 'production' && baseUrl.includes('localhost'))) {
     throw new Error('Invalid NEXT_PUBLIC_BASE_URL: must be set to your production domain in production.');
   }
+  // Fetch user info for personalization (optional, fallback to email if not found)
+  let userName = email, restaurantName = '', userEmail = email;
+  try {
+    const user = await getUserByEmail(email);
+    if (user) {
+      userName = user.full_name || email;
+      restaurantName = user.restaurant_name || user.restaurant || '';
+      userEmail = user.email;
+    }
+  } catch {}
   const resetUrl = `${baseUrl}/backoffice/reset-password?token=${token}`;
   const sender = { email: 'no-reply@tuordenya.com', name: 'TuOrdenYa' };
-  const subject = 'Reset your TuOrdenYa password';
-  const htmlContent = `
-    <p>Hello,</p>
-    <p>We received a request to reset your password. Click the link below to set a new password:</p>
-    <p><a href="${resetUrl}">${resetUrl}</a></p>
-    <p>If you did not request this, you can ignore this email.</p>
-    <p>Thank you,<br/>TuOrdenYa Team</p>
-  `;
   const payload = {
     sender,
     to: [{ email }],
-    subject,
-    htmlContent
+    templateId: 2,
+    params: {
+      NAME: userName,
+      RESTAURANT: restaurantName,
+      EMAIL: userEmail,
+      RESET_LINK: resetUrl
+    }
   };
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
