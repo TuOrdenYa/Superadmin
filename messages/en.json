@@ -112,7 +112,7 @@
   "login": {
     "title": "Backoffice Login",
     "subtitle": "Sign in to manage your restaurant",
-    "tenantId": "Tenant ID",
+    "tenantId": "ID Number",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign In",
