@@ -40,7 +40,6 @@
     "active": "Active",
     "inactive": "Inactive"
   },
-  
   "landing": {
     "pricingTitle": "Plans for Every Stage of Your Business",
     "lightPrice": "Free",
@@ -90,24 +89,24 @@
     "feature5Title": "Product Variants",
     "feature5Desc": "Sizes, extras, customizations. Manage all your product options. (Pro Plan)",
     "feature6Title": "Multi-language",
-    "feature6Desc": "Spanish and English included. Your customers choose their preferred language automatically."
-    ,"comparePlansButton": "Compare Plans"
-    ,"finalCtaTitle": "Ready to Transform Your Restaurant?"
-    ,"finalCtaDesc": "Join hundreds of restaurants that have already digitized their operations"
-    ,"finalCtaButton": "Start Free Now"
-    ,"footerProducts": "Products"
-    ,"footerFaq": "FAQ"
-    ,"footerContact": "Contact"
-    ,"footerCopyright": "All rights reserved."
-    ,"footerCompany": "Company"
-    ,"footerLight": "Light — Free"
-    ,"footerPlus": "Plus — $29/mo"
-    ,"footerPro": "Pro — $79/mo"
-    ,"footerFaqs": "FAQs"
-    ,"footerLogin": "Login"
-    ,"footerRegister": "Register",
-      "companyInfo": "The easiest restaurant management platform in Latin America. Digitize your business in minutes.",
-      "closeMenu": "Close menu"
+    "feature6Desc": "Spanish and English included. Your customers choose their preferred language automatically.",
+    "comparePlansButton": "Compare Plans",
+    "finalCtaTitle": "Ready to Transform Your Restaurant?",
+    "finalCtaDesc": "Join hundreds of restaurants that have already digitized their operations",
+    "finalCtaButton": "Start Free Now",
+    "footerProducts": "Products",
+    "footerFaq": "FAQ",
+    "footerContact": "Contact",
+    "footerCopyright": "All rights reserved.",
+    "footerCompany": "Company",
+    "footerLight": "Light — Free",
+    "footerPlus": "Plus — $29/mo",
+    "footerPro": "Pro — $79/mo",
+    "footerFaqs": "FAQs",
+    "footerLogin": "Login",
+    "footerRegister": "Register",
+    "companyInfo": "The easiest restaurant management platform in Latin America. Digitize your business in minutes.",
+    "closeMenu": "Close menu"
   },
   "login": {
     "title": "Backoffice Login",
@@ -181,7 +180,18 @@
       "Bebidas": "Drinks",
       "Pizzas": "Pizzas",
       "Salads": "Salads",
-      "Ensaladas": "Salads"
+      "Ensaladas": "Salads",
+      "Sopas": "Soups",
+      "Acompañamientos": "Side Dishes",
+      "Pastas": "Pastas",
+      "Hamburguesas": "Burgers",
+      "Sándwiches": "Sandwiches",
+      "Mariscos": "Seafood",
+      "Bebidas Frías": "Cold Drinks",
+      "Bebidas Calientes": "Hot Drinks",
+      "Cócteles": "Cocktails",
+      "Licores": "Liquors",
+      "Combos y Promociones": "Combos & Promotions"
     }
   },
   "tables": {
@@ -224,8 +234,7 @@
     "feature": "Feature",
     "action": "Action",
     "usageCount": "Usage Count"
-  }
-  ,
+  },
   "location": {
     "main": "Main Location"
   }
