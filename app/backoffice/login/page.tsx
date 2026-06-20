@@ -56,8 +56,8 @@ export default function LoginPage() {
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         // Redirect to backoffice
-        const tenantId = data.user.tenant_id;
-        router.push(`/backoffice/${tenantId}`);
+        const redirectId = data.user.tenant_tax_id;
+        router.push(`/backoffice/${redirectId}`);
       } else {
         setError(data.error || 'Login failed');
         if (turnstileRef.current) turnstileRef.current.reset();

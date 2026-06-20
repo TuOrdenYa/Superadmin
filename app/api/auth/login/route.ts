@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { query, logSuspiciousActivity } from '@/lib/db';
 import { verifyPassword, generateToken } from '@/lib/auth';
@@ -69,7 +68,6 @@ export async function POST(request: NextRequest) {
 
       // Check if user exists and is active
       if (!user || user.is_active === false) {
-        // Log suspicious activity: failed login (user not found or inactive)
         await logSuspiciousActivity({
           user_id: null,
           tenant_id,
@@ -86,7 +84,6 @@ export async function POST(request: NextRequest) {
 
       // Check for lockout
       if (user.lockout_until && new Date(user.lockout_until) > new Date()) {
-        // Log suspicious activity: attempted login to locked account
         await logSuspiciousActivity({
           user_id: user.id,
           tenant_id,
@@ -108,12 +105,10 @@ export async function POST(request: NextRequest) {
       );
 
       if (!isValidPassword) {
-        // Increment failed attempts
         let failedAttempts = (user.failed_login_attempts || 0) + 1;
         let lockoutUntil = null;
         let lockoutTriggered = false;
         if (failedAttempts >= 5) {
-          // Lock for 15 minutes
           lockoutUntil = new Date(Date.now() + 15 * 60 * 1000);
           lockoutTriggered = true;
         }
@@ -121,25 +116,19 @@ export async function POST(request: NextRequest) {
           'UPDATE users SET failed_login_attempts = $1, lockout_until = $2 WHERE id = $3',
           [failedAttempts, lockoutUntil, user.id]
         );
-        // Log suspicious activity: failed login (bad password)
         await logSuspiciousActivity({
           user_id: user.id,
           tenant_id,
           email,
           ip_address: req.headers.get('x-forwarded-for') || null,
           event_type: lockoutTriggered ? 'account_lockout' : 'failed_login',
-          event_details: {
-            failedAttempts,
-            lockoutUntil,
-            reason: 'bad_password'
-          }
+          event_details: { failedAttempts, lockoutUntil, reason: 'bad_password' }
         });
         return NextResponse.json(
           { ok: false, error: failedAttempts >= 5 ? 'Cuenta bloqueada por demasiados intentos fallidos. Intenta nuevamente en 15 minutos.' : 'Credenciales inválidas' },
           { status: failedAttempts >= 5 ? 403 : 401 }
         );
       } else {
-        // Reset failed attempts and lockout
         if (user.failed_login_attempts > 0 || user.lockout_until) {
           await query(
             'UPDATE users SET failed_login_attempts = 0, lockout_until = NULL WHERE id = $1',
@@ -165,7 +154,7 @@ export async function POST(request: NextRequest) {
           full_name: user.full_name,
           email: user.email,
           tenant_id: user.tenant_id,
-          tenant_tax_id: user.tenant_tax_id,
+          tenant_tax_id: tenantResult.rows[0].tax_id,
           role: user.role,
           location_id: user.location_id || null,
           location_name: user.location_name || null,
