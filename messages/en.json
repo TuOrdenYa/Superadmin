@@ -225,4 +225,8 @@
     "action": "Action",
     "usageCount": "Usage Count"
   }
+  ,
+  "location": {
+    "main": "Main Location"
+  }
 }

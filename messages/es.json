@@ -223,4 +223,8 @@
     "action": "Acción",
     "usageCount": "Cantidad de Uso"
   }
+  ,
+  "location": {
+    "main": "Local principal"
+  }
 }

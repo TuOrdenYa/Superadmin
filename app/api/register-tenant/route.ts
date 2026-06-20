@@ -72,10 +72,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: tenantError?.message || 'Tenant creation failed', insertData }, { status: 400 });
     }
 
+
+    // Create default location for tenant
+    // Use i18n key for default location name
+    const { data: locationInsert, error: locationError } = await supabase
+      .from('locations')
+      .insert([{ tenant_id: tenantInsert[0].id, name: 'location.main' }])
+      .select();
+
+    if (locationError || !locationInsert || !locationInsert[0] || !locationInsert[0].id) {
+      return NextResponse.json({ error: locationError?.message || 'Default location creation failed' }, { status: 400 });
+    }
+
     // Hash password
     const password_hash = await hashPassword(password);
 
-    // Insert user
+    // Insert user, associate with default location
     const userData = {
       tenant_id: tenantInsert[0].id,
       full_name: name,
@@ -83,7 +95,7 @@ export async function POST(req: NextRequest) {
       password_hash,
       role: 'admin',
       is_active: true,
-      location_id: null,
+      location_id: locationInsert[0].id,
       created_at: now,
       preferred_language: preferred_language || 'es',
     };

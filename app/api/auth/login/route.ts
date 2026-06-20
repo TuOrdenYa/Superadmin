@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
          LEFT JOIN tenants t ON u.tenant_id = t.id
          WHERE u.tenant_id = $1 AND lower(u.email) = lower($2)
          LIMIT 1`,
-        [Number(tenant_id), String(email).trim()]
+       [String(tenant_id), String(email).trim()]
       );
 
       const user = result.rows[0];
