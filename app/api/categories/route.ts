@@ -21,9 +21,10 @@ export async function GET(request: NextRequest) {
        FROM category_templates
        WHERE active = true
        UNION ALL
-       SELECT id, tenant_id, name, position, active, is_custom
-       FROM categories 
-       WHERE tenant_id = $1 AND is_custom = true
+       SELECT c.id, c.tenant_id, c.name, c.position, c.active, c.is_custom
+       FROM categories c
+       INNER JOIN tenants t ON t.id = c.tenant_id
+       WHERE t.tax_id = $1 AND c.is_custom = true
        ORDER BY position, name`,
       [tenantId]
     );
@@ -71,18 +72,16 @@ export async function POST(request: NextRequest) {
 
     // Only enforce limits for custom categories
     if (is_custom) {
-      // Check custom category count
       const countResult = await query(
         'SELECT COUNT(*) as count FROM categories WHERE tenant_id = $1 AND is_custom = true',
         [tenant_id]
       );
       const customCount = parseInt(countResult.rows[0].count);
 
-      // Enforce tier limits
       const limits = {
-        light: 0,    // No custom categories
-        plus: 3,     // 3 custom categories
-        pro: 999     // Unlimited
+        light: 0,
+        plus: 3,
+        pro: 999
       };
 
       const limit = limits[tier as keyof typeof limits] || 0;
