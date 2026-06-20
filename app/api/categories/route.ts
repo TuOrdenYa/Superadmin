@@ -15,12 +15,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get global templates + tenant custom categories
     const result = await query(
-      `SELECT id, tenant_id, name, position, active, template_id, is_custom
+      `SELECT id, null as tenant_id, name, position, active, false as is_custom
+       FROM category_templates
+       WHERE active = true
+       UNION ALL
+       SELECT id, tenant_id, name, position, active, is_custom
        FROM categories 
-       WHERE tenant_id = $1 
+       WHERE tenant_id = $1 AND is_custom = true
        ORDER BY position, name`,
-      [Number(tenantId)]
+      [tenantId]
     );
 
     return NextResponse.json({
