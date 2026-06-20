@@ -38,7 +38,6 @@
     "active": "Activo",
     "inactive": "Inactivo"
   },
-  
   "landing": {
     "pricingTitle": "Planes para Cada Etapa de Tu Negocio",
     "lightPrice": "Gratis",
@@ -88,24 +87,24 @@
     "feature5Title": "Variantes de Productos",
     "feature5Desc": "Tamaños, extras, personalizaciones. Gestiona todas las opciones de tus productos. (Plan Pro)",
     "feature6Title": "Multi-idioma",
-    "feature6Desc": "Español e inglés incluidos. Tus clientes eligen su idioma preferido automáticamente."
-    ,"comparePlansButton": "Comparar Planes"
-    ,"finalCtaTitle": "¿Listo para Transformar Tu Restaurante?"
-    ,"finalCtaDesc": "Únete a cientos de restaurantes que ya digitalizaron su operación"
-    ,"finalCtaButton": "Comenzar Gratis Ahora"
-    ,"footerProducts": "Productos"
-    ,"footerFaq": "FAQ"
-    ,"footerContact": "Contacto"
-    ,"footerCopyright": "Todos los derechos reservados."
-    ,"footerCompany": "Empresa"
-    ,"footerLight": "Light — Gratis"
-    ,"footerPlus": "Plus — $29/mes"
-    ,"footerPro": "Pro — $79/mes"
-    ,"footerFaqs": "FAQs"
-    ,"footerLogin": "Iniciar Sesión"
-    ,"footerRegister": "Registrarse",
-      "companyInfo": "La plataforma de gestión de restaurantes más fácil de América Latina. Digitaliza tu negocio en minutos.",
-      "closeMenu": "Cerrar menú"
+    "feature6Desc": "Español e inglés incluidos. Tus clientes eligen su idioma preferido automáticamente.",
+    "comparePlansButton": "Comparar Planes",
+    "finalCtaTitle": "¿Listo para Transformar Tu Restaurante?",
+    "finalCtaDesc": "Únete a cientos de restaurantes que ya digitalizaron su operación",
+    "finalCtaButton": "Comenzar Gratis Ahora",
+    "footerProducts": "Productos",
+    "footerFaq": "FAQ",
+    "footerContact": "Contacto",
+    "footerCopyright": "Todos los derechos reservados.",
+    "footerCompany": "Empresa",
+    "footerLight": "Light — Gratis",
+    "footerPlus": "Plus — $29/mes",
+    "footerPro": "Pro — $79/mes",
+    "footerFaqs": "FAQs",
+    "footerLogin": "Iniciar Sesión",
+    "footerRegister": "Registrarse",
+    "companyInfo": "La plataforma de gestión de restaurantes más fácil de América Latina. Digitaliza tu negocio en minutos.",
+    "closeMenu": "Cerrar menú"
   },
   "login": {
     "title": "Inicio de Sesión",
@@ -179,7 +178,18 @@
       "Bebidas": "Bebidas",
       "Pizzas": "Pizzas",
       "Salads": "Ensaladas",
-      "Ensaladas": "Ensaladas"
+      "Ensaladas": "Ensaladas",
+      "Sopas": "Sopas ✓",
+      "Acompañamientos": "Acompañamientos",
+      "Pastas": "Pastas",
+      "Hamburguesas": "Hamburguesas",
+      "Sándwiches": "Sándwiches",
+      "Mariscos": "Mariscos",
+      "Bebidas Frías": "Bebidas Frías",
+      "Bebidas Calientes": "Bebidas Calientes",
+      "Cócteles": "Cócteles",
+      "Licores": "Licores",
+      "Combos y Promociones": "Combos y Promociones"
     }
   },
   "tables": {
@@ -222,8 +232,7 @@
     "feature": "Función",
     "action": "Acción",
     "usageCount": "Cantidad de Uso"
-  }
-  ,
+  },
   "location": {
     "main": "Local principal"
   }
