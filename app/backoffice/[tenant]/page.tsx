@@ -43,7 +43,7 @@ interface Location {
 
 export default function BackofficePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = use(params);
-  const tenantId = parseInt(tenant);
+  const tenantId = tenant;
   const router = useRouter();
   const { t, locale } = useLanguage();
 
@@ -156,7 +156,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     try {
       const userData = JSON.parse(userStr);
       // Verify user belongs to this tenant
-      if (userData.tenant_id !== tenantId) {
+      if (userData.tenant_tax_id !== tenantId) {
         alert('Access denied to this tenant');
         router.push('/backoffice/login');
         return;
