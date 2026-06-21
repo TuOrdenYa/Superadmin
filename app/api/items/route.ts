@@ -6,7 +6,14 @@ import { withRateLimit } from '@/lib/rate-limit';
 export const dynamic = 'force-dynamic';
 
 export async function OPTIONS(request: NextRequest) {
-  return handleCors(request);
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }
 
 async function handlePOST(request: NextRequest) {
@@ -71,7 +78,7 @@ async function handlePOST(request: NextRequest) {
     console.error('[POST /api/items] error:', error);
     return NextResponse.json(
       { ok: false, error: 'Error al crear producto' },
-      { status: 500, headers: corsHeaders }
+      { status: 500 }
     );
   }
 }
