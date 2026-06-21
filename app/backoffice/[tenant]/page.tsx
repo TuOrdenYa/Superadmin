@@ -7,6 +7,7 @@ import UpgradePrompt from '@/app/components/UpgradePrompt';
 import BannerAd from '@/app/components/BannerAd';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/LanguageContext';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Category {
   id: string;
@@ -31,6 +32,7 @@ interface Table {
   number: string;
   tenant_id: string;
   location_name?: string;
+  location_slug?: string;
 }
 
 interface Location {
@@ -38,6 +40,7 @@ interface Location {
   name: string;
   address?: string;
   phone?: string;
+  slug?: string;
   tenant_id: string;
 }
 
@@ -64,12 +67,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [locations, setLocations] = useState<Location[]>([]);
   const [teamUsers, setTeamUsers] = useState<TeamUser[]>([]);
   const [tenantName, setTenantName] = useState<string>('');
+  const [tenantSlug, setTenantSlug] = useState<string>('');
   const [tenantAdFree, setTenantAdFree] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'items' | 'categories' | 'locations' | 'tables' | 'team' | 'variants'>('items');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [qrTable, setQrTable] = useState<Table | null>(null);
 
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
@@ -169,7 +174,11 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         try {
           const res = await fetch(`/api/admin/tenants/${tenantId}`);
           const data = await res.json();
-          if (data.ok) { setTenantName(data.tenant.name); setTenantAdFree(!!data.tenant.ad_free); }
+          if (data.ok) {
+            setTenantName(data.tenant.name);
+            setTenantSlug(data.tenant.slug || '');
+            setTenantAdFree(!!data.tenant.ad_free);
+          }
         } catch (error) { console.error('Error fetching tenant info:', error); }
       };
       fetchTenantInfo();
@@ -178,6 +187,34 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-600">Loading...</div></div>;
   if (!isAuthenticated) return null;
+
+  // Get menu URL for a table
+  const getMenuUrl = (table: Table) => {
+    const loc = locations.find(l => l.id === table.location_id);
+    const locationSlug = loc?.slug || table.location_id;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.tuordenya.com';
+    return `${baseUrl}/${tenantSlug}/${locationSlug}/menu?table=${table.id}`;
+  };
+
+  // Download QR as PNG
+  const downloadQR = (table: Table) => {
+    const svg = document.getElementById(`qr-${table.id}`);
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      ctx?.drawImage(img, 0, 0);
+      const a = document.createElement('a');
+      a.download = `mesa-${table.number}-qr.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+  };
 
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -298,15 +335,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   const filteredItems = selectedCategory ? items.filter(i => i.category_id === selectedCategory) : items;
   const getCategoryName = (cat: Category) => cat.is_custom ? cat.name : (t(`categories.names.${cat.name}`) || cat.name);
-
-  const formatPrice = (price: string | number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-    }).format(Number(price));
-  };
-
+  const formatPrice = (price: string | number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(price));
   const roleColors: Record<string, string> = { admin: 'bg-purple-100 text-purple-700', manager: 'bg-blue-100 text-blue-700', waiter: 'bg-green-100 text-green-700', kitchen: 'bg-orange-100 text-orange-700' };
   const roleLabels: Record<string, string> = { admin: 'Admin', manager: locale === 'es' ? 'Gerente' : 'Manager', waiter: locale === 'es' ? 'Mesero' : 'Waiter', kitchen: locale === 'es' ? 'Cocina' : 'Kitchen' };
 
@@ -356,6 +385,33 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           </nav>
         </div>
       </div>
+
+      {/* QR Modal */}
+      {qrTable && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+            <h3 className="text-lg font-bold text-black mb-1">{locale === 'es' ? 'QR Mesa' : 'Table QR'} #{qrTable.number}</h3>
+            <p className="text-sm text-gray-500 mb-4">{qrTable.location_name}</p>
+            <div className="flex justify-center mb-4">
+              <QRCodeSVG
+                id={`qr-${qrTable.id}`}
+                value={getMenuUrl(qrTable)}
+                size={220}
+                includeMargin
+              />
+            </div>
+            <p className="text-xs text-gray-400 mb-4 break-all">{getMenuUrl(qrTable)}</p>
+            <div className="flex gap-2">
+              <button onClick={() => downloadQR(qrTable)} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm">
+                ⬇️ {locale === 'es' ? 'Descargar' : 'Download'}
+              </button>
+              <button onClick={() => setQrTable(null)} className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold text-sm">
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Item Modal */}
       {editingItem && (
@@ -482,7 +538,8 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-semibold">{locale === 'es' ? 'Activo' : 'Active'}</span>
                   </div>
                   {loc.address && <p className="text-sm text-gray-600 mb-1">📍 {loc.address}</p>}
-                  {loc.phone && <p className="text-sm text-gray-600 mb-3">📞 {loc.phone}</p>}
+                  {loc.phone && <p className="text-sm text-gray-600 mb-1">📞 {loc.phone}</p>}
+                  {loc.slug && <p className="text-xs text-gray-400 mb-3 font-mono">ID: {loc.slug}</p>}
                   <div className="flex gap-2 pt-3 border-t border-gray-100">
                     <button onClick={() => { setEditingLocation(loc); setEditLocationForm({ name: loc.name, address: loc.address || '', phone: loc.phone || '' }); }} className="flex-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 text-sm font-semibold">✏️ {locale === 'es' ? 'Editar' : 'Edit'}</button>
                     <button onClick={() => handleDeleteLocation(loc.id, loc.name)} className="flex-1 px-3 py-1.5 bg-red-50 text-red-700 rounded hover:bg-red-100 text-sm font-semibold">🗑️ {locale === 'es' ? 'Eliminar' : 'Delete'}</button>
@@ -531,7 +588,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Contraseña (opcional, se genera automáticamente)' : 'Password (optional, auto-generated)'}</label>
+                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Contraseña (opcional)' : 'Password (optional)'}</label>
                     <input type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" placeholder={locale === 'es' ? 'Dejar vacío para generar automáticamente' : 'Leave empty to auto-generate'} />
                   </div>
                   <div className="flex gap-2">
@@ -661,7 +718,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">Mesa #</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">{locale === 'es' ? 'Local' : 'Location'}</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">QR URL</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">URL</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">{locale === 'es' ? 'Acciones' : 'Actions'}</th>
                   </tr>
                 </thead>
@@ -670,8 +727,15 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <tr key={table.id}>
                       <td className="px-6 py-4 text-sm font-bold text-black">{table.number}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{table.location_name || `Location ${table.location_id}`}</td>
-                      <td className="px-6 py-4 text-sm"><code className="bg-gray-100 px-2 py-1 rounded text-xs text-blue-600">/menu?table={table.id}</code></td>
-                      <td className="px-6 py-4"><button onClick={async () => { if (confirm(`Delete table ${table.number}?`)) { const res = await fetch(`/api/tenants/${tenantId}/tables/${table.id}`, { method: 'DELETE' }); const data = await res.json(); if (data.ok) fetchTables(); else alert(data.error); }}} className="text-red-600 hover:text-red-800 font-semibold text-xs">{locale === 'es' ? 'Eliminar' : 'Delete'}</button></td>
+                      <td className="px-6 py-4 text-xs text-blue-600 truncate max-w-xs">
+                        <a href={getMenuUrl(table)} target="_blank" rel="noopener noreferrer" className="hover:underline">{getMenuUrl(table)}</a>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          <button onClick={() => setQrTable(table)} className="px-3 py-1 bg-blue-50 text-blue-700 rounded text-xs font-semibold hover:bg-blue-100">📱 QR</button>
+                          <button onClick={async () => { if (confirm(`Delete table ${table.number}?`)) { const res = await fetch(`/api/tenants/${tenantId}/tables/${table.id}`, { method: 'DELETE' }); const data = await res.json(); if (data.ok) fetchTables(); else alert(data.error); }}} className="px-3 py-1 bg-red-50 text-red-700 rounded text-xs font-semibold hover:bg-red-100">{locale === 'es' ? 'Eliminar' : 'Delete'}</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
