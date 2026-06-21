@@ -10,7 +10,7 @@ export async function GET(
     const { tenant } = await params;
 
     const result = await query(
-      `SELECT l.id, l.tenant_id, l.name, l.address, l.phone
+      `SELECT l.id, l.tenant_id, l.name, l.address, l.phone, l.slug
        FROM locations l
        INNER JOIN tenants t ON t.id = l.tenant_id
        WHERE t.tax_id = $1 OR t.id::text = $1
