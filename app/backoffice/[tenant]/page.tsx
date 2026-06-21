@@ -736,7 +736,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       </label>
                       <select
                         value={newItem.category_id}
-                        onChange={(e) => setNewItem({ ...newItem, category_id: e.target.value })}
+                        onChange={(e) => setNewItem({ ...newItem, category_id: e.target.value as any })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold"
                         required
                       >
