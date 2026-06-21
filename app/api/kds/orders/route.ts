@@ -20,28 +20,28 @@ export async function GET(request: NextRequest) {
     const params: any[] = [statuses];
     let paramIndex = 2;
 
-    if (tenantId && !isNaN(Number(tenantId))) {
-      where.push(`tenant_id = $${paramIndex++}`);
-      params.push(Number(tenantId));
+    if (tenantId) {
+      // Support both tax_id and uuid
+      const tenantResult = await query(
+        `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+        [String(tenantId)]
+      );
+      if (tenantResult.rows.length > 0) {
+        where.push(`tenant_id = $${paramIndex++}`);
+        params.push(tenantResult.rows[0].id);
+      }
     }
 
-    if (locationId && !isNaN(Number(locationId))) {
+    if (locationId) {
       where.push(`location_id = $${paramIndex++}`);
-      params.push(Number(locationId));
+      params.push(String(locationId));
     }
 
     if (table && String(table).trim() !== '') {
       const tableQuery = String(table).trim();
-      const tableNum = Number(tableQuery);
-
-      if (!isNaN(tableNum)) {
-        where.push(`(table_id = $${paramIndex} OR table_label ILIKE $${paramIndex + 1})`);
-        params.push(tableNum, `%${tableQuery}%`);
-        paramIndex += 2;
-      } else {
-        where.push(`table_label ILIKE $${paramIndex++}`);
-        params.push(`%${tableQuery}%`);
-      }
+      where.push(`(table_id::text = $${paramIndex} OR table_label ILIKE $${paramIndex + 1})`);
+      params.push(tableQuery, `%${tableQuery}%`);
+      paramIndex += 2;
     }
 
     const sql = `SELECT * FROM orders WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT 200`;

@@ -19,13 +19,28 @@ export async function PUT(
       );
     }
 
+    // Get tenant UUID
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
+    );
+
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json(
+        { ok: false, error: 'Tenant no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    const tenantUuid = tenantResult.rows[0].id;
+
     const result = await query(
       `INSERT INTO menu_item_locations (tenant_id, item_id, location_id, price_override)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (tenant_id, item_id, location_id)
        DO UPDATE SET price_override = EXCLUDED.price_override
        RETURNING tenant_id, item_id, location_id, price_override`,
-      [Number(tenant_id), Number(itemId), Number(location_id), price_override ?? null]
+      [tenantUuid, String(itemId), String(location_id), price_override ?? null]
     );
 
     return NextResponse.json({
