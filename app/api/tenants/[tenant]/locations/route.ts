@@ -52,9 +52,9 @@ export async function POST(
     const tenantUuid = tenantResult.rows[0].id;
 
     const result = await query(
-      `INSERT INTO locations (tenant_id, name, address, phone)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, tenant_id, name, address, phone`,
+      `INSERT INTO locations (tenant_id, name, address, phone, slug)
+ VALUES ($1, $2, $3, $4, substr(md5(random()::text), 1, 8))
+ RETURNING id, tenant_id, name, address, phone, slug`,
       [tenantUuid, name.trim(), address || null, phone || null]
     );
 
