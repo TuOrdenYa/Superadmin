@@ -16,33 +16,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get tenant UUID from tax_id or uuid
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenantId)]
+    );
+
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json(
+        { ok: false, error: 'Tenant no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    const tenantUuid = tenantResult.rows[0].id;
+
+    // Simple query without menu_item_locations since table doesn't exist
     const sql = `
-      SELECT it.id, it.tenant_id, it.category_id, c.name AS category_name,
-             it.name, it.description, it.price AS price_base, it.active AS global_active,
-             mil.location_id AS override_location_id, mil.active AS location_active, mil.price_override,
-             COALESCE(mil.price_override, it.price) AS price_effective,
-             ((it.active IS TRUE) AND (mil.active IS DISTINCT FROM FALSE)) AS effective_active
+      SELECT it.id, it.tenant_id, it.category_id,
+             COALESCE(c.name, ct.name) AS category_name,
+             it.name, it.description, it.price, it.active
         FROM menu_items it
-        JOIN categories c ON c.id = it.category_id
-        LEFT JOIN menu_item_locations mil
-               ON mil.item_id = it.id 
-               AND mil.tenant_id = it.tenant_id 
-               AND ($2::INT IS NOT NULL AND mil.location_id = $2)
+        LEFT JOIN categories c ON c.id = it.category_id
+        LEFT JOIN category_templates ct ON ct.id = it.category_id
        WHERE it.tenant_id = $1
-       ORDER BY c.position, c.id, it.id`;
+       ORDER BY it.id`;
 
-    const params = [Number(tenantId), locationId ? Number(locationId) : null];
-    const result = await query(sql, params);
-
-    // Map effective_active to active for UI compatibility
-    const items = result.rows.map(row => ({
-      ...row,
-      active: row.effective_active
-    }));
+    const result = await query(sql, [tenantUuid]);
 
     return NextResponse.json({
       ok: true,
-      items: items,
+      items: result.rows,
     });
   } catch (error) {
     console.error('[GET /api/backoffice/items] error:', error);

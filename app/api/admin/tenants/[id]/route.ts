@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-// GET /api/admin/tenants/[id] - Get tenant by ID
+// GET /api/admin/tenants/[id] - Get tenant by ID or tax_id
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,8 +12,9 @@ export async function GET(
     const result = await query(
       `SELECT id, name, slug, product_tier, subscription_status, ad_free
        FROM tenants
-       WHERE id = $1`,
-      [Number(id)]
+       WHERE tax_id = $1 OR id::text = $1
+       LIMIT 1`,
+      [String(id)]
     );
 
     if (result.rowCount === 0) {
@@ -46,7 +47,6 @@ export async function PUT(
     const body = await request.json();
     const { product_tier, subscription_status, ad_free } = body;
 
-    // Validate tier
     const validTiers = ['light', 'plus', 'pro'];
     if (product_tier && !validTiers.includes(product_tier)) {
       return NextResponse.json(
@@ -55,7 +55,6 @@ export async function PUT(
       );
     }
 
-    // Build update query dynamically
     const updates = [];
     const values = [];
     let paramCount = 1;
@@ -76,12 +75,12 @@ export async function PUT(
     }
 
     updates.push(`updated_at = NOW()`);
-    values.push(Number(id));
+    values.push(String(id));
 
     const result = await query(
       `UPDATE tenants 
        SET ${updates.join(', ')}
-       WHERE id = $${paramCount}
+       WHERE tax_id = $${paramCount} OR id::text = $${paramCount}
        RETURNING id, name, slug, product_tier, subscription_status, ad_free`,
       values
     );

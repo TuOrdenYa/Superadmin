@@ -9,19 +9,17 @@ interface RateLimitResult {
 }
 
 const RATE_LIMITS = {
-  light: 100,   // 100 requests per hour
-  plus: 500,    // 500 requests per hour
-  pro: 999999,  // Unlimited (high number)
+  light: 100,
+  plus: 500,
+  pro: 999999,
 };
 
-export async function checkRateLimit(tenantId: number, tier: 'light' | 'plus' | 'pro'): Promise<RateLimitResult> {
+export async function checkRateLimit(tenantId: string, tier: 'light' | 'plus' | 'pro'): Promise<RateLimitResult> {
   try {
-    // Get current hour window
     const now = new Date();
     const windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0);
-    const windowEnd = new Date(windowStart.getTime() + 60 * 60 * 1000); // +1 hour
+    const windowEnd = new Date(windowStart.getTime() + 60 * 60 * 1000);
 
-    // Get or create rate limit record for this tenant and hour
     const result = await query(
       `INSERT INTO rate_limits (tenant_id, window_start, request_count, updated_at)
        VALUES ($1, $2, 1, NOW())
@@ -38,15 +36,9 @@ export async function checkRateLimit(tenantId: number, tier: 'light' | 'plus' | 
     const remaining = Math.max(0, limit - currentCount);
     const allowed = currentCount <= limit;
 
-    return {
-      allowed,
-      limit,
-      remaining,
-      reset: windowEnd,
-    };
+    return { allowed, limit, remaining, reset: windowEnd };
   } catch (error) {
     console.error('Rate limit check error:', error);
-    // On error, allow the request (fail open)
     return {
       allowed: true,
       limit: RATE_LIMITS[tier] || RATE_LIMITS.light,
@@ -61,7 +53,6 @@ export async function withRateLimit(
   handler: (request: NextRequest) => Promise<NextResponse>
 ): Promise<NextResponse> {
   try {
-    // Extract tenant_id from query params or body
     const { searchParams } = new URL(request.url);
     let tenantId = searchParams.get('tenant_id');
     
@@ -75,14 +66,13 @@ export async function withRateLimit(
     }
 
     if (!tenantId) {
-      // No tenant_id found, skip rate limiting
       return handler(request);
     }
 
-    // Get tenant's product tier
+    // Look up tenant by tax_id OR by uuid (handles both cases)
     const tenantResult = await query(
-      'SELECT product_tier FROM tenants WHERE id = $1',
-      [Number(tenantId)]
+      `SELECT id, product_tier FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenantId)]
     );
 
     if (tenantResult.rows.length === 0) {
@@ -90,18 +80,16 @@ export async function withRateLimit(
     }
 
     const tier = tenantResult.rows[0].product_tier || 'light';
+    const tenantUuid = tenantResult.rows[0].id;
 
-    // Check rate limit
-    const rateLimitResult = await checkRateLimit(Number(tenantId), tier);
+    const rateLimitResult = await checkRateLimit(tenantUuid, tier);
 
-    // Add rate limit headers to response
     const response = await handler(request);
     
     response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
     response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
     response.headers.set('X-RateLimit-Reset', rateLimitResult.reset.toISOString());
 
-    // If rate limit exceeded, return 429
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         {
@@ -126,7 +114,6 @@ export async function withRateLimit(
     return response;
   } catch (error) {
     console.error('Rate limit middleware error:', error);
-    // On error, proceed with request (fail open)
     return handler(request);
   }
 }

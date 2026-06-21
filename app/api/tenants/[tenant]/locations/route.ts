@@ -10,11 +10,12 @@ export async function GET(
     const { tenant } = await params;
 
     const result = await query(
-      `SELECT id, tenant_id, name
-       FROM locations
-       WHERE tenant_id = $1
-       ORDER BY name`,
-      [Number(tenant)]
+      `SELECT l.id, l.tenant_id, l.name
+       FROM locations l
+       INNER JOIN tenants t ON t.id = l.tenant_id
+       WHERE t.tax_id = $1 OR t.id::text = $1
+       ORDER BY l.name`,
+      [String(tenant)]
     );
 
     return NextResponse.json({

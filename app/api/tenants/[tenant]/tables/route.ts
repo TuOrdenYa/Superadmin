@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
-// GET /api/tenants/[tenant]/tables - List tables (optionally filter by location)
+// GET /api/tenants/[tenant]/tables - List tables
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ tenant: string }> }
@@ -11,21 +11,33 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const locationId = searchParams.get('location_id');
 
+    // Get tenant UUID
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant)]
+    );
+
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json({ ok: true, tables: [] });
+    }
+
+    const tenantUuid = tenantResult.rows[0].id;
+
     let sql = `
-      SELECT t.id, t.location_id, t.number, t.tenant_id, 
+      SELECT t.id, t.location_id, t.name as number, t.tenant_id, 
              l.name as location_name
       FROM tables t
       LEFT JOIN locations l ON t.location_id = l.id
       WHERE t.tenant_id = $1
     `;
-    const queryParams: any[] = [tenant];
+    const queryParams: any[] = [tenantUuid];
 
     if (locationId) {
       sql += ' AND t.location_id = $2';
       queryParams.push(locationId);
     }
 
-    sql += ' ORDER BY t.location_id, t.number';
+    sql += ' ORDER BY t.location_id, t.name';
 
     const result = await query(sql, queryParams);
 
@@ -59,11 +71,26 @@ export async function POST(
       );
     }
 
-    // Check if table number already exists in this location
+    // Get tenant UUID
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant)]
+    );
+
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json(
+        { error: 'Tenant not found' },
+        { status: 404 }
+      );
+    }
+
+    const tenantUuid = tenantResult.rows[0].id;
+
+    // Check if table name already exists in this location
     const existing = await query(
       `SELECT id FROM tables 
-       WHERE tenant_id = $1 AND location_id = $2 AND number = $3`,
-      [tenant, location_id, number]
+       WHERE tenant_id = $1 AND location_id = $2 AND name = $3`,
+      [tenantUuid, location_id, number]
     );
 
     if (existing.rows.length > 0) {
@@ -74,10 +101,10 @@ export async function POST(
     }
 
     const result = await query(
-      `INSERT INTO tables (tenant_id, location_id, number)
+      `INSERT INTO tables (tenant_id, location_id, name)
        VALUES ($1, $2, $3)
        RETURNING *`,
-      [tenant, location_id, number]
+      [tenantUuid, location_id, number]
     );
 
     return NextResponse.json({
