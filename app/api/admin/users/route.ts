@@ -3,7 +3,7 @@ import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { isPasswordStrong } from '@/lib/auth';
 
-// GET - List all users (super admin only)
+// GET - List users for a tenant
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -28,11 +28,19 @@ export async function GET(request: NextRequest) {
     
     const params: any[] = [];
     if (tenantId) {
+      // Support both tax_id and uuid
+      const tenantResult = await query(
+        `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+        [String(tenantId)]
+      );
+      if (tenantResult.rows.length === 0) {
+        return NextResponse.json({ ok: true, users: [] });
+      }
       sql += ' WHERE u.tenant_id = $1';
-      params.push(parseInt(tenantId));
+      params.push(tenantResult.rows[0].id);
     }
     
-    sql += ' ORDER BY u.tenant_id, u.created_at DESC';
+    sql += ' ORDER BY u.created_at DESC';
 
     const result = await query(sql, params);
 
@@ -49,13 +57,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new user (super admin only)
+// POST - Create new user
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { tenant_id, location_id, email, full_name, role, password } = body;
 
-    // Validate required fields
     if (!tenant_id || !email || !full_name || !role) {
       return NextResponse.json(
         { ok: false, error: 'Missing required fields' },
@@ -63,8 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate role
-    const validRoles = ['admin', 'manager', 'waiter'];
+    const validRoles = ['admin', 'manager', 'waiter', 'kitchen'];
     if (!validRoles.includes(role)) {
       return NextResponse.json(
         { ok: false, error: 'Invalid role' },
@@ -72,20 +78,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate location_id for manager/waiter
-    if ((role === 'manager' || role === 'waiter') && !location_id) {
+    if ((role === 'manager' || role === 'waiter' || role === 'kitchen') && !location_id) {
       return NextResponse.json(
-        { ok: false, error: 'Location required for manager and waiter roles' },
+        { ok: false, error: 'Location required for manager, waiter and kitchen roles' },
         { status: 400 }
       );
     }
 
-    // Check if email already exists
-    const existingUser = await query(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase().trim()]
+    // Get tenant UUID
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
     );
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json(
+        { ok: false, error: 'Tenant not found' },
+        { status: 404 }
+      );
+    }
+    const tenantUuid = tenantResult.rows[0].id;
 
+    // Check if email already exists for this tenant
+    const existingUser = await query(
+      'SELECT id FROM users WHERE email = $1 AND tenant_id = $2',
+      [email.toLowerCase().trim(), tenantUuid]
+    );
     if (existingUser.rows.length > 0) {
       return NextResponse.json(
         { ok: false, error: 'Email already exists' },
@@ -93,7 +110,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Enforce strong password policy if password is provided
+    // Password handling
     let userPassword = password;
     if (userPassword) {
       if (!isPasswordStrong(userPassword)) {
@@ -103,19 +120,19 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
-      userPassword = Math.random().toString(36).slice(-8);
+      // Generate random password
+      userPassword = Math.random().toString(36).slice(-6).toUpperCase() + Math.random().toString(36).slice(-6) + '!1';
     }
     const passwordHash = await bcrypt.hash(userPassword, 10);
 
-    // Insert user
     const result = await query(
       `INSERT INTO users 
         (tenant_id, location_id, email, password_hash, full_name, role, is_active) 
        VALUES ($1, $2, $3, $4, $5, $6, true) 
        RETURNING id, tenant_id, location_id, email, full_name, role, is_active`,
       [
-        parseInt(tenant_id),
-        location_id ? parseInt(location_id) : null,
+        tenantUuid,
+        location_id ? String(location_id) : null,
         email.toLowerCase().trim(),
         passwordHash,
         full_name.trim(),
@@ -126,7 +143,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       user: result.rows[0],
-      password: userPassword, // Return generated password (only shown once!)
+      password: userPassword, // Shown only once!
     });
   } catch (error) {
     console.error('[admin/users POST] error:', error);
