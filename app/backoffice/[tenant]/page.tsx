@@ -527,8 +527,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                         <option value="waiter">{locale === 'es' ? 'Mesero' : 'Waiter'}</option>
                         <option value="kitchen">{locale === 'es' ? 'Cocina' : 'Kitchen'}</option>
                         <option value="manager">{locale === 'es' ? 'Gerente' : 'Manager'}</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                        </select>
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Local' : 'Location'} {newUser.role !== 'admin' ? '*' : ''}</label>
@@ -572,9 +571,11 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       <td className="px-6 py-4"><span className={`px-2 py-1 rounded text-xs font-bold ${u.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{u.is_active ? (locale === 'es' ? 'Activo' : 'Active') : (locale === 'es' ? 'Inactivo' : 'Inactive')}</span></td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          <button onClick={() => handleToggleUserActive(u.id, u.is_active)} className={`px-3 py-1 rounded text-xs font-semibold ${u.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
-                            {u.is_active ? (locale === 'es' ? 'Desactivar' : 'Deactivate') : (locale === 'es' ? 'Activar' : 'Activate')}
-                          </button>
+                          {u.id !== user?.id && (
+  <button onClick={() => handleToggleUserActive(u.id, u.is_active)} className={`px-3 py-1 rounded text-xs font-semibold ${u.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
+    {u.is_active ? (locale === 'es' ? 'Desactivar' : 'Deactivate') : (locale === 'es' ? 'Activar' : 'Activate')}
+  </button>
+)}
                           {u.role !== 'admin' && <button onClick={() => handleDeleteUser(u.id, u.full_name)} className="px-3 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200">{locale === 'es' ? 'Eliminar' : 'Delete'}</button>}
                         </div>
                       </td>
