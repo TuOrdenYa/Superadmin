@@ -12,36 +12,33 @@ export async function GET(
     const tenant_id = searchParams.get("tenant_id");
 
     if (!tenant_id) {
-      return NextResponse.json(
-        { error: "tenant_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tenant_id is required" }, { status: 400 });
     }
 
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
+    );
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+    const tenantUuid = tenantResult.rows[0].id;
+
     const result = await query(
-      `SELECT id, tenant_id, category_id, name, description, price, active, created_at, updated_at
+      `SELECT id, tenant_id, category_id, name, description, price, active
        FROM menu_items
-       WHERE id = $1 AND tenant_id = $2`,
-      [itemId, tenant_id]
+       WHERE id::text = $1 AND tenant_id = $2`,
+      [String(itemId), tenantUuid]
     );
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: "Item not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      ok: true,
-      item: result.rows[0],
-    });
+    return NextResponse.json({ ok: true, item: result.rows[0] });
   } catch (error) {
     console.error("Error fetching item:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch item" }, { status: 500 });
   }
 }
 
@@ -56,69 +53,49 @@ export async function PUT(
     const { tenant_id, name, description, price, category_id } = body;
 
     if (!tenant_id) {
-      return NextResponse.json(
-        { error: "tenant_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tenant_id is required" }, { status: 400 });
     }
 
-    // Build dynamic update query
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
+    );
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+    const tenantUuid = tenantResult.rows[0].id;
+
     const updates: string[] = [];
     const values: any[] = [];
     let paramCount = 1;
 
-    if (name !== undefined) {
-      updates.push(`name = $${paramCount++}`);
-      values.push(name);
-    }
-    if (description !== undefined) {
-      updates.push(`description = $${paramCount++}`);
-      values.push(description);
-    }
-    if (price !== undefined) {
-      updates.push(`price = $${paramCount++}`);
-      values.push(price);
-    }
-    if (category_id !== undefined) {
-      updates.push(`category_id = $${paramCount++}`);
-      values.push(category_id);
-    }
+    if (name !== undefined) { updates.push(`name = $${paramCount++}`); values.push(name); }
+    if (description !== undefined) { updates.push(`description = $${paramCount++}`); values.push(description); }
+    if (price !== undefined) { updates.push(`price = $${paramCount++}`); values.push(price); }
+    if (category_id !== undefined) { updates.push(`category_id = $${paramCount++}`); values.push(String(category_id)); }
 
     if (updates.length === 0) {
-      return NextResponse.json(
-        { error: "No fields to update" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No fields to update" }, { status: 400 });
     }
 
-    updates.push(`updated_at = now()`);
-    values.push(itemId, tenant_id);
+    values.push(String(itemId), tenantUuid);
 
     const result = await query(
       `UPDATE menu_items
        SET ${updates.join(", ")}
-       WHERE id = $${paramCount} AND tenant_id = $${paramCount + 1}
+       WHERE id::text = $${paramCount} AND tenant_id = $${paramCount + 1}
        RETURNING *`,
       values
     );
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: "Item not found or update failed" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Item not found or update failed" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      ok: true,
-      item: result.rows[0],
-    });
+    return NextResponse.json({ ok: true, item: result.rows[0] });
   } catch (error) {
     console.error("Error updating item:", error);
-    return NextResponse.json(
-      { error: "Failed to update item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
   }
 }
 
@@ -133,35 +110,30 @@ export async function DELETE(
     const tenant_id = searchParams.get("tenant_id");
 
     if (!tenant_id) {
-      return NextResponse.json(
-        { error: "tenant_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tenant_id is required" }, { status: 400 });
     }
 
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
+    );
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+    const tenantUuid = tenantResult.rows[0].id;
+
     const result = await query(
-      `DELETE FROM menu_items
-       WHERE id = $1 AND tenant_id = $2
-       RETURNING id`,
-      [itemId, tenant_id]
+      `DELETE FROM menu_items WHERE id::text = $1 AND tenant_id = $2 RETURNING id`,
+      [String(itemId), tenantUuid]
     );
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: "Item not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      ok: true,
-      message: "Item deleted successfully",
-    });
+    return NextResponse.json({ ok: true, message: "Item deleted successfully" });
   } catch (error) {
     console.error("Error deleting item:", error);
-    return NextResponse.json(
-      { error: "Failed to delete item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
   }
 }
