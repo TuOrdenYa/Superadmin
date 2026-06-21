@@ -71,7 +71,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
-  // Form states
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
   const [showTableForm, setShowTableForm] = useState(false);
@@ -83,13 +82,11 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [newUser, setNewUser] = useState({ full_name: '', email: '', role: 'waiter', location_id: '', password: '' });
   const [newLocation, setNewLocation] = useState({ name: '', address: '', phone: '' });
 
-  // Edit states
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [editForm, setEditForm] = useState({ name: '', description: '', price: '', category_id: '' });
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [editLocationForm, setEditLocationForm] = useState({ name: '', address: '', phone: '' });
 
-  // Password modal
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [createdUserEmail, setCreatedUserEmail] = useState<string>('');
 
@@ -182,7 +179,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-600">Loading...</div></div>;
   if (!isAuthenticated) return null;
 
-  // Handlers
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -302,6 +298,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   const filteredItems = selectedCategory ? items.filter(i => i.category_id === selectedCategory) : items;
   const getCategoryName = (cat: Category) => cat.is_custom ? cat.name : (t(`categories.names.${cat.name}`) || cat.name);
+
+  const formatPrice = (price: string | number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+    }).format(Number(price));
+  };
 
   const roleColors: Record<string, string> = { admin: 'bg-purple-100 text-purple-700', manager: 'bg-blue-100 text-blue-700', waiter: 'bg-green-100 text-green-700', kitchen: 'bg-orange-100 text-orange-700' };
   const roleLabels: Record<string, string> = { admin: 'Admin', manager: locale === 'es' ? 'Gerente' : 'Manager', waiter: locale === 'es' ? 'Mesero' : 'Waiter', kitchen: locale === 'es' ? 'Cocina' : 'Kitchen' };
@@ -443,11 +447,8 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">📍 {locale === 'es' ? 'Locales' : 'Locations'}</h2>
-              <button onClick={() => setShowLocationForm(!showLocationForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
-                + {locale === 'es' ? 'Agregar Local' : 'Add Location'}
-              </button>
+              <button onClick={() => setShowLocationForm(!showLocationForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">+ {locale === 'es' ? 'Agregar Local' : 'Add Location'}</button>
             </div>
-
             {showLocationForm && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Nuevo Local' : 'New Location'}</h3>
@@ -473,7 +474,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </form>
               </div>
             )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {locations.map((loc) => (
                 <div key={loc.id} className="bg-white rounded-lg shadow p-6">
@@ -490,13 +490,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </div>
               ))}
             </div>
-
-            {locations.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                <div className="text-4xl mb-2">📍</div>
-                <p>{locale === 'es' ? 'No hay locales. ¡Crea uno!' : 'No locations yet. Create one!'}</p>
-              </div>
-            )}
+            {locations.length === 0 && <div className="text-center py-12 text-gray-500"><div className="text-4xl mb-2">📍</div><p>{locale === 'es' ? 'No hay locales. ¡Crea uno!' : 'No locations yet. Create one!'}</p></div>}
           </div>
         )}
 
@@ -507,7 +501,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               <h2 className="text-2xl font-bold text-black">👥 {locale === 'es' ? 'Equipo' : 'Team'}</h2>
               <button onClick={() => setShowUserForm(!showUserForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">+ {locale === 'es' ? 'Agregar Usuario' : 'Add User'}</button>
             </div>
-
             {showUserForm && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Nuevo Usuario' : 'New User'}</h3>
@@ -527,11 +520,11 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                         <option value="waiter">{locale === 'es' ? 'Mesero' : 'Waiter'}</option>
                         <option value="kitchen">{locale === 'es' ? 'Cocina' : 'Kitchen'}</option>
                         <option value="manager">{locale === 'es' ? 'Gerente' : 'Manager'}</option>
-                        </select>
+                      </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Local' : 'Location'} {newUser.role !== 'admin' ? '*' : ''}</label>
-                      <select value={newUser.location_id} onChange={(e) => setNewUser({ ...newUser, location_id: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required={newUser.role !== 'admin'}>
+                      <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Local' : 'Location'} *</label>
+                      <select value={newUser.location_id} onChange={(e) => setNewUser({ ...newUser, location_id: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required>
                         <option value="">{locale === 'es' ? 'Seleccionar local' : 'Select location'}</option>
                         {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
                       </select>
@@ -548,7 +541,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </form>
               </div>
             )}
-
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -572,10 +564,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {u.id !== user?.id && (
-  <button onClick={() => handleToggleUserActive(u.id, u.is_active)} className={`px-3 py-1 rounded text-xs font-semibold ${u.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
-    {u.is_active ? (locale === 'es' ? 'Desactivar' : 'Deactivate') : (locale === 'es' ? 'Activar' : 'Activate')}
-  </button>
-)}
+                            <button onClick={() => handleToggleUserActive(u.id, u.is_active)} className={`px-3 py-1 rounded text-xs font-semibold ${u.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
+                              {u.is_active ? (locale === 'es' ? 'Desactivar' : 'Deactivate') : (locale === 'es' ? 'Activar' : 'Activate')}
+                            </button>
+                          )}
                           {u.role !== 'admin' && <button onClick={() => handleDeleteUser(u.id, u.full_name)} className="px-3 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200">{locale === 'es' ? 'Eliminar' : 'Delete'}</button>}
                         </div>
                       </td>
@@ -744,7 +736,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     </div>
                     {item.description && <p className="text-gray-600 text-sm mb-3">{item.description}</p>}
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-2xl font-bold text-black">${item.price}</span>
+                      <span className="text-2xl font-bold text-black">{formatPrice(item.price)}</span>
                       <span className="text-sm text-gray-500">{(() => { const cat = categories.find(c => c.id === item.category_id); return cat ? getCategoryName(cat) : ''; })()}</span>
                     </div>
                     {user?.role === 'admin' && (
