@@ -8,6 +8,7 @@ import BannerAd from '@/app/components/BannerAd';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/LanguageContext';
 import { QRCodeSVG } from 'qrcode.react';
+import VariantsView from './VariantsView';
 
 interface Category {
   id: string;
@@ -86,7 +87,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [user, setUser] = useState<any>(null);
   const [qrTable, setQrTable] = useState<Table | null>(null);
 
-  // Profile state
   const [profile, setProfile] = useState<TenantProfile>({ name: '', logo_url: '', primary_color: '#f97316', secondary_color: '#1d4ed8', description: '', instagram: '', whatsapp: '' });
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -565,8 +565,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           <div className="max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-black mb-6">⚙️ {locale === 'es' ? 'Perfil del Restaurante' : 'Restaurant Profile'}</h2>
             <form onSubmit={handleSaveProfile} className="space-y-6">
-
-              {/* Logo */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Logo' : 'Logo'}</h3>
                 <div className="flex items-center gap-6">
@@ -583,8 +581,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   </div>
                 </div>
               </div>
-
-              {/* Info básica */}
               <div className="bg-white rounded-lg shadow p-6 space-y-4">
                 <h3 className="text-lg font-bold text-black mb-2">{locale === 'es' ? 'Información Básica' : 'Basic Info'}</h3>
                 <div>
@@ -593,11 +589,9 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Descripción' : 'Description'}</label>
-                  <textarea value={profile.description} onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" rows={3} placeholder={locale === 'es' ? 'Ej: Restaurante de cocina colombiana...' : 'e.g. Colombian cuisine restaurant...'} />
+                  <textarea value={profile.description} onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" rows={3} />
                 </div>
               </div>
-
-              {/* Colores */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Colores del Menú' : 'Menu Colors'}</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -620,8 +614,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   {locale === 'es' ? 'Vista previa del gradiente' : 'Gradient preview'}
                 </div>
               </div>
-
-              {/* Redes sociales */}
               <div className="bg-white rounded-lg shadow p-6 space-y-4">
                 <h3 className="text-lg font-bold text-black mb-2">{locale === 'es' ? 'Redes Sociales' : 'Social Media'}</h3>
                 <div>
@@ -636,7 +628,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   <input type="text" value={profile.whatsapp} onChange={(e) => setProfile(prev => ({ ...prev, whatsapp: e.target.value }))} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" placeholder="+57 300 000 0000" />
                 </div>
               </div>
-
               <button type="submit" disabled={savingProfile} className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 {savingProfile ? (locale === 'es' ? 'Guardando...' : 'Saving...') : (locale === 'es' ? '💾 Guardar Perfil' : '💾 Save Profile')}
               </button>
@@ -963,15 +954,17 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
           </div>
         )}
 
+        {/* VARIANTS VIEW */}
         {view === 'variants' && (
-          <div className="max-w-4xl mx-auto mt-8">
+          <div className="max-w-5xl mx-auto mt-8">
             {user?.product_tier === 'pro' ? (
-              <div className="bg-white rounded-lg shadow p-6"><h2 className="text-2xl font-bold text-black mb-4">Variants Management</h2><p className="text-gray-600">Coming soon...</p></div>
+              <VariantsView tenantId={tenantId} items={items} locale={locale} />
             ) : (
               <UpgradePrompt feature="Product Variants" currentTier={user?.product_tier || 'light'} requiredTier="pro" message="Product Variants allow you to create options like size, add-ons, and customizations. This feature requires the Pro tier." />
             )}
           </div>
         )}
+
       </div>
     </div>
   );
