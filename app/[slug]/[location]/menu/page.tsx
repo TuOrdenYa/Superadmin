@@ -264,7 +264,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
                   onClick={() => setShowWaiterCall(true)}
                   className="bg-white text-gray-800 px-3 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition"
                 >
-                  🔔 Mesero
+                  🔔 Llamar Mesero
                 </button>
               )}
               <button
