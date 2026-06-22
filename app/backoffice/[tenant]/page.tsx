@@ -7,7 +7,6 @@ import UpgradePrompt from '@/app/components/UpgradePrompt';
 import BannerAd from '@/app/components/BannerAd';
 import LanguageSwitcher from '@/app/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/LanguageContext';
-import { QRCodeSVG } from 'qrcode.react';
 
 interface Category {
   id: string;
@@ -32,7 +31,6 @@ interface Table {
   number: string;
   tenant_id: string;
   location_name?: string;
-  location_slug?: string;
 }
 
 interface Location {
@@ -40,7 +38,6 @@ interface Location {
   name: string;
   address?: string;
   phone?: string;
-  slug?: string;
   tenant_id: string;
 }
 
@@ -55,16 +52,6 @@ interface TeamUser {
   created_at: string;
 }
 
-interface TenantProfile {
-  name: string;
-  logo_url: string;
-  primary_color: string;
-  secondary_color: string;
-  description: string;
-  instagram: string;
-  whatsapp: string;
-}
-
 export default function BackofficePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = use(params);
   const tenantId = tenant;
@@ -77,20 +64,14 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [locations, setLocations] = useState<Location[]>([]);
   const [teamUsers, setTeamUsers] = useState<TeamUser[]>([]);
   const [tenantName, setTenantName] = useState<string>('');
-  const [tenantSlug, setTenantSlug] = useState<string>('');
   const [tenantAdFree, setTenantAdFree] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [view, setView] = useState<'items' | 'categories' | 'locations' | 'tables' | 'team' | 'variants' | 'profile'>('items');
+  const [view, setView] = useState<'items' | 'categories' | 'locations' | 'tables' | 'team' | 'variants'>('items');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [qrTable, setQrTable] = useState<Table | null>(null);
 
-  // Profile state
-  const [profile, setProfile] = useState<TenantProfile>({ name: '', logo_url: '', primary_color: '#f97316', secondary_color: '#1d4ed8', description: '', instagram: '', whatsapp: '' });
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [savingProfile, setSavingProfile] = useState(false);
-
+  // Form states
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
   const [showTableForm, setShowTableForm] = useState(false);
@@ -102,11 +83,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [newUser, setNewUser] = useState({ full_name: '', email: '', role: 'waiter', location_id: '', password: '' });
   const [newLocation, setNewLocation] = useState({ name: '', address: '', phone: '' });
 
+  // Edit states
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [editForm, setEditForm] = useState({ name: '', description: '', price: '', category_id: '' });
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [editLocationForm, setEditLocationForm] = useState({ name: '', address: '', phone: '' });
 
+  // Password modal
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [createdUserEmail, setCreatedUserEmail] = useState<string>('');
 
@@ -152,24 +135,6 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     } catch (error) { console.error('Error fetching team users:', error); }
   }, [tenantId]);
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/tenants/${tenantId}/profile`);
-      const data = await res.json();
-      if (data.ok) {
-        setProfile({
-          name: data.profile.name || '',
-          logo_url: data.profile.logo_url || '',
-          primary_color: data.profile.primary_color || '#f97316',
-          secondary_color: data.profile.secondary_color || '#1d4ed8',
-          description: data.profile.description || '',
-          instagram: data.profile.instagram || '',
-          whatsapp: data.profile.whatsapp || '',
-        });
-      }
-    } catch (error) { console.error('Error fetching profile:', error); }
-  }, [tenantId]);
-
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
@@ -203,89 +168,21 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       fetchLocations();
       fetchTables();
       fetchTeamUsers();
-      fetchProfile();
       const fetchTenantInfo = async () => {
         try {
           const res = await fetch(`/api/admin/tenants/${tenantId}`);
           const data = await res.json();
-          if (data.ok) {
-            setTenantName(data.tenant.name);
-            setTenantSlug(data.tenant.slug || '');
-            setTenantAdFree(!!data.tenant.ad_free);
-          }
+          if (data.ok) { setTenantName(data.tenant.name); setTenantAdFree(!!data.tenant.ad_free); }
         } catch (error) { console.error('Error fetching tenant info:', error); }
       };
       fetchTenantInfo();
     }
-  }, [isAuthenticated, fetchCategories, fetchItems, fetchLocations, fetchTables, fetchTeamUsers, fetchProfile]);
+  }, [isAuthenticated, fetchCategories, fetchItems, fetchLocations, fetchTables, fetchTeamUsers]);
 
   if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-600">Loading...</div></div>;
   if (!isAuthenticated) return null;
 
-  const getMenuUrl = (table: Table) => {
-    const loc = locations.find(l => l.id === table.location_id);
-    const locationSlug = loc?.slug || table.location_id;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.tuordenya.com';
-    return `${baseUrl}/${tenantSlug}/${locationSlug}/menu?table=${table.id}`;
-  };
-
-  const downloadQR = (table: Table) => {
-    const svg = document.getElementById(`qr-${table.id}`);
-    if (!svg) return;
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement('canvas');
-    canvas.width = 300; canvas.height = 300;
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = () => {
-      ctx?.drawImage(img, 0, 0);
-      const a = document.createElement('a');
-      a.download = `mesa-${table.number}-qr.png`;
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    };
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-  };
-
-  const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingLogo(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', `tuordenya/${tenantId}/logos`);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.ok) {
-        setProfile(prev => ({ ...prev, logo_url: data.url }));
-      } else {
-        alert(data.error || 'Error uploading logo');
-      }
-    } catch { alert('Error uploading logo'); }
-    finally { setUploadingLogo(false); }
-  };
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingProfile(true);
-    try {
-      const res = await fetch(`/api/tenants/${tenantId}/profile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setTenantName(data.profile.name);
-        alert(locale === 'es' ? '¡Perfil guardado!' : 'Profile saved!');
-      } else {
-        alert(data.error || 'Error saving profile');
-      }
-    } catch { alert('Error saving profile'); }
-    finally { setSavingProfile(false); }
-  };
-
+  // Handlers
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -405,7 +302,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   const filteredItems = selectedCategory ? items.filter(i => i.category_id === selectedCategory) : items;
   const getCategoryName = (cat: Category) => cat.is_custom ? cat.name : (t(`categories.names.${cat.name}`) || cat.name);
-  const formatPrice = (price: string | number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(price));
+
   const roleColors: Record<string, string> = { admin: 'bg-purple-100 text-purple-700', manager: 'bg-blue-100 text-blue-700', waiter: 'bg-green-100 text-green-700', kitchen: 'bg-orange-100 text-orange-700' };
   const roleLabels: Record<string, string> = { admin: 'Admin', manager: locale === 'es' ? 'Gerente' : 'Manager', waiter: locale === 'es' ? 'Mesero' : 'Waiter', kitchen: locale === 'es' ? 'Cocina' : 'Kitchen' };
 
@@ -417,7 +314,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2">
           <div className="flex flex-wrap md:flex-nowrap items-center justify-between w-full gap-2">
             <div className="flex items-center gap-2 flex-shrink-0">
-              {profile.logo_url ? <img src={profile.logo_url} alt="Logo" className="h-9 w-auto rounded" /> : <img src="/logo-tuordenya-orange.png" alt="TuOrdenYa Logo" width={36} height={36} className="h-9 w-auto" />}
+              <img src="/logo-tuordenya-orange.png" alt="TuOrdenYa Logo" width={36} height={36} className="h-9 w-auto" />
               <span className="font-bold text-gray-700 text-base md:text-lg">{t('nav.backoffice')}</span>
             </div>
             <div className="flex flex-wrap md:flex-nowrap gap-2 items-center justify-end w-full md:w-auto">
@@ -451,29 +348,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               <button onClick={() => setView('tables')} className={`py-4 px-1 border-b-2 font-bold text-sm whitespace-nowrap ${view === 'tables' ? 'border-blue-500 text-blue-600' : 'border-transparent text-black hover:text-gray-700'}`}>{t('tabs.tables')}{user?.product_tier !== 'pro' && <span className="ml-1 text-xs">🔒</span>}</button>
               <button onClick={() => setView('variants')} className={`py-4 px-1 border-b-2 font-bold text-sm whitespace-nowrap ${view === 'variants' ? 'border-blue-500 text-blue-600' : 'border-transparent text-black hover:text-gray-700'}`}>{t('tabs.variants')}{user?.product_tier !== 'pro' && <span className="ml-1 text-xs">🔒</span>}</button>
               <button onClick={() => setView('team')} className={`py-4 px-1 border-b-2 font-bold text-sm whitespace-nowrap ${view === 'team' ? 'border-blue-500 text-blue-600' : 'border-transparent text-black hover:text-gray-700'}`}>👥 {locale === 'es' ? 'Equipo' : 'Team'}</button>
-              <button onClick={() => setView('profile')} className={`py-4 px-1 border-b-2 font-bold text-sm whitespace-nowrap ${view === 'profile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-black hover:text-gray-700'}`}>⚙️ {locale === 'es' ? 'Perfil' : 'Profile'}</button>
             </>}
           </nav>
         </div>
       </div>
-
-      {/* QR Modal */}
-      {qrTable && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
-            <h3 className="text-lg font-bold text-black mb-1">{locale === 'es' ? 'QR Mesa' : 'Table QR'} #{qrTable.number}</h3>
-            <p className="text-sm text-gray-500 mb-4">{qrTable.location_name}</p>
-            <div className="flex justify-center mb-4">
-              <QRCodeSVG id={`qr-${qrTable.id}`} value={getMenuUrl(qrTable)} size={220} includeMargin />
-            </div>
-            <p className="text-xs text-gray-400 mb-4 break-all">{getMenuUrl(qrTable)}</p>
-            <div className="flex gap-2">
-              <button onClick={() => downloadQR(qrTable)} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm">⬇️ {locale === 'es' ? 'Descargar' : 'Download'}</button>
-              <button onClick={() => setQrTable(null)} className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold text-sm">{t('common.cancel')}</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Edit Item Modal */}
       {editingItem && (
@@ -560,97 +438,16 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* PROFILE VIEW */}
-        {view === 'profile' && (
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-black mb-6">⚙️ {locale === 'es' ? 'Perfil del Restaurante' : 'Restaurant Profile'}</h2>
-            <form onSubmit={handleSaveProfile} className="space-y-6">
-
-              {/* Logo */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Logo' : 'Logo'}</h3>
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
-                    {profile.logo_url ? <img src={profile.logo_url} alt="Logo" className="w-full h-full object-contain" /> : <span className="text-3xl">🍽️</span>}
-                  </div>
-                  <div>
-                    <label className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm inline-block">
-                      {uploadingLogo ? (locale === 'es' ? 'Subiendo...' : 'Uploading...') : (locale === 'es' ? 'Subir Logo' : 'Upload Logo')}
-                      <input type="file" accept="image/*" onChange={handleUploadLogo} className="hidden" disabled={uploadingLogo} />
-                    </label>
-                    <p className="text-xs text-gray-500 mt-2">{locale === 'es' ? 'PNG, JPG hasta 5MB' : 'PNG, JPG up to 5MB'}</p>
-                    {profile.logo_url && <button type="button" onClick={() => setProfile(prev => ({ ...prev, logo_url: '' }))} className="text-xs text-red-600 hover:text-red-800 mt-1 block">{locale === 'es' ? 'Eliminar logo' : 'Remove logo'}</button>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Info básica */}
-              <div className="bg-white rounded-lg shadow p-6 space-y-4">
-                <h3 className="text-lg font-bold text-black mb-2">{locale === 'es' ? 'Información Básica' : 'Basic Info'}</h3>
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Nombre del restaurante' : 'Restaurant name'} *</label>
-                  <input type="text" value={profile.name} onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Descripción' : 'Description'}</label>
-                  <textarea value={profile.description} onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" rows={3} placeholder={locale === 'es' ? 'Ej: Restaurante de cocina colombiana...' : 'e.g. Colombian cuisine restaurant...'} />
-                </div>
-              </div>
-
-              {/* Colores */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Colores del Menú' : 'Menu Colors'}</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Color primario' : 'Primary color'}</label>
-                    <div className="flex items-center gap-3">
-                      <input type="color" value={profile.primary_color} onChange={(e) => setProfile(prev => ({ ...prev, primary_color: e.target.value }))} className="w-12 h-10 rounded cursor-pointer border border-gray-300" />
-                      <span className="text-sm font-mono text-gray-600">{profile.primary_color}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Color secundario' : 'Secondary color'}</label>
-                    <div className="flex items-center gap-3">
-                      <input type="color" value={profile.secondary_color} onChange={(e) => setProfile(prev => ({ ...prev, secondary_color: e.target.value }))} className="w-12 h-10 rounded cursor-pointer border border-gray-300" />
-                      <span className="text-sm font-mono text-gray-600">{profile.secondary_color}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 p-3 rounded-lg text-white text-sm font-semibold text-center" style={{ background: `linear-gradient(to right, ${profile.primary_color}, ${profile.secondary_color})` }}>
-                  {locale === 'es' ? 'Vista previa del gradiente' : 'Gradient preview'}
-                </div>
-              </div>
-
-              {/* Redes sociales */}
-              <div className="bg-white rounded-lg shadow p-6 space-y-4">
-                <h3 className="text-lg font-bold text-black mb-2">{locale === 'es' ? 'Redes Sociales' : 'Social Media'}</h3>
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">📸 Instagram</label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-sm">@</span>
-                    <input type="text" value={profile.instagram} onChange={(e) => setProfile(prev => ({ ...prev, instagram: e.target.value }))} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" placeholder="turestaurante" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2">💬 WhatsApp</label>
-                  <input type="text" value={profile.whatsapp} onChange={(e) => setProfile(prev => ({ ...prev, whatsapp: e.target.value }))} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" placeholder="+57 300 000 0000" />
-                </div>
-              </div>
-
-              <button type="submit" disabled={savingProfile} className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                {savingProfile ? (locale === 'es' ? 'Guardando...' : 'Saving...') : (locale === 'es' ? '💾 Guardar Perfil' : '💾 Save Profile')}
-              </button>
-            </form>
-          </div>
-        )}
-
         {/* LOCATIONS VIEW */}
         {view === 'locations' && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-black">📍 {locale === 'es' ? 'Locales' : 'Locations'}</h2>
-              <button onClick={() => setShowLocationForm(!showLocationForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">+ {locale === 'es' ? 'Agregar Local' : 'Add Location'}</button>
+              <button onClick={() => setShowLocationForm(!showLocationForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
+                + {locale === 'es' ? 'Agregar Local' : 'Add Location'}
+              </button>
             </div>
+
             {showLocationForm && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Nuevo Local' : 'New Location'}</h3>
@@ -676,6 +473,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </form>
               </div>
             )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {locations.map((loc) => (
                 <div key={loc.id} className="bg-white rounded-lg shadow p-6">
@@ -684,8 +482,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-semibold">{locale === 'es' ? 'Activo' : 'Active'}</span>
                   </div>
                   {loc.address && <p className="text-sm text-gray-600 mb-1">📍 {loc.address}</p>}
-                  {loc.phone && <p className="text-sm text-gray-600 mb-1">📞 {loc.phone}</p>}
-                  {loc.slug && <p className="text-xs text-gray-400 mb-3 font-mono">ID: {loc.slug}</p>}
+                  {loc.phone && <p className="text-sm text-gray-600 mb-3">📞 {loc.phone}</p>}
                   <div className="flex gap-2 pt-3 border-t border-gray-100">
                     <button onClick={() => { setEditingLocation(loc); setEditLocationForm({ name: loc.name, address: loc.address || '', phone: loc.phone || '' }); }} className="flex-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 text-sm font-semibold">✏️ {locale === 'es' ? 'Editar' : 'Edit'}</button>
                     <button onClick={() => handleDeleteLocation(loc.id, loc.name)} className="flex-1 px-3 py-1.5 bg-red-50 text-red-700 rounded hover:bg-red-100 text-sm font-semibold">🗑️ {locale === 'es' ? 'Eliminar' : 'Delete'}</button>
@@ -693,7 +490,13 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </div>
               ))}
             </div>
-            {locations.length === 0 && <div className="text-center py-12 text-gray-500"><div className="text-4xl mb-2">📍</div><p>{locale === 'es' ? 'No hay locales. ¡Crea uno!' : 'No locations yet. Create one!'}</p></div>}
+
+            {locations.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                <div className="text-4xl mb-2">📍</div>
+                <p>{locale === 'es' ? 'No hay locales. ¡Crea uno!' : 'No locations yet. Create one!'}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -704,6 +507,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
               <h2 className="text-2xl font-bold text-black">👥 {locale === 'es' ? 'Equipo' : 'Team'}</h2>
               <button onClick={() => setShowUserForm(!showUserForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">+ {locale === 'es' ? 'Agregar Usuario' : 'Add User'}</button>
             </div>
+
             {showUserForm && (
               <div className="bg-white rounded-lg shadow p-6 mb-6">
                 <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Nuevo Usuario' : 'New User'}</h3>
@@ -723,18 +527,18 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                         <option value="waiter">{locale === 'es' ? 'Mesero' : 'Waiter'}</option>
                         <option value="kitchen">{locale === 'es' ? 'Cocina' : 'Kitchen'}</option>
                         <option value="manager">{locale === 'es' ? 'Gerente' : 'Manager'}</option>
-                      </select>
+                        </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Local' : 'Location'} *</label>
-                      <select value={newUser.location_id} onChange={(e) => setNewUser({ ...newUser, location_id: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required>
+                      <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Local' : 'Location'} {newUser.role !== 'admin' ? '*' : ''}</label>
+                      <select value={newUser.location_id} onChange={(e) => setNewUser({ ...newUser, location_id: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required={newUser.role !== 'admin'}>
                         <option value="">{locale === 'es' ? 'Seleccionar local' : 'Select location'}</option>
                         {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Contraseña (opcional)' : 'Password (optional)'}</label>
+                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Contraseña (opcional, se genera automáticamente)' : 'Password (optional, auto-generated)'}</label>
                     <input type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" placeholder={locale === 'es' ? 'Dejar vacío para generar automáticamente' : 'Leave empty to auto-generate'} />
                   </div>
                   <div className="flex gap-2">
@@ -744,6 +548,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 </form>
               </div>
             )}
+
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -767,10 +572,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {u.id !== user?.id && (
-                            <button onClick={() => handleToggleUserActive(u.id, u.is_active)} className={`px-3 py-1 rounded text-xs font-semibold ${u.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
-                              {u.is_active ? (locale === 'es' ? 'Desactivar' : 'Deactivate') : (locale === 'es' ? 'Activar' : 'Activate')}
-                            </button>
-                          )}
+  <button onClick={() => handleToggleUserActive(u.id, u.is_active)} className={`px-3 py-1 rounded text-xs font-semibold ${u.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
+    {u.is_active ? (locale === 'es' ? 'Desactivar' : 'Deactivate') : (locale === 'es' ? 'Activar' : 'Activate')}
+  </button>
+)}
                           {u.role !== 'admin' && <button onClick={() => handleDeleteUser(u.id, u.full_name)} className="px-3 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200">{locale === 'es' ? 'Eliminar' : 'Delete'}</button>}
                         </div>
                       </td>
@@ -864,7 +669,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">Mesa #</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">{locale === 'es' ? 'Local' : 'Location'}</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">URL</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">QR URL</th>
                     <th className="px-6 py-3 text-left text-xs font-bold text-black uppercase">{locale === 'es' ? 'Acciones' : 'Actions'}</th>
                   </tr>
                 </thead>
@@ -873,15 +678,8 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <tr key={table.id}>
                       <td className="px-6 py-4 text-sm font-bold text-black">{table.number}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{table.location_name || `Location ${table.location_id}`}</td>
-                      <td className="px-6 py-4 text-xs text-blue-600 truncate max-w-xs">
-                        <a href={getMenuUrl(table)} target="_blank" rel="noopener noreferrer" className="hover:underline">{getMenuUrl(table)}</a>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button onClick={() => setQrTable(table)} className="px-3 py-1 bg-blue-50 text-blue-700 rounded text-xs font-semibold hover:bg-blue-100">📱 QR</button>
-                          <button onClick={async () => { if (confirm(`Delete table ${table.number}?`)) { const res = await fetch(`/api/tenants/${tenantId}/tables/${table.id}`, { method: 'DELETE' }); const data = await res.json(); if (data.ok) fetchTables(); else alert(data.error); }}} className="px-3 py-1 bg-red-50 text-red-700 rounded text-xs font-semibold hover:bg-red-100">{locale === 'es' ? 'Eliminar' : 'Delete'}</button>
-                        </div>
-                      </td>
+                      <td className="px-6 py-4 text-sm"><code className="bg-gray-100 px-2 py-1 rounded text-xs text-blue-600">/menu?table={table.id}</code></td>
+                      <td className="px-6 py-4"><button onClick={async () => { if (confirm(`Delete table ${table.number}?`)) { const res = await fetch(`/api/tenants/${tenantId}/tables/${table.id}`, { method: 'DELETE' }); const data = await res.json(); if (data.ok) fetchTables(); else alert(data.error); }}} className="text-red-600 hover:text-red-800 font-semibold text-xs">{locale === 'es' ? 'Eliminar' : 'Delete'}</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -946,7 +744,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     </div>
                     {item.description && <p className="text-gray-600 text-sm mb-3">{item.description}</p>}
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-2xl font-bold text-black">{formatPrice(item.price)}</span>
+                      <span className="text-2xl font-bold text-black">${item.price}</span>
                       <span className="text-sm text-gray-500">{(() => { const cat = categories.find(c => c.id === item.category_id); return cat ? getCategoryName(cat) : ''; })()}</span>
                     </div>
                     {user?.role === 'admin' && (

@@ -10,32 +10,31 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "PENDING";
 
     if (!tenant_id || !location_id) {
-      return NextResponse.json({ error: "tenant_id and location_id are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "tenant_id and location_id are required" },
+        { status: 400 }
+      );
     }
-
-    // Resolve tenant UUID
-    const tenantResult = await query(
-      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
-      [String(tenant_id)]
-    );
-    if (tenantResult.rows.length === 0) {
-      return NextResponse.json({ ok: true, calls: [] });
-    }
-    const tenantUuid = tenantResult.rows[0].id;
 
     const result = await query(
-      `SELECT wc.*, t.name as table_number
+      `SELECT wc.*, t.number as table_number
        FROM waiter_calls wc
        LEFT JOIN tables t ON wc.table_id = t.id
-       WHERE wc.tenant_id = $1 AND wc.location_id::text = $2 AND wc.status = $3
+       WHERE wc.tenant_id = $1 AND wc.location_id = $2 AND wc.status = $3
        ORDER BY wc.created_at DESC`,
-      [tenantUuid, String(location_id), status]
+      [tenant_id, location_id, status]
     );
 
-    return NextResponse.json({ ok: true, calls: result.rows });
+    return NextResponse.json({
+      ok: true,
+      calls: result.rows,
+    });
   } catch (error) {
     console.error("Error fetching waiter calls:", error);
-    return NextResponse.json({ error: "Failed to fetch waiter calls" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch waiter calls" },
+      { status: 500 }
+    );
   }
 }
 
@@ -46,29 +45,28 @@ export async function POST(request: NextRequest) {
     const { tenant_id, location_id, table_id, message } = body;
 
     if (!tenant_id || !location_id || !table_id) {
-      return NextResponse.json({ error: "tenant_id, location_id, and table_id are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "tenant_id, location_id, and table_id are required" },
+        { status: 400 }
+      );
     }
-
-    // Resolve tenant UUID
-    const tenantResult = await query(
-      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
-      [String(tenant_id)]
-    );
-    if (tenantResult.rows.length === 0) {
-      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
-    }
-    const tenantUuid = tenantResult.rows[0].id;
 
     const result = await query(
       `INSERT INTO waiter_calls (tenant_id, location_id, table_id, message, status)
        VALUES ($1, $2, $3, $4, 'PENDING')
        RETURNING *`,
-      [tenantUuid, String(location_id), String(table_id), message || null]
+      [tenant_id, location_id, table_id, message || null]
     );
 
-    return NextResponse.json({ ok: true, call: result.rows[0] });
+    return NextResponse.json({
+      ok: true,
+      call: result.rows[0],
+    });
   } catch (error) {
     console.error("Error creating waiter call:", error);
-    return NextResponse.json({ error: "Failed to create waiter call" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create waiter call" },
+      { status: 500 }
+    );
   }
 }
