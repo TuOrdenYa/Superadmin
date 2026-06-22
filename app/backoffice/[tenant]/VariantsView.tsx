@@ -294,7 +294,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                                 {/* Option name + active toggle */}
                                 <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => toggleOptionOnItem(group.group_id || group.id, opt.option_id, optActive)}
+                                    onClick={() => toggleOptionOnItem(group.id, opt.option_id, optActive)}
                                     disabled={togglingOption === opt.option_id}
                                     className={`relative flex-shrink-0 w-8 h-4 rounded-full transition-colors focus:outline-none ${optActive ? 'bg-blue-500' : 'bg-gray-300'}`}
                                   >
