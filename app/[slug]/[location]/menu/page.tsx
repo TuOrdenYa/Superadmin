@@ -262,7 +262,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
               {tableId && (
                 <button
                   onClick={() => setShowWaiterCall(true)}
-                  className="bg-white bg-opacity-20 text-white px-3 py-2 rounded-lg font-semibold text-sm hover:bg-opacity-30 transition border border-white border-opacity-40"
+                  className="bg-white text-gray-800 px-3 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition"
                 >
                   🔔 Mesero
                 </button>
