@@ -228,7 +228,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               {profile.logo_url && (
-                <img src={profile.logo_url} alt="Logo" className="h-14 w-14 rounded-lg object-contain bg-white p-1" />
+                <img src={profile.logo_url} alt="Logo" className="h-10 w-auto rounded-lg object-contain bg-white p-1" />
               )}
               <div>
                 <h1 className="text-xl font-bold">{profile.name || tenantName}</h1>
