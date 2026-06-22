@@ -4,29 +4,28 @@ import { ProductTier, hasFeature, isSubscriptionActive, getFeatureUpgradeMessage
 import { trackUsage } from './usage-analytics';
 
 export interface TenantTierInfo {
-  id: number;
+  id: string;
   product_tier: ProductTier;
   subscription_status: string;
   has_access: boolean;
 }
 
 // Get tenant tier information from database
-export async function getTenantTier(tenantId: number): Promise<TenantTierInfo | null> {
+// tenantId can be a UUID or tax_id string
+export async function getTenantTier(tenantId: string): Promise<TenantTierInfo | null> {
   try {
     const result = await query(
-      `SELECT id, product_tier, subscription_status 
-       FROM tenants 
-       WHERE id = $1`,
-      [tenantId]
+      `SELECT id, product_tier, subscription_status
+       FROM tenants
+       WHERE tax_id = $1 OR id::text = $1
+       LIMIT 1`,
+      [String(tenantId)]
     );
-
-    if (result.rowCount === 0) {
+    if (!result.rowCount || result.rowCount === 0) {
       return null;
     }
-
     const tenant = result.rows[0];
     const has_access = isSubscriptionActive(tenant.subscription_status);
-
     return {
       id: tenant.id,
       product_tier: tenant.product_tier,
@@ -41,10 +40,10 @@ export async function getTenantTier(tenantId: number): Promise<TenantTierInfo | 
 
 // Check if tenant has access to a specific feature
 export async function checkFeatureAccess(
-  tenantId: number,
+  tenantId: string,
   feature: string
 ): Promise<{ allowed: boolean; message?: string; tier?: ProductTier }> {
-  const tierInfo = await getTenantTier(tenantId);
+  const tierInfo = await getTenantTier(String(tenantId));
 
   if (!tierInfo) {
     return {
@@ -64,10 +63,8 @@ export async function checkFeatureAccess(
   const allowed = hasFeature(tierInfo.product_tier, feature as any);
 
   if (!allowed) {
-    // Track that they tried to use a locked feature
-    trackUsage(tenantId, feature, 'api_call', undefined, { blocked: true, tier: tierInfo.product_tier }).catch(console.error);
-    
-    // Determine which tier is required for this feature
+    trackUsage(tierInfo.id, feature, 'api_call', undefined, { blocked: true, tier: tierInfo.product_tier }).catch(console.error);
+
     let requiredTier: ProductTier = 'pro';
     if (hasFeature('plus', feature as any)) {
       requiredTier = 'plus';
@@ -80,8 +77,7 @@ export async function checkFeatureAccess(
     };
   }
 
-  // Track successful feature access
-  trackUsage(tenantId, feature, 'api_call', undefined, { allowed: true }).catch(console.error);
+  trackUsage(tierInfo.id, feature, 'api_call', undefined, { allowed: true }).catch(console.error);
 
   return {
     allowed: true,

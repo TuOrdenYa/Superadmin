@@ -1,4 +1,34 @@
-// Log suspicious activity (failed logins, rate limits, etc.)
+import { Pool, QueryResult, QueryResultRow } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 3,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+});
+
+export async function query<T extends QueryResultRow = any>(
+  text: string,
+  params?: any[]
+): Promise<QueryResult<T>> {
+  const start = Date.now();
+  try {
+    const res = await pool.query<T>(text, params);
+    const duration = Date.now() - start;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Query executed', { duration, rows: res.rowCount });
+    }
+    return res;
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
+}
+
+export async function closePool(): Promise<void> {
+  await pool.end();
+}
+
 export async function logSuspiciousActivity({
   user_id = null,
   tenant_id = null,
@@ -24,40 +54,3 @@ export async function logSuspiciousActivity({
     console.error('Failed to log suspicious activity:', err);
   }
 }
-import { Pool, QueryResult, QueryResultRow } from 'pg';
-
-// Force rebuild - database connection pool for Supabase
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 3,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
-
-// Helper function for queries
-export async function query<T extends QueryResultRow = any>(
-  text: string,
-  params?: any[]
-): Promise<QueryResult<T>> {
-  const start = Date.now();
-  
-  try {
-    const res = await pool.query<T>(text, params);
-    const duration = Date.now() - start;
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Query executed', { duration, rows: res.rowCount });
-    }
-    
-    return res;
-  } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
-  }
-}
-
-// Close pool (for graceful shutdown)
-export async function closePool(): Promise<void> {
-  await pool.end();
-}
-
