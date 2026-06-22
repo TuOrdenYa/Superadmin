@@ -10,7 +10,7 @@ export async function GET(
     const { tenant } = await params;
 
     const result = await query(
-      `SELECT l.id, l.tenant_id, l.name, l.address, l.phone
+      `SELECT l.id, l.tenant_id, l.name, l.address, l.phone, l.slug
        FROM locations l
        INNER JOIN tenants t ON t.id = l.tenant_id
        WHERE t.tax_id = $1 OR t.id::text = $1
@@ -52,9 +52,9 @@ export async function POST(
     const tenantUuid = tenantResult.rows[0].id;
 
     const result = await query(
-      `INSERT INTO locations (tenant_id, name, address, phone)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, tenant_id, name, address, phone`,
+      `INSERT INTO locations (tenant_id, name, address, phone, slug)
+ VALUES ($1, $2, $3, $4, substr(md5(random()::text), 1, 8))
+ RETURNING id, tenant_id, name, address, phone, slug`,
       [tenantUuid, name.trim(), address || null, phone || null]
     );
 
