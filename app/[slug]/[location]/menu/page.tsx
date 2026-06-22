@@ -236,8 +236,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
     <span className="font-normal opacity-80"> · {locationName}</span>
     {tableNumber && <span className="font-normal opacity-60"> · Mesa #{tableNumber}</span>}
   </h1>
-                {tableNumber && <p className="text-xs opacity-60">Mesa #{tableNumber}</p>}
-              </div>
+                              </div>
             </div>
             <button
               onClick={() => setShowCart(true)}
