@@ -12,7 +12,7 @@ export interface TenantTierInfo {
 
 // Get tenant tier information from database
 // tenantId can be a UUID or tax_id string
-export async function getTenantTier(tenantId: string): Promise<TenantTierInfo | null> {
+export async function getTenantTier(tenantId: number | string): Promise<TenantTierInfo | null> {
   try {
     const result = await query(
       `SELECT id, product_tier, subscription_status
@@ -40,7 +40,7 @@ export async function getTenantTier(tenantId: string): Promise<TenantTierInfo | 
 
 // Check if tenant has access to a specific feature
 export async function checkFeatureAccess(
-  tenantId: string,
+  tenantId: number | string,
   feature: string
 ): Promise<{ allowed: boolean; message?: string; tier?: ProductTier }> {
   const tierInfo = await getTenantTier(String(tenantId));
