@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-// GET /api/variant-group-templates - List all variant group templates
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -16,15 +15,22 @@ export async function GET(request: NextRequest) {
       `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
       [String(tenant_id)]
     );
+
     if (tenantResult.rows.length === 0) {
       return NextResponse.json({ ok: true, groups: [] });
     }
 
+    const tenantUuid = tenantResult.rows[0].id;
+
+    // Devuelve grupos globales (tenant_id IS NULL) + grupos propios del tenant
     const result = await query(
-      `SELECT id, name, position, required, max_select, active
+      `SELECT id, name, position, required, max_select, active,
+              CASE WHEN tenant_id IS NULL THEN 'global' ELSE 'custom' END as scope
        FROM variant_group_templates
        WHERE active = true
-       ORDER BY position, id`
+         AND (tenant_id IS NULL OR tenant_id = $1)
+       ORDER BY position, id`,
+      [tenantUuid]
     );
 
     return NextResponse.json({ ok: true, groups: result.rows });
@@ -34,7 +40,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/variant-group-templates - Create a new variant group template (global)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -49,15 +54,19 @@ export async function POST(request: NextRequest) {
       `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
       [String(tenant_id)]
     );
+
     if (tenantResult.rows.length === 0) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
+    const tenantUuid = tenantResult.rows[0].id;
+
+    // Guarda con tenant_id — es un grupo propio del tenant, no global
     const result = await query(
-      `INSERT INTO variant_group_templates (name, position, required, max_select, active)
-       VALUES ($1, $2, $3, $4, true)
+      `INSERT INTO variant_group_templates (name, position, required, max_select, active, tenant_id)
+       VALUES ($1, $2, $3, $4, true, $5)
        RETURNING *`,
-      [name, position, required, max_select]
+      [name, position, required, max_select, tenantUuid]
     );
 
     return NextResponse.json({ ok: true, group: result.rows[0] });
