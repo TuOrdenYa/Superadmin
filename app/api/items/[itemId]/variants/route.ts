@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { checkFeatureAccess, createTierErrorResponse } from "@/lib/tier-access";
 
-// GET /api/items/:itemId/variants - Get all variant groups for an item
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ itemId: string }> }
@@ -13,14 +12,10 @@ export async function GET(
     const tenant_id = searchParams.get("tenant_id");
 
     if (!tenant_id) {
-      return NextResponse.json(
-        { error: "tenant_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tenant_id is required" }, { status: 400 });
     }
 
-    // Check tier access - Variants feature requires Pro tier
-    const access = await checkFeatureAccess(parseInt(tenant_id), 'product_variants');
+    const access = await checkFeatureAccess(String(tenant_id), 'product_variants');
     if (!access.allowed) {
       return NextResponse.json(
         createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
@@ -28,7 +23,6 @@ export async function GET(
       );
     }
 
-    // Get all variant groups associated with this item
     const result = await query(
       `SELECT 
         vgt.id as group_id,
@@ -44,7 +38,6 @@ export async function GET(
       [tenant_id, itemId]
     );
 
-    // Get all options for each group
     const groupsWithOptions = await Promise.all(
       result.rows.map(async (group) => {
         const optionsResult = await query(
@@ -65,28 +58,17 @@ export async function GET(
            ORDER BY vot.position, vot.id`,
           [tenant_id, itemId, group.group_id]
         );
-
-        return {
-          ...group,
-          options: optionsResult.rows,
-        };
+        return { ...group, options: optionsResult.rows };
       })
     );
 
-    return NextResponse.json({
-      ok: true,
-      variants: groupsWithOptions,
-    });
+    return NextResponse.json({ ok: true, variants: groupsWithOptions });
   } catch (error) {
     console.error("Error fetching item variants:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch item variants" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch item variants" }, { status: 500 });
   }
 }
 
-// POST /api/items/:itemId/variants - Associate variant group with item
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ itemId: string }> }
@@ -112,15 +94,9 @@ export async function POST(
       [tenant_id, itemId, group_template_id, active]
     );
 
-    return NextResponse.json({
-      ok: true,
-      association: result.rows[0],
-    });
+    return NextResponse.json({ ok: true, association: result.rows[0] });
   } catch (error) {
     console.error("Error associating variant group:", error);
-    return NextResponse.json(
-      { error: "Failed to associate variant group" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to associate variant group" }, { status: 500 });
   }
 }
