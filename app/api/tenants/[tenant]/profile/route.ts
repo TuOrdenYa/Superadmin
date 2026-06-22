@@ -12,7 +12,7 @@ export async function GET(
     const result = await query(
       `SELECT id, name, slug, tax_id, logo_url, primary_color, secondary_color, 
               description, instagram, whatsapp, product_tier, subscription_status
-       FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+       FROM tenants WHERE tax_id = $1 OR id::text = $1 OR slug = $1 LIMIT 1`,
       [String(tenant)]
     );
 
