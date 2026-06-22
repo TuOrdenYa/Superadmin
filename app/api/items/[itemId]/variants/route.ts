@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { checkFeatureAccess, createTierErrorResponse } from "@/lib/tier-access";
 
 // GET /api/items/:itemId/variants - Get all variant groups for an item
 export async function GET(
@@ -13,22 +12,19 @@ export async function GET(
     const tenant_id = searchParams.get("tenant_id");
 
     if (!tenant_id) {
-      return NextResponse.json(
-        { error: "tenant_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tenant_id is required" }, { status: 400 });
     }
 
-    // Check tier access - Variants feature requires Pro tier
-    const access = await checkFeatureAccess(parseInt(tenant_id), 'product_variants');
-    if (!access.allowed) {
-      return NextResponse.json(
-        createTierErrorResponse(access.message || 'Access denied', access.tier || 'light'),
-        { status: 403 }
-      );
+    // Resolve tenant UUID
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
+    );
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json({ ok: true, variants: [] });
     }
+    const tenantUuid = tenantResult.rows[0].id;
 
-    // Get all variant groups associated with this item
     const result = await query(
       `SELECT 
         vgt.id as group_id,
@@ -39,12 +35,11 @@ export async function GET(
         ivg.active_override as item_active
        FROM item_variant_groups ivg
        JOIN variant_group_templates vgt ON ivg.group_template_id = vgt.id
-       WHERE ivg.tenant_id = $1 AND ivg.item_id = $2
+       WHERE ivg.tenant_id = $1 AND ivg.item_id::text = $2
        ORDER BY vgt.position, vgt.id`,
-      [tenant_id, itemId]
+      [tenantUuid, String(itemId)]
     );
 
-    // Get all options for each group
     const groupsWithOptions = await Promise.all(
       result.rows.map(async (group) => {
         const optionsResult = await query(
@@ -59,30 +54,21 @@ export async function GET(
            LEFT JOIN item_variant_options ivo ON 
              ivo.option_template_id = vot.id AND 
              ivo.tenant_id = $1 AND 
-             ivo.item_id = $2 AND
+             ivo.item_id::text = $2 AND
              ivo.group_template_id = $3
            WHERE vot.group_template_id = $3 AND vot.active = true
            ORDER BY vot.position, vot.id`,
-          [tenant_id, itemId, group.group_id]
+          [tenantUuid, String(itemId), group.group_id]
         );
 
-        return {
-          ...group,
-          options: optionsResult.rows,
-        };
+        return { ...group, options: optionsResult.rows };
       })
     );
 
-    return NextResponse.json({
-      ok: true,
-      variants: groupsWithOptions,
-    });
+    return NextResponse.json({ ok: true, variants: groupsWithOptions });
   } catch (error) {
     console.error("Error fetching item variants:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch item variants" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch item variants" }, { status: 500 });
   }
 }
 
@@ -97,11 +83,18 @@ export async function POST(
     const { tenant_id, group_template_id, active = true } = body;
 
     if (!tenant_id || !group_template_id) {
-      return NextResponse.json(
-        { error: "tenant_id and group_template_id are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tenant_id and group_template_id are required" }, { status: 400 });
     }
+
+    // Resolve tenant UUID
+    const tenantResult = await query(
+      `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
+      [String(tenant_id)]
+    );
+    if (tenantResult.rows.length === 0) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+    const tenantUuid = tenantResult.rows[0].id;
 
     const result = await query(
       `INSERT INTO item_variant_groups (tenant_id, item_id, group_template_id, active_override)
@@ -109,18 +102,12 @@ export async function POST(
        ON CONFLICT (tenant_id, item_id, group_template_id) 
        DO UPDATE SET active_override = $4
        RETURNING *`,
-      [tenant_id, itemId, group_template_id, active]
+      [tenantUuid, String(itemId), String(group_template_id), active]
     );
 
-    return NextResponse.json({
-      ok: true,
-      association: result.rows[0],
-    });
+    return NextResponse.json({ ok: true, association: result.rows[0] });
   } catch (error) {
     console.error("Error associating variant group:", error);
-    return NextResponse.json(
-      { error: "Failed to associate variant group" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to associate variant group" }, { status: 500 });
   }
 }
