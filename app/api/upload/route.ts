@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Cloudinary reads CLOUDINARY_URL from environment automatically
+cloudinary.config();
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate Cloudinary is configured
+    if (!process.env.CLOUDINARY_URL) {
+      console.error('Missing CLOUDINARY_URL environment variable');
+      return NextResponse.json(
+        { 
+          error: 'Upload service not configured. Missing CLOUDINARY_URL.',
+          ok: false
+        }, 
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const folder = formData.get('folder') as string || 'tuordenya';
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided', ok: false }, { status: 400 });
     }
 
     // Convert file to base64
@@ -35,6 +44,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
+    return NextResponse.json({ error: errorMessage, ok: false }, { status: 500 });
   }
 }
