@@ -228,7 +228,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               {profile.logo_url && (
-                <img src={profile.logo_url} alt="Logo" className="h-10 w-10 rounded-lg object-contain bg-white p-0.5" />
+                <img src={profile.logo_url} alt="Logo" className="h-14 w-14 rounded-lg object-contain bg-white p-1" />
               )}
               <div>
                 <h1 className="text-xl font-bold">{profile.name || tenantName}</h1>
@@ -314,6 +314,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
         {(profile.instagram || profile.whatsapp) && (
           <div className="mt-12 pt-6 border-t border-gray-200 text-center">
             <p className="text-gray-500 text-sm mb-3">{profile.name}</p>
+<p className="text-gray-400 text-xs mb-3">© {new Date().getFullYear()} {profile.name} · Elaborado por <a href="https://tuordenya.com" target="_blank" className="hover:text-gray-600">TuOrdenYa</a> · Todos los derechos reservados</p>
             <div className="flex justify-center gap-4">
               {profile.instagram && (
                 <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-pink-600 transition">
