@@ -17,6 +17,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/pg": "^8.15.6",
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.10.0",
     "jsonwebtoken": "^9.0.3",
     "next": "16.0.7",
     "next-intl": "^4.5.8",
