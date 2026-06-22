@@ -26,6 +26,16 @@ interface CartItem extends MenuItem {
   notes?: string;
 }
 
+interface TenantProfile {
+  name: string;
+  logo_url: string;
+  primary_color: string;
+  secondary_color: string;
+  description: string;
+  instagram: string;
+  whatsapp: string;
+}
+
 const formatPrice = (price: string | number) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(price));
 
@@ -39,6 +49,15 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
   const [tenantName, setTenantName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
   const [tableNumber, setTableNumber] = useState<string>('');
+  const [profile, setProfile] = useState<TenantProfile>({
+    name: '',
+    logo_url: '',
+    primary_color: '#f97316',
+    secondary_color: '#ea580c',
+    description: '',
+    instagram: '',
+    whatsapp: '',
+  });
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -49,25 +68,36 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
 
-  // Fetch tenant and location by slugs
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get tenant by slug
         const tenantRes = await fetch(`/api/tenant-by-slug?slug=${slug}`);
         const tenantData = await tenantRes.json();
         if (!tenantData.ok) { setError('Restaurant not found'); setIsLoading(false); return; }
         setTenantId(tenantData.tenant.id);
         setTenantName(tenantData.tenant.name);
 
-        // Get location by slug
+        // Fetch profile
+        const profileRes = await fetch(`/api/tenants/${tenantData.tenant.tax_id || slug}/profile`);
+        const profileData = await profileRes.json();
+        if (profileData.ok) {
+          setProfile({
+            name: profileData.profile.name || tenantData.tenant.name,
+            logo_url: profileData.profile.logo_url || '',
+            primary_color: profileData.profile.primary_color || '#f97316',
+            secondary_color: profileData.profile.secondary_color || '#ea580c',
+            description: profileData.profile.description || '',
+            instagram: profileData.profile.instagram || '',
+            whatsapp: profileData.profile.whatsapp || '',
+          });
+        }
+
         const locationRes = await fetch(`/api/tenants/${slug}/locations/by-slug?slug=${location}`);
         const locationData = await locationRes.json();
         if (!locationData.ok) { setError('Location not found'); setIsLoading(false); return; }
         setLocationId(locationData.location.id);
         setLocationName(locationData.location.name);
 
-        // Get table info if tableId provided
         if (tableId) {
           const tableRes = await fetch(`/api/tables/${tableId}`);
           const tableData = await tableRes.json();
@@ -83,7 +113,6 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
     fetchData();
   }, [slug, location, tableId]);
 
-  // Fetch menu data
   useEffect(() => {
     if (!tenantId || !locationId) return;
     const fetchMenu = async () => {
@@ -158,6 +187,9 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const filteredItems = selectedCategory ? items.filter(i => i.category_id === selectedCategory) : items;
 
+  const primaryColor = profile.primary_color || '#f97316';
+  const secondaryColor = profile.secondary_color || '#ea580c';
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -184,25 +216,30 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Order placed toast */}
       {orderPlaced && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg font-semibold text-center">
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 text-white px-6 py-3 rounded-lg shadow-lg font-semibold text-center" style={{ backgroundColor: primaryColor }}>
           ✅ ¡Pedido enviado! El mesero lo atenderá pronto.
         </div>
       )}
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white sticky top-0 z-40 shadow-lg">
+      <div className="text-white sticky top-0 z-40 shadow-lg" style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold">{tenantName}</h1>
-              <p className="text-sm text-orange-100">{locationName}</p>
-              {tableNumber && <p className="text-xs text-orange-200">Mesa #{tableNumber}</p>}
+            <div className="flex items-center gap-3">
+              {profile.logo_url && (
+                <img src={profile.logo_url} alt="Logo" className="h-10 w-10 rounded-lg object-contain bg-white p-0.5" />
+              )}
+              <div>
+                <h1 className="text-xl font-bold">{profile.name || tenantName}</h1>
+                <p className="text-sm opacity-80">{locationName}</p>
+                {tableNumber && <p className="text-xs opacity-60">Mesa #{tableNumber}</p>}
+              </div>
             </div>
             <button
               onClick={() => setShowCart(true)}
-              className="relative bg-white text-orange-600 px-4 py-2 rounded-lg font-bold hover:bg-orange-50 transition"
+              className="relative bg-white px-4 py-2 rounded-lg font-bold hover:bg-opacity-90 transition"
+              style={{ color: primaryColor }}
             >
               🛒
               {cartItemCount > 0 && (
@@ -221,7 +258,8 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
           <div className="flex space-x-2">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold text-sm transition ${selectedCategory === null ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className="px-4 py-2 rounded-full whitespace-nowrap font-semibold text-sm transition"
+              style={selectedCategory === null ? { backgroundColor: primaryColor, color: 'white' } : { backgroundColor: '#f3f4f6', color: '#374151' }}
             >
               Todos
             </button>
@@ -229,7 +267,8 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold text-sm transition ${selectedCategory === cat.id ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className="px-4 py-2 rounded-full whitespace-nowrap font-semibold text-sm transition"
+                style={selectedCategory === cat.id ? { backgroundColor: primaryColor, color: 'white' } : { backgroundColor: '#f3f4f6', color: '#374151' }}
               >
                 {cat.name}
               </button>
@@ -250,10 +289,11 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
                 <h3 className="text-base font-bold text-black">{item.name}</h3>
                 {item.description && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.description}</p>}
                 <div className="flex justify-between items-center mt-3">
-                  <span className="text-lg font-bold text-orange-600">{formatPrice(item.price)}</span>
+                  <span className="text-lg font-bold" style={{ color: primaryColor }}>{formatPrice(item.price)}</span>
                   <button
                     onClick={() => addToCart(item)}
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 font-semibold text-sm transition"
+                    className="text-white px-4 py-2 rounded-lg font-semibold text-sm transition hover:opacity-90"
+                    style={{ backgroundColor: primaryColor }}
                   >
                     + Agregar
                   </button>
@@ -269,6 +309,25 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
             <p>No hay items disponibles en esta categoría</p>
           </div>
         )}
+
+        {/* Footer con redes sociales */}
+        {(profile.instagram || profile.whatsapp) && (
+          <div className="mt-12 pt-6 border-t border-gray-200 text-center">
+            <p className="text-gray-500 text-sm mb-3">{profile.name}</p>
+            <div className="flex justify-center gap-4">
+              {profile.instagram && (
+                <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-pink-600 transition">
+                  📸 @{profile.instagram}
+                </a>
+              )}
+              {profile.whatsapp && (
+                <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-green-600 transition">
+                  💬 {profile.whatsapp}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating cart button */}
@@ -276,7 +335,8 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
         <div className="fixed bottom-6 left-0 right-0 flex justify-center z-40 px-4">
           <button
             onClick={() => setShowCart(true)}
-            className="bg-orange-500 text-white px-8 py-4 rounded-full shadow-xl font-bold text-lg hover:bg-orange-600 transition flex items-center gap-3"
+            className="text-white px-8 py-4 rounded-full shadow-xl font-bold text-lg transition flex items-center gap-3 hover:opacity-90"
+            style={{ backgroundColor: primaryColor }}
           >
             🛒 Ver pedido ({cartItemCount}) — {formatPrice(cartTotal)}
           </button>
@@ -288,13 +348,13 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
         <>
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setShowCart(false)} />
           <div className="fixed right-0 top-0 h-full w-full md:w-96 bg-white shadow-xl z-50 flex flex-col">
-            <div className="bg-orange-500 text-white p-4 flex justify-between items-center">
+            <div className="text-white p-4 flex justify-between items-center" style={{ backgroundColor: primaryColor }}>
               <h2 className="text-xl font-bold">Tu Pedido</h2>
-              <button onClick={() => setShowCart(false)} className="text-3xl leading-none hover:text-orange-200">×</button>
+              <button onClick={() => setShowCart(false)} className="text-3xl leading-none hover:opacity-70">×</button>
             </div>
 
             {tableNumber && (
-              <div className="bg-orange-50 px-4 py-2 text-sm text-orange-700 font-semibold border-b border-orange-100">
+              <div className="px-4 py-2 text-sm font-semibold border-b" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
                 Mesa #{tableNumber}
               </div>
             )}
@@ -317,7 +377,7 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
                         <div className="flex items-center gap-2">
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="bg-gray-200 text-black w-8 h-8 rounded-full font-bold hover:bg-gray-300 flex items-center justify-center">−</button>
                           <span className="font-bold text-black w-6 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="bg-orange-500 text-white w-8 h-8 rounded-full font-bold hover:bg-orange-600 flex items-center justify-center">+</button>
+                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-white w-8 h-8 rounded-full font-bold flex items-center justify-center hover:opacity-90" style={{ backgroundColor: primaryColor }}>+</button>
                         </div>
                         <span className="font-bold text-black">{formatPrice(parseFloat(item.price) * item.quantity)}</span>
                       </div>
@@ -331,12 +391,13 @@ export default function MenuPage({ params }: { params: Promise<{ slug: string; l
               <div className="border-t p-4 space-y-3 bg-white">
                 <div className="flex justify-between text-lg font-bold">
                   <span className="text-black">Total:</span>
-                  <span className="text-orange-600">{formatPrice(cartTotal)}</span>
+                  <span style={{ color: primaryColor }}>{formatPrice(cartTotal)}</span>
                 </div>
                 <button
                   onClick={handlePlaceOrder}
                   disabled={placingOrder}
-                  className="w-full bg-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-white py-4 rounded-xl font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}
                 >
                   {placingOrder ? '⏳ Enviando pedido...' : '✅ Hacer Pedido'}
                 </button>
