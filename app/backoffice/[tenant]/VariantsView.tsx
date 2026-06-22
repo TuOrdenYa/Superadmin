@@ -58,9 +58,9 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
   const [selectedItem, setSelectedItem] = useState<string>('');
   const [itemVariants, setItemVariants] = useState<ItemVariantGroup[]>([]);
   const [loadingItemVariants, setLoadingItemVariants] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [editingPrice, setEditingPrice] = useState<string | null>(null);
   const [editPriceValue, setEditPriceValue] = useState<string>('');
+  const [togglingOption, setTogglingOption] = useState<string | null>(null);
 
   const fetchGroups = useCallback(async () => {
     try {
@@ -110,13 +110,37 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
     } catch { alert('Error al actualizar variante'); }
   };
 
+  const toggleOptionOnItem = async (groupId: string, optionId: string, currentlyActive: boolean) => {
+    if (!selectedItem) return;
+    setTogglingOption(optionId);
+    try {
+      const res = await fetch(`/api/items/${selectedItem}/variant-options/${optionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          group_template_id: groupId,
+          active: !currentlyActive,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) fetchItemVariants(selectedItem);
+      else alert(data.error || 'Error al actualizar opción');
+    } catch { alert('Error al actualizar opción'); }
+    finally { setTogglingOption(null); }
+  };
+
   const saveOptionPrice = async (groupId: string, optionId: string) => {
     if (!selectedItem) return;
     try {
       const res = await fetch(`/api/items/${selectedItem}/variant-options/${optionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, group_template_id: groupId, price_delta: parseFloat(editPriceValue) || 0 }),
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          group_template_id: groupId,
+          price_delta: parseFloat(editPriceValue) || 0,
+        }),
       });
       const data = await res.json();
       if (data.ok) { fetchItemVariants(selectedItem); setEditingPrice(null); }
@@ -128,7 +152,6 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header — sin botón de nuevo grupo por ahora */}
       <div>
         <h2 className="text-2xl font-bold text-black">
           {locale === 'es' ? 'Variantes de productos' : 'Product variants'}
@@ -235,6 +258,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                   const isActive = assigned ? assigned.item_active !== false : false;
                   return (
                     <div key={group.id} className={`rounded-lg border p-3 transition ${isActive ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+                      {/* Group header */}
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <span className={`text-sm font-bold ${isActive ? 'text-blue-800' : 'text-gray-600'}`}>
@@ -249,50 +273,73 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                         <button
                           onClick={() => toggleGroupOnItem(group.id, isActive)}
                           className={`relative flex-shrink-0 w-10 h-6 rounded-full transition-colors focus:outline-none ${isActive ? 'bg-blue-600' : 'bg-gray-300'}`}
->
-  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isActive ? 'translate-x-4' : 'translate-x-0'}`} />
+                        >
+                          <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isActive ? 'translate-x-4' : 'translate-x-0'}`} />
                         </button>
                       </div>
 
+                      {/* Options — price + active toggle */}
                       {isActive && assigned && assigned.options.length > 0 && (
-                        <div className="space-y-1 mt-2 pt-2 border-t border-blue-100">
-                          <p className="text-xs text-blue-600 font-semibold mb-1">
-                            {locale === 'es' ? 'Precio por opción:' : 'Price per option:'}
+                        <div className="space-y-1.5 mt-2 pt-2 border-t border-blue-100">
+                          <p className="text-xs text-blue-600 font-semibold mb-2">
+                            {locale === 'es' ? 'Opciones:' : 'Options:'}
                           </p>
-                          {assigned.options.map(opt => (
-                            <div key={opt.option_id} className="flex items-center justify-between">
-                              <span className="text-xs text-gray-700">{opt.option_name}</span>
-                              {editingPrice === opt.option_id ? (
-                                <div className="flex items-center gap-1">
-                                  <input
-                                    type="number"
-                                    value={editPriceValue}
-                                    onChange={e => setEditPriceValue(e.target.value)}
-                                    className="w-24 px-2 py-0.5 border border-blue-300 rounded text-xs text-black"
-                                    autoFocus
-                                  />
+                          {assigned.options.map(opt => {
+                            const optActive = opt.item_active !== false;
+                            return (
+                              <div
+                                key={opt.option_id}
+                                className={`flex items-center justify-between rounded-lg px-2 py-1.5 transition ${optActive ? 'bg-white' : 'bg-gray-100 opacity-60'}`}
+                              >
+                                {/* Option name + active toggle */}
+                                <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => saveOptionPrice(group.id, opt.option_id)}
-                                    className="text-xs bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-700"
-                                  >✓</button>
-                                  <button
-                                    onClick={() => setEditingPrice(null)}
-                                    className="text-xs bg-gray-300 text-gray-700 px-2 py-0.5 rounded"
-                                  >✕</button>
+                                    onClick={() => toggleOptionOnItem(group.group_id || group.id, opt.option_id, optActive)}
+                                    disabled={togglingOption === opt.option_id}
+                                    className={`relative flex-shrink-0 w-8 h-4 rounded-full transition-colors focus:outline-none ${optActive ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                  >
+                                    <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${optActive ? 'translate-x-4' : 'translate-x-0'}`} />
+                                  </button>
+                                  <span className={`text-xs font-medium ${optActive ? 'text-gray-800' : 'text-gray-400 line-through'}`}>
+                                    {opt.option_name}
+                                  </span>
                                 </div>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    setEditingPrice(opt.option_id);
-                                    setEditPriceValue(String(opt.item_price_delta ?? opt.price_delta));
-                                  }}
-                                  className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
-                                >
-                                  {opt.item_price_delta !== null ? `+${fmt(opt.item_price_delta)}` : `+${fmt(opt.price_delta)}`} ✏️
-                                </button>
-                              )}
-                            </div>
-                          ))}
+
+                                {/* Price edit */}
+                                {optActive && (
+                                  editingPrice === opt.option_id ? (
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        value={editPriceValue}
+                                        onChange={e => setEditPriceValue(e.target.value)}
+                                        className="w-20 px-2 py-0.5 border border-blue-300 rounded text-xs text-black"
+                                        autoFocus
+                                      />
+                                      <button
+                                        onClick={() => saveOptionPrice(group.id, opt.option_id)}
+                                        className="text-xs bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-700"
+                                      >✓</button>
+                                      <button
+                                        onClick={() => setEditingPrice(null)}
+                                        className="text-xs bg-gray-300 text-gray-700 px-2 py-0.5 rounded"
+                                      >✕</button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => {
+                                        setEditingPrice(opt.option_id);
+                                        setEditPriceValue(String(opt.item_price_delta ?? opt.price_delta));
+                                      }}
+                                      className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                                    >
+                                      {opt.item_price_delta !== null ? `+${fmt(opt.item_price_delta)}` : `+${fmt(opt.price_delta)}`} ✏️
+                                    </button>
+                                  )
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
