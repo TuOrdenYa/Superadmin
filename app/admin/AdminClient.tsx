@@ -384,7 +384,7 @@ export default function AdminClient() {
                           <div className="flex gap-2 items-center">
                             {editingId === tenant.id ? (
                               <>
-                                <button onClick={() => handleUpdateTier(tenant.id, editTier)} disabled={loading} className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">Guardar</button>
+                                <button onClick={() => handleUpdateTier(String(tenant.id), editTier)} disabled={loading} className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">Guardar</button>
                                 <button onClick={() => setEditingId(null)} className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Cancelar</button>
                               </>
                             ) : (
