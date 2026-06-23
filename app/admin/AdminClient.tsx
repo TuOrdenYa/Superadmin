@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import UserManagement from './UserManagement';
 
 interface Tenant {
@@ -35,53 +35,78 @@ export default function AdminClient() {
   const [rateLimits, setRateLimits] = useState<RateLimit[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [savedPassword, setSavedPassword] = useState('');
   const [authError, setAuthError] = useState('');
-  
+
   // Form states
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [newTenantId, setNewTenantId] = useState('');
   const [newTenantTier, setNewTenantTier] = useState<'light' | 'plus' | 'pro'>('light');
   const [newLocationName, setNewLocationName] = useState('');
-  
+
   // Tier editing
   const [editingTenantId, setEditingTenantId] = useState<number | null>(null);
   const [editTier, setEditTier] = useState<'light' | 'plus' | 'pro'>('light');
 
+  // Helper: fetch con el header de autenticación siempre incluido
+  const adminFetch = useCallback((url: string, options: RequestInit = {}) => {
+    return fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': savedPassword,
+        ...options.headers,
+      },
+    });
+  }, [savedPassword]);
+
   // Check if already authenticated
   useEffect(() => {
     const authenticated = sessionStorage.getItem('admin_authenticated');
-    if (authenticated === 'true') {
+    const pw = sessionStorage.getItem('admin_pw');
+    if (authenticated === 'true' && pw) {
+      setSavedPassword(pw);
       setIsAuthenticated(true);
     }
   }, []);
 
   // Handle admin login
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'SuperAdmin2024!') {
+    const res = await fetch('/api/admin/tenants', {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': password,
+      },
+    });
+    if (res.ok) {
+      setSavedPassword(password);
       setIsAuthenticated(true);
       sessionStorage.setItem('admin_authenticated', 'true');
+      sessionStorage.setItem('admin_pw', password);
       setAuthError('');
     } else {
-      setAuthError('Invalid password');
+      setAuthError('Contraseña incorrecta');
     }
   };
 
   // Logout
   const handleLogout = () => {
     sessionStorage.removeItem('admin_authenticated');
+    sessionStorage.removeItem('admin_pw');
+    setSavedPassword('');
     setIsAuthenticated(false);
   };
 
   // Fetch tenants
-  const fetchTenants = async () => {
+  const fetchTenants = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/tenants');
+      const res = await adminFetch('/api/admin/tenants');
       const data = await res.json();
       if (data.ok) {
         setTenants(data.tenants);
@@ -89,10 +114,10 @@ export default function AdminClient() {
     } catch (error) {
       console.error('Error fetching tenants:', error);
     }
-  };
+  }, [adminFetch]);
 
   // Fetch locations for selected tenant
-  const fetchLocations = async (tenantId: number) => {
+  const fetchLocations = useCallback(async (tenantId: number) => {
     try {
       const res = await fetch(`/api/tenants/${tenantId}/locations`);
       const data = await res.json();
@@ -102,12 +127,12 @@ export default function AdminClient() {
     } catch (error) {
       console.error('Error fetching locations:', error);
     }
-  };
+  }, []);
 
   // Fetch rate limits
-  const fetchRateLimits = async () => {
+  const fetchRateLimits = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/rate-limits');
+      const res = await adminFetch('/api/admin/rate-limits');
       const data = await res.json();
       if (data.ok) {
         setRateLimits(data.rate_limits);
@@ -115,18 +140,17 @@ export default function AdminClient() {
     } catch (error) {
       console.error('Error fetching rate limits:', error);
     }
-  };
+  }, [adminFetch]);
 
   // Load tenants on auth
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && savedPassword) {
       fetchTenants();
       fetchRateLimits();
-      // Refresh rate limits every 30 seconds
       const interval = setInterval(fetchRateLimits, 30000);
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, savedPassword, fetchTenants, fetchRateLimits]);
 
   // Load locations when tenant selected
   useEffect(() => {
@@ -135,7 +159,7 @@ export default function AdminClient() {
     } else {
       setLocations([]);
     }
-  }, [selectedTenant]);
+  }, [selectedTenant, fetchLocations]);
 
   // Auto-generate slug from tenant name
   const handleTenantNameChange = (name: string) => {
@@ -152,9 +176,8 @@ export default function AdminClient() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/tenants', {
+      const res = await adminFetch('/api/admin/tenants', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: newTenantId ? parseInt(newTenantId) : undefined,
           name: newTenantName,
@@ -206,10 +229,9 @@ export default function AdminClient() {
   const handleUpdateTier = async (tenantId: number, newTier: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/tenants/${tenantId}`, {
+      const res = await adminFetch(`/api/admin/tenants/${tenantId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           product_tier: newTier,
           subscription_status: 'active'
         }),
@@ -243,13 +265,13 @@ export default function AdminClient() {
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
           <h1 className="text-3xl font-bold text-black mb-2">Super Admin</h1>
           <p className="text-black mb-6">Enter password to access admin panel</p>
-          
+
           {authError && (
             <div className="bg-red-50 text-red-600 p-3 rounded mb-4">
               {authError}
             </div>
           )}
-          
+
           <form onSubmit={handleAdminLogin}>
             <div className="mb-4">
               <label className="block text-sm font-bold text-black mb-2">
@@ -438,10 +460,10 @@ export default function AdminClient() {
               onClick={fetchRateLimits}
               className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
             >
-              🔄 Refresh
+              Refresh
             </button>
           </div>
-          
+
           {rateLimits.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No active rate limit data (refreshes every 30s)</p>
           ) : (
@@ -487,17 +509,11 @@ export default function AdminClient() {
                         </td>
                         <td className="px-4 py-2 text-center">
                           {rl.is_limited ? (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">
-                              🚫 LIMITED
-                            </span>
+                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">LIMITADO</span>
                           ) : usagePercent >= 80 ? (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">
-                              ⚠️ WARNING
-                            </span>
+                            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">ADVERTENCIA</span>
                           ) : (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
-                              ✓ OK
-                            </span>
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">OK</span>
                           )}
                         </td>
                         <td className="px-4 py-2 text-xs text-gray-600">
@@ -548,7 +564,9 @@ export default function AdminClient() {
                 </div>
                 <p className="text-sm text-black">ID: {tenant.id}</p>
                 <p className="text-sm text-blue-800 font-bold">{tenant.slug}.tuordenya.com</p>
-                <p className={`text-xs mt-2 font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>Ad-Free: {tenant.ad_free ? 'Yes' : 'No'}</p>
+                <p className={`text-xs mt-2 font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>
+                  Ad-Free: {tenant.ad_free ? 'Yes' : 'No'}
+                </p>
                 {tenant.subscription_status && (
                   <p className={`text-xs mt-2 ${
                     tenant.subscription_status === 'active' ? 'text-green-600' : 'text-red-600'
@@ -565,9 +583,8 @@ export default function AdminClient() {
                     onChange={async (e) => {
                       setLoading(true);
                       try {
-                        const res = await fetch(`/api/admin/tenants/${tenant.id}`, {
+                        const res = await adminFetch(`/api/admin/tenants/${tenant.id}`, {
                           method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ ad_free: e.target.checked }),
                         });
                         const data = await res.json();
@@ -584,7 +601,9 @@ export default function AdminClient() {
                     }}
                     className="form-checkbox h-4 w-4 text-orange-600"
                   />
-                  <span className={`text-xs font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>{tenant.ad_free ? 'Yes' : 'No'}</span>
+                  <span className={`text-xs font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>
+                    {tenant.ad_free ? 'Yes' : 'No'}
+                  </span>
                 </div>
                 {/* Tier Management Buttons */}
                 <div className="mt-3 flex gap-2">
