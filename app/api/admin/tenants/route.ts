@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { checkAdminAuth } from "@/lib/superadmin-auth";
 
 // GET /api/admin/tenants - List all tenants
 export async function GET(request: NextRequest) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const result = await query(
       `SELECT id, name, slug, ad_free
        FROM tenants
        ORDER BY id DESC`
     );
-
     return NextResponse.json({
       ok: true,
       tenants: result.rows,
@@ -25,18 +28,18 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/tenants - Create new tenant
 export async function POST(request: NextRequest) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const body = await request.json();
     const { id, name, slug, product_tier = 'light' } = body;
-
     if (!name || !slug) {
       return NextResponse.json(
         { error: "name and slug are required" },
         { status: 400 }
       );
     }
-
-    // Validate tier
     const validTiers = ['light', 'plus', 'pro'];
     if (product_tier && !validTiers.includes(product_tier)) {
       return NextResponse.json(
@@ -44,10 +47,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
     let result;
     if (id) {
-      // Use custom ID (e.g., tax ID)
       result = await query(
         `INSERT INTO tenants (id, name, slug, product_tier, subscription_status)
          VALUES ($1, $2, $3, $4, 'active')
@@ -55,7 +56,6 @@ export async function POST(request: NextRequest) {
         [id, name, slug, product_tier]
       );
     } else {
-      // Auto-increment ID
       result = await query(
         `INSERT INTO tenants (name, slug, product_tier, subscription_status)
          VALUES ($1, $2, $3, 'active')
@@ -63,7 +63,6 @@ export async function POST(request: NextRequest) {
         [name, slug, product_tier]
       );
     }
-
     return NextResponse.json({
       ok: true,
       tenant: result.rows[0],
