@@ -449,7 +449,7 @@ export default function AdminClient() {
 
         {/* User Management Section */}
         <div className="mt-6">
-          <UserManagement tenants={tenants} />
+          <UserManagement tenants={tenants} adminFetch={adminFetch} />
         </div>
 
         {/* Rate Limit Monitoring */}
