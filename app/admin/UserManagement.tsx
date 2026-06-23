@@ -16,7 +16,7 @@ interface User {
 }
 
 interface Tenant {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
 }
@@ -39,13 +39,11 @@ export default function UserManagement({ tenants, adminFetch }: UserManagementPr
   const [showForm, setShowForm] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
-  // Filter state
   const [filterTenant, setFilterTenant] = useState<string>('');
   const [filterRole, setFilterRole] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
 
-  // Form state
   const [formData, setFormData] = useState({
     tenant_id: '',
     location_id: '',
@@ -61,9 +59,7 @@ export default function UserManagement({ tenants, adminFetch }: UserManagementPr
         : '/api/admin/users';
       const res = await adminFetch(url);
       const data = await res.json();
-      if (data.ok) {
-        setUsers(data.users);
-      }
+      if (data.ok) setUsers(data.users);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -73,9 +69,7 @@ export default function UserManagement({ tenants, adminFetch }: UserManagementPr
     try {
       const res = await fetch(`/api/tenants/${tenantId}/locations`);
       const data = await res.json();
-      if (data.ok) {
-        setLocations(data.locations);
-      }
+      if (data.ok) setLocations(data.locations);
     } catch (error) {
       console.error('Error fetching locations:', error);
     }
@@ -162,7 +156,7 @@ export default function UserManagement({ tenants, adminFetch }: UserManagementPr
   };
 
   const filteredUsers = users.filter(user => {
-    if (filterTenant && user.tenant_id !== parseInt(filterTenant)) return false;
+    if (filterTenant && String(user.tenant_id) !== filterTenant) return false;
     if (filterRole && user.role !== filterRole) return false;
     if (filterStatus === 'active' && !user.is_active) return false;
     if (filterStatus === 'inactive' && user.is_active) return false;
