@@ -4,56 +4,58 @@ import { useState, useEffect, useCallback } from 'react';
 import UserManagement from './UserManagement';
 
 interface Tenant {
-  id: number;
+  id: string;
   name: string;
-  slug?: string;
+  slug: string;
+  tax_id?: string;
+  ad_free?: boolean;
   product_tier?: string;
   subscription_status?: string;
+  is_active?: boolean;
   created_at?: string;
-  ad_free?: boolean;
+  phone?: string;
+  city?: string;
+  currency?: string;
+  locations_count?: number;
+  active_locations?: number;
+  items_count?: number;
+  active_items?: number;
+  users_count?: number;
+  orders_this_month?: number;
+  last_order_at?: string;
+  pipeline_profile?: boolean;
+  pipeline_has_items?: boolean;
+  pipeline_first_order?: boolean;
 }
 
-interface Location {
-  id: number;
-  tenant_id: number;
-  name: string;
-}
-
-interface RateLimit {
-  tenant_id: number;
-  tenant_name: string;
-  product_tier: string;
-  window_start: string;
-  request_count: number;
-  rate_limit: number;
-  is_limited: boolean;
-}
+type Tab = 'tenants' | 'pipeline' | 'crear';
 
 export default function AdminClient() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [rateLimits, setRateLimits] = useState<RateLimit[]>([]);
-  const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('tenants');
 
-  // Auth state
+  // Auth
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [savedPassword, setSavedPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
-  // Form states
+  // Filtros
+  const [search, setSearch] = useState('');
+  const [filterTier, setFilterTier] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+
+  // Crear tenant
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [newTenantId, setNewTenantId] = useState('');
   const [newTenantTier, setNewTenantTier] = useState<'light' | 'plus' | 'pro'>('light');
-  const [newLocationName, setNewLocationName] = useState('');
 
-  // Tier editing
-  const [editingTenantId, setEditingTenantId] = useState<number | null>(null);
+  // Editing
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editTier, setEditTier] = useState<'light' | 'plus' | 'pro'>('light');
 
-  // Helper: fetch con el header de autenticación siempre incluido
   const adminFetch = useCallback((url: string, options: RequestInit = {}) => {
     return fetch(url, {
       ...options,
@@ -65,7 +67,6 @@ export default function AdminClient() {
     });
   }, [savedPassword]);
 
-  // Check if already authenticated
   useEffect(() => {
     const authenticated = sessionStorage.getItem('admin_authenticated');
     const pw = sessionStorage.getItem('admin_pw');
@@ -75,14 +76,10 @@ export default function AdminClient() {
     }
   }, []);
 
-  // Handle admin login
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch('/api/admin/tenants', {
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-password': password,
-      },
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
     });
     if (res.ok) {
       setSavedPassword(password);
@@ -95,7 +92,6 @@ export default function AdminClient() {
     }
   };
 
-  // Logout
   const handleLogout = () => {
     sessionStorage.removeItem('admin_authenticated');
     sessionStorage.removeItem('admin_pw');
@@ -103,75 +99,25 @@ export default function AdminClient() {
     setIsAuthenticated(false);
   };
 
-  // Fetch tenants
   const fetchTenants = useCallback(async () => {
     try {
       const res = await adminFetch('/api/admin/tenants');
       const data = await res.json();
-      if (data.ok) {
-        setTenants(data.tenants);
-      }
+      if (data.ok) setTenants(data.tenants);
     } catch (error) {
       console.error('Error fetching tenants:', error);
     }
   }, [adminFetch]);
 
-  // Fetch locations for selected tenant
-  const fetchLocations = useCallback(async (tenantId: number) => {
-    try {
-      const res = await fetch(`/api/tenants/${tenantId}/locations`);
-      const data = await res.json();
-      if (data.ok) {
-        setLocations(data.locations);
-      }
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-    }
-  }, []);
-
-  // Fetch rate limits
-  const fetchRateLimits = useCallback(async () => {
-    try {
-      const res = await adminFetch('/api/admin/rate-limits');
-      const data = await res.json();
-      if (data.ok) {
-        setRateLimits(data.rate_limits);
-      }
-    } catch (error) {
-      console.error('Error fetching rate limits:', error);
-    }
-  }, [adminFetch]);
-
-  // Load tenants on auth
   useEffect(() => {
-    if (isAuthenticated && savedPassword) {
-      fetchTenants();
-      fetchRateLimits();
-      const interval = setInterval(fetchRateLimits, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, savedPassword, fetchTenants, fetchRateLimits]);
+    if (isAuthenticated && savedPassword) fetchTenants();
+  }, [isAuthenticated, savedPassword, fetchTenants]);
 
-  // Load locations when tenant selected
-  useEffect(() => {
-    if (selectedTenant) {
-      fetchLocations(selectedTenant);
-    } else {
-      setLocations([]);
-    }
-  }, [selectedTenant, fetchLocations]);
-
-  // Auto-generate slug from tenant name
   const handleTenantNameChange = (name: string) => {
     setNewTenantName(name);
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    setNewTenantSlug(slug);
+    setNewTenantSlug(name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
   };
 
-  // Create tenant
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -187,12 +133,11 @@ export default function AdminClient() {
       });
       const data = await res.json();
       if (data.ok) {
-        alert('Tenant created successfully!');
-        setNewTenantName('');
-        setNewTenantSlug('');
-        setNewTenantId('');
-        setNewTenantTier('light');
+        setNewTenantName(''); setNewTenantSlug(''); setNewTenantId(''); setNewTenantTier('light');
+        setActiveTab('tenants');
         fetchTenants();
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error creating tenant:', error);
@@ -201,96 +146,116 @@ export default function AdminClient() {
     }
   };
 
-  // Create location
-  const handleCreateLocation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTenant) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/tenants/${selectedTenant}/locations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newLocationName }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        alert('Location created!');
-        setNewLocationName('');
-        fetchLocations(selectedTenant);
-      }
-    } catch (error) {
-      console.error('Error creating location:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Update tenant tier
-  const handleUpdateTier = async (tenantId: number, newTier: string) => {
+  const handleUpdateTier = async (tenantId: string, newTier: string) => {
     setLoading(true);
     try {
       const res = await adminFetch(`/api/admin/tenants/${tenantId}`, {
         method: 'PUT',
-        body: JSON.stringify({
-          product_tier: newTier,
-          subscription_status: 'active'
-        }),
+        body: JSON.stringify({ product_tier: newTier, subscription_status: 'active' }),
       });
       const data = await res.json();
       if (data.ok) {
-        alert(`Tier updated to ${newTier.toUpperCase()} successfully!`);
-        setEditingTenantId(null);
+        setEditingId(null);
         fetchTenants();
       } else {
-        alert('Error updating tier: ' + (data.error || 'Unknown error'));
+        alert('Error: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error updating tier:', error);
-      alert('Error updating tier');
     } finally {
       setLoading(false);
     }
   };
 
-  // Start editing tier
-  const startEditingTier = (tenant: Tenant) => {
-    setEditingTenantId(tenant.id);
-    setEditTier((tenant.product_tier as 'light' | 'plus' | 'pro') || 'light');
+  const handleToggleActive = async (tenant: Tenant) => {
+    try {
+      const res = await adminFetch(`/api/admin/tenants/${tenant.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_active: !tenant.is_active }),
+      });
+      const data = await res.json();
+      if (data.ok) fetchTenants();
+    } catch (error) {
+      console.error('Error toggling tenant:', error);
+    }
   };
 
-  // Show login form if not authenticated
+  const filteredTenants = tenants.filter(t => {
+    if (search && !t.name.toLowerCase().includes(search.toLowerCase()) &&
+        !t.slug.toLowerCase().includes(search.toLowerCase()) &&
+        !(t.tax_id || '').includes(search)) return false;
+    if (filterTier && t.product_tier !== filterTier) return false;
+    if (filterStatus && t.subscription_status !== filterStatus) return false;
+    return true;
+  });
+
+  // Métricas globales
+  const totalOrders = tenants.reduce((s, t) => s + (t.orders_this_month || 0), 0);
+  const inactive = tenants.filter(t => {
+    if (!t.last_order_at) return true;
+    const days = (Date.now() - new Date(t.last_order_at).getTime()) / 86400000;
+    return days > 30;
+  }).length;
+  const incomplete = tenants.filter(t => !t.pipeline_first_order).length;
+
+  function tierBadge(tier?: string) {
+    const styles: Record<string, string> = {
+      pro: 'bg-purple-100 text-purple-700',
+      plus: 'bg-orange-100 text-orange-700',
+      light: 'bg-gray-100 text-gray-600',
+    };
+    return (
+      <span className={`px-2 py-0.5 text-xs font-bold rounded ${styles[tier || 'light'] || styles.light}`}>
+        {(tier || 'light').toUpperCase()}
+      </span>
+    );
+  }
+
+  function statusBadge(status?: string, isActive?: boolean) {
+    if (!isActive) return <span className="px-2 py-0.5 text-xs font-bold rounded bg-red-100 text-red-700">Desactivado</span>;
+    const styles: Record<string, string> = {
+      active: 'bg-green-100 text-green-700',
+      trial: 'bg-yellow-100 text-yellow-700',
+      paused: 'bg-red-100 text-red-700',
+      inactive: 'bg-gray-100 text-gray-500',
+    };
+    const labels: Record<string, string> = { active: 'Activo', trial: 'Trial', paused: 'Pausado', inactive: 'Inactivo' };
+    return (
+      <span className={`px-2 py-0.5 text-xs font-bold rounded ${styles[status || 'inactive'] || styles.inactive}`}>
+        {labels[status || 'inactive'] || status}
+      </span>
+    );
+  }
+
+  function daysAgo(date?: string) {
+    if (!date) return '—';
+    const days = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
+    if (days === 0) return 'hoy';
+    if (days === 1) return 'ayer';
+    return `hace ${days}d`;
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
           <h1 className="text-3xl font-bold text-black mb-2">Super Admin</h1>
-          <p className="text-black mb-6">Enter password to access admin panel</p>
-
-          {authError && (
-            <div className="bg-red-50 text-red-600 p-3 rounded mb-4">
-              {authError}
-            </div>
-          )}
-
+          <p className="text-gray-500 mb-6">TuOrdenYa · Panel de control</p>
+          {authError && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{authError}</div>}
           <form onSubmit={handleAdminLogin}>
             <div className="mb-4">
-              <label className="block text-sm font-bold text-black mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-bold text-black mb-2">Contraseña</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black font-semibold"
-                placeholder="Enter admin password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
+                placeholder="Contraseña de administrador"
                 required
               />
             </div>
-            <button
-              type="submit"
-              className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition"
-            >
-              Access Admin Panel
+            <button type="submit" className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition font-semibold">
+              Entrar
             </button>
           </form>
         </div>
@@ -299,358 +264,252 @@ export default function AdminClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-orange-600 to-indigo-700 rounded-lg shadow-lg p-6 mb-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Super Admin Panel</h1>
-            <p className="text-blue-100 mt-1">Manage tenants and locations</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-bold text-black">TuOrdenYa · Superadmin</h1>
+          <p className="text-xs text-gray-500">{tenants.length} tenants registrados</p>
+        </div>
+        <button onClick={handleLogout} className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-semibold">
+          Cerrar sesión
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-6">
+
+        {/* Métricas */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[
+            { label: 'Tenants activos', value: tenants.filter(t => t.is_active !== false).length, sub: `de ${tenants.length} totales` },
+            { label: 'Pedidos este mes', value: totalOrders.toLocaleString('es-CO'), sub: 'todos los tenants' },
+            { label: 'Sin actividad 30d', value: inactive, sub: 'requieren seguimiento', warn: inactive > 0 },
+            { label: 'Sin primer pedido', value: incomplete, sub: 'onboarding incompleto', warn: incomplete > 0 },
+          ].map((m, i) => (
+            <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-xs text-gray-500 mb-1">{m.label}</div>
+              <div className={`text-2xl font-bold ${m.warn ? 'text-orange-600' : 'text-black'}`}>{m.value}</div>
+              <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Create Tenant */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-black mb-4">Create Tenant (Restaurant)</h2>
-            <form onSubmit={handleCreateTenant} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Tenant ID (Optional - Tax ID/RUC)
-                </label>
-                <input
-                  type="number"
-                  value={newTenantId}
-                  onChange={(e) => setNewTenantId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
-                  placeholder="e.g., 20601234567 (leave empty for auto-increment)"
-                />
-                <p className="text-xs text-gray-600 mt-1">Use client's tax ID for accounting alignment</p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Restaurant Name
-                </label>
-                <input
-                  type="text"
-                  value={newTenantName}
-                  onChange={(e) => handleTenantNameChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
-                  placeholder="e.g., Pizza Roma"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Subdomain Slug
-                </label>
-                <input
-                  type="text"
-                  value={newTenantSlug}
-                  onChange={(e) => setNewTenantSlug(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
-                  placeholder="e.g., pizza-roma"
-                  pattern="[a-z0-9-]+"
-                  required
-                />
-                <p className="text-xs text-gray-900 font-semibold mt-1">
-                  Preview: {newTenantSlug || 'your-slug'}.tuordenya.com
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Product Tier
-                </label>
-                <select
-                  value={newTenantTier}
-                  onChange={(e) => setNewTenantTier(e.target.value as 'light' | 'plus' | 'pro')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
-                >
-                  <option value="light">Light - Menu + QR Code only</option>
-                  <option value="plus">Plus - Orders + Reports (no tables/variants)</option>
-                  <option value="pro">Pro - Full features (tables + variants)</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700 disabled:opacity-50"
-              >
-                {loading ? 'Creating...' : 'Create Tenant'}
-              </button>
-            </form>
-          </div>
-
-          {/* Create Location */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-black mb-4">Create Location</h2>
-            <form onSubmit={handleCreateLocation} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Select Tenant
-                </label>
-                <select
-                  value={selectedTenant || ''}
-                  onChange={(e) => setSelectedTenant(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
-                  required
-                >
-                  <option value="">Choose a tenant...</option>
-                  {tenants.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.slug}.tuordenya.com)
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Location Name
-                </label>
-                <input
-                  type="text"
-                  value={newLocationName}
-                  onChange={(e) => setNewLocationName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-black font-semibold"
-                  placeholder="e.g., Main Branch"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading || !selectedTenant}
-                className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
-              >
-                {loading ? 'Creating...' : 'Create Location'}
-              </button>
-            </form>
-
-            {/* Locations List */}
-            {selectedTenant && locations.length > 0 && (
-              <div className="mt-4 pt-4 border-t">
-                <h3 className="font-bold text-black mb-2">Locations:</h3>
-                <ul className="space-y-1">
-                  {locations.map((loc) => (
-                    <li key={loc.id} className="text-sm text-black">
-                      • {loc.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* User Management Section */}
-        <div className="mt-6">
-          <UserManagement tenants={tenants} adminFetch={adminFetch} />
-        </div>
-
-        {/* Rate Limit Monitoring */}
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-black">API Rate Limit Monitoring</h2>
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
+          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (
             <button
-              onClick={fetchRateLimits}
-              className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm rounded-md font-semibold transition ${activeTab === tab ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-black'}`}
             >
-              Refresh
+              {label}
             </button>
-          </div>
+          ))}
+        </div>
 
-          {rateLimits.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No active rate limit data (refreshes every 30s)</p>
-          ) : (
-            <div className="overflow-x-auto">
+        {/* Tab: Tenants */}
+        {activeTab === 'tenants' && (
+          <div>
+            {/* Filtros */}
+            <div className="flex gap-3 mb-4 flex-wrap">
+              <input
+                type="text"
+                placeholder="Buscar por nombre, slug o NIT..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="flex-1 min-w-48 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black"
+              />
+              <select value={filterTier} onChange={e => setFilterTier(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg text-black">
+                <option value="">Todos los tiers</option>
+                <option value="pro">Pro</option>
+                <option value="plus">Plus</option>
+                <option value="light">Light</option>
+              </select>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg text-black">
+                <option value="">Todos los estados</option>
+                <option value="active">Activo</option>
+                <option value="trial">Trial</option>
+                <option value="paused">Pausado</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+            </div>
+
+            {/* Tabla */}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Restaurante</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tier</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Estado</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Sedes</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Items</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Usuarios</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Pedidos/mes</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Último pedido</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredTenants.length === 0 ? (
+                      <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">Sin resultados</td></tr>
+                    ) : filteredTenants.map(tenant => (
+                      <tr key={tenant.id} className={`hover:bg-gray-50 ${tenant.is_active === false ? 'opacity-50' : ''}`}>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-black">{tenant.name}</div>
+                          <div className="text-xs text-gray-400">{tenant.slug}.tuordenya.com · {tenant.tax_id || '—'}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {editingId === tenant.id ? (
+                            <select
+                              value={editTier}
+                              onChange={e => setEditTier(e.target.value as 'light' | 'plus' | 'pro')}
+                              className="px-2 py-1 text-xs border-2 border-orange-500 rounded text-black"
+                              autoFocus
+                            >
+                              <option value="light">Light</option>
+                              <option value="plus">Plus</option>
+                              <option value="pro">Pro</option>
+                            </select>
+                          ) : tierBadge(tenant.product_tier)}
+                        </td>
+                        <td className="px-4 py-3">{statusBadge(tenant.subscription_status, tenant.is_active)}</td>
+                        <td className="px-4 py-3 text-center text-black">{tenant.locations_count ?? '—'}</td>
+                        <td className="px-4 py-3 text-center text-black">{tenant.active_items ?? '—'}<span className="text-gray-400">/{tenant.items_count ?? '—'}</span></td>
+                        <td className="px-4 py-3 text-center text-black">{tenant.users_count ?? '—'}</td>
+                        <td className="px-4 py-3 text-center font-semibold text-black">{tenant.orders_this_month ?? 0}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500">{daysAgo(tenant.last_order_at)}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2 items-center">
+                            {editingId === tenant.id ? (
+                              <>
+                                <button onClick={() => handleUpdateTier(tenant.id, editTier)} disabled={loading} className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">Guardar</button>
+                                <button onClick={() => setEditingId(null)} className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Cancelar</button>
+                              </>
+                            ) : (
+                              <>
+                                <button onClick={() => { setEditingId(tenant.id); setEditTier((tenant.product_tier as 'light' | 'plus' | 'pro') || 'light'); }} className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 font-semibold">Tier</button>
+                                <button onClick={() => handleToggleActive(tenant)} className={`text-xs px-2 py-1 rounded font-semibold ${tenant.is_active !== false ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
+                                  {tenant.is_active !== false ? 'Desactivar' : 'Activar'}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* User Management */}
+            <div className="mt-6">
+              <UserManagement tenants={tenants} adminFetch={adminFetch} />
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Pipeline */}
+        {activeTab === 'pipeline' && (
+          <div>
+            {/* Resumen */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              {[
+                { label: 'Perfil configurado', value: tenants.filter(t => t.pipeline_profile).length, total: tenants.length },
+                { label: 'Items creados', value: tenants.filter(t => t.pipeline_has_items).length, total: tenants.length },
+                { label: 'Primer pedido', value: tenants.filter(t => t.pipeline_first_order).length, total: tenants.length },
+              ].map((s, i) => (
+                <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="text-xs text-gray-500 mb-1">{s.label}</div>
+                  <div className="text-2xl font-bold text-black">{s.value}<span className="text-sm text-gray-400 font-normal">/{s.total}</span></div>
+                  <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-orange-500 rounded-full" style={{ width: `${s.total ? (s.value / s.total) * 100 : 0}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tabla pipeline */}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-gray-100">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-2 text-left text-black font-bold">Tenant</th>
-                    <th className="px-4 py-2 text-left text-black font-bold">Tier</th>
-                    <th className="px-4 py-2 text-right text-black font-bold">Requests</th>
-                    <th className="px-4 py-2 text-right text-black font-bold">Limit</th>
-                    <th className="px-4 py-2 text-right text-black font-bold">Usage %</th>
-                    <th className="px-4 py-2 text-center text-black font-bold">Status</th>
-                    <th className="px-4 py-2 text-left text-black font-bold">Window Start</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Restaurante</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Registrado</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Perfil</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Items</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Primer pedido</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {rateLimits.map((rl) => {
-                    const usagePercent = (rl.request_count / rl.rate_limit) * 100;
+                <tbody className="divide-y divide-gray-100">
+                  {tenants.map(t => {
+                    const steps = [true, !!t.pipeline_profile, !!t.pipeline_has_items, !!t.pipeline_first_order];
                     return (
-                      <tr key={`${rl.tenant_id}-${rl.window_start}`} className="border-b hover:bg-gray-50">
-                        <td className="px-4 py-2 text-black font-semibold">{rl.tenant_name}</td>
-                        <td className="px-4 py-2">
-                          <span className={`px-2 py-1 text-xs font-bold rounded ${
-                            rl.product_tier === 'pro' ? 'bg-purple-100 text-purple-700' :
-                            rl.product_tier === 'plus' ? 'bg-orange-100 text-orange-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {rl.product_tier.toUpperCase()}
-                          </span>
+                      <tr key={t.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-black">{t.name}</div>
+                          <div className="text-xs text-gray-400">{tierBadge(t.product_tier)}</div>
                         </td>
-                        <td className="px-4 py-2 text-right text-black font-semibold">{rl.request_count}</td>
-                        <td className="px-4 py-2 text-right text-gray-600">{rl.rate_limit === 999999 ? '∞' : rl.rate_limit}</td>
-                        <td className="px-4 py-2 text-right">
-                          <span className={`font-bold ${
-                            usagePercent >= 100 ? 'text-red-600' :
-                            usagePercent >= 80 ? 'text-orange-600' :
-                            usagePercent >= 50 ? 'text-yellow-600' :
-                            'text-green-600'
-                          }`}>
-                            {usagePercent.toFixed(1)}%
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 text-center">
-                          {rl.is_limited ? (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">LIMITADO</span>
-                          ) : usagePercent >= 80 ? (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">ADVERTENCIA</span>
-                          ) : (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">OK</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2 text-xs text-gray-600">
-                          {new Date(rl.window_start).toLocaleTimeString()}
-                        </td>
+                        {steps.map((done, i) => (
+                          <td key={i} className="px-4 py-3 text-center">
+                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${done ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+                              {done ? '✓' : '–'}
+                            </span>
+                          </td>
+                        ))}
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
-
-        {/* Tenants List */}
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-xl font-bold text-black mb-4">All Tenants</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tenants.map((tenant) => (
-              <div
-                key={tenant.id}
-                className="border-2 border-gray-200 rounded-lg p-4 hover:border-orange-600 hover:shadow-md transition-all"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg text-black">{tenant.name}</h3>
-                  {editingTenantId === tenant.id ? (
-                    <select
-                      value={editTier}
-                      onChange={(e) => setEditTier(e.target.value as 'light' | 'plus' | 'pro')}
-                      className="px-2 py-1 text-xs font-bold rounded border-2 border-blue-500 bg-white text-black focus:ring-2 focus:ring-blue-500"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <option value="light">LIGHT</option>
-                      <option value="plus">PLUS</option>
-                      <option value="pro">PRO</option>
-                    </select>
-                  ) : (
-                    tenant.product_tier && (
-                      <span className={`px-2 py-1 text-xs font-bold rounded ${
-                        tenant.product_tier === 'pro' ? 'bg-purple-100 text-purple-700' :
-                        tenant.product_tier === 'plus' ? 'bg-orange-100 text-orange-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {tenant.product_tier.toUpperCase()}
-                      </span>
-                    )
-                  )}
-                </div>
-                <p className="text-sm text-black">ID: {tenant.id}</p>
-                <p className="text-sm text-blue-800 font-bold">{tenant.slug}.tuordenya.com</p>
-                <p className={`text-xs mt-2 font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>
-                  Ad-Free: {tenant.ad_free ? 'Yes' : 'No'}
-                </p>
-                {tenant.subscription_status && (
-                  <p className={`text-xs mt-2 ${
-                    tenant.subscription_status === 'active' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {tenant.subscription_status === 'active' ? '✓ Active' : '⚠ Inactive'}
-                  </p>
-                )}
-                {/* Ad-Free Toggle */}
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-700">Ad-Free:</span>
-                  <input
-                    type="checkbox"
-                    checked={!!tenant.ad_free}
-                    onChange={async (e) => {
-                      setLoading(true);
-                      try {
-                        const res = await adminFetch(`/api/admin/tenants/${tenant.id}`, {
-                          method: 'PUT',
-                          body: JSON.stringify({ ad_free: e.target.checked }),
-                        });
-                        const data = await res.json();
-                        if (data.ok) {
-                          fetchTenants();
-                        } else {
-                          alert('Error updating ad-free status: ' + (data.error || 'Unknown error'));
-                        }
-                      } catch (error) {
-                        alert('Error updating ad-free status');
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                    className="form-checkbox h-4 w-4 text-orange-600"
-                  />
-                  <span className={`text-xs font-bold ${tenant.ad_free ? 'text-green-600' : 'text-orange-600'}`}>
-                    {tenant.ad_free ? 'Yes' : 'No'}
-                  </span>
-                </div>
-                {/* Tier Management Buttons */}
-                <div className="mt-3 flex gap-2">
-                  {editingTenantId === tenant.id ? (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUpdateTier(tenant.id, editTier);
-                        }}
-                        disabled={loading}
-                        className="flex-1 bg-green-600 text-white text-xs py-1 px-2 rounded hover:bg-green-700 disabled:opacity-50"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingTenantId(null);
-                        }}
-                        className="flex-1 bg-gray-500 text-white text-xs py-1 px-2 rounded hover:bg-gray-600"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startEditingTier(tenant);
-                      }}
-                      className="flex-1 bg-orange-600 text-white text-xs py-1 px-2 rounded hover:bg-orange-700"
-                    >
-                      Change Tier
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setSelectedTenant(tenant.id)}
-                    className="flex-1 bg-orange-700 text-white text-xs py-1 px-2 rounded hover:bg-indigo-700"
-                  >
-                    View
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
-        </div>
+        )}
+
+        {/* Tab: Crear tenant */}
+        {activeTab === 'crear' && (
+          <div className="max-w-lg">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-lg font-bold text-black mb-4">Nuevo tenant</h2>
+              <form onSubmit={handleCreateTenant} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-black mb-1">NIT / Tax ID <span className="font-normal text-gray-400">(opcional)</span></label>
+                  <input type="number" value={newTenantId} onChange={e => setNewTenantId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 text-black"
+                    placeholder="Ej: 1015439930" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-black mb-1">Nombre del restaurante</label>
+                  <input type="text" value={newTenantName} onChange={e => handleTenantNameChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 text-black"
+                    placeholder="Ej: Pizza Roma" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-black mb-1">Slug</label>
+                  <input type="text" value={newTenantSlug} onChange={e => setNewTenantSlug(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 text-black"
+                    placeholder="pizza-roma" pattern="[a-z0-9-]+" required />
+                  <p className="text-xs text-gray-400 mt-1">{newTenantSlug || 'tu-slug'}.tuordenya.com</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-black mb-1">Tier inicial</label>
+                  <select value={newTenantTier} onChange={e => setNewTenantTier(e.target.value as 'light' | 'plus' | 'pro')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 text-black">
+                    <option value="light">Light — Menú + QR</option>
+                    <option value="plus">Plus — Pedidos + Reportes</option>
+                    <option value="pro">Pro — Todo incluido</option>
+                  </select>
+                </div>
+                <button type="submit" disabled={loading}
+                  className="w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 disabled:opacity-50 font-semibold">
+                  {loading ? 'Creando...' : 'Crear tenant'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
