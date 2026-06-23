@@ -389,7 +389,7 @@ export default function AdminClient() {
                               </>
                             ) : (
                               <>
-                                <button onClick={() => { setEditingId(tenant.id); setEditTier((tenant.product_tier as 'light' | 'plus' | 'pro') || 'light'); }} className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 font-semibold">Tier</button>
+                                <button onClick={() => { setEditingId(String(tenant.id)); setEditTier((tenant.product_tier as 'light' | 'plus' | 'pro') || 'light'); }} className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 font-semibold">Tier</button>
                                 <button onClick={() => handleToggleActive(tenant)} className={`text-xs px-2 py-1 rounded font-semibold ${tenant.is_active !== false ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
                                   {tenant.is_active !== false ? 'Desactivar' : 'Activar'}
                                 </button>
