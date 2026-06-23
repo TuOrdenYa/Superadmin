@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import UserManagement from './UserManagement';
 
 interface Tenant {
-  id: string;
+  id: string | number;
   name: string;
   slug: string;
   tax_id?: string;
