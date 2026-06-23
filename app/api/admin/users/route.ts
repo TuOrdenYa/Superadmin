@@ -2,21 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { isPasswordStrong } from '@/lib/auth';
+import { checkAdminAuth } from '@/lib/superadmin-auth';
 
 // GET - List users for a tenant
 export async function GET(request: NextRequest) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenant_id');
 
     let sql = `
-      SELECT 
-        u.id, 
-        u.tenant_id, 
-        u.location_id, 
-        u.email, 
-        u.full_name, 
-        u.role, 
+      SELECT
+        u.id,
+        u.tenant_id,
+        u.location_id,
+        u.email,
+        u.full_name,
+        u.role,
         u.is_active,
         u.created_at,
         t.name as tenant_name,
@@ -25,10 +29,9 @@ export async function GET(request: NextRequest) {
       LEFT JOIN tenants t ON u.tenant_id = t.id
       LEFT JOIN locations l ON u.location_id = l.id
     `;
-    
+
     const params: any[] = [];
     if (tenantId) {
-      // Support both tax_id and uuid
       const tenantResult = await query(
         `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
         [String(tenantId)]
@@ -39,7 +42,7 @@ export async function GET(request: NextRequest) {
       sql += ' WHERE u.tenant_id = $1';
       params.push(tenantResult.rows[0].id);
     }
-    
+
     sql += ' ORDER BY u.created_at DESC';
 
     const result = await query(sql, params);
@@ -59,6 +62,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new user
 export async function POST(request: NextRequest) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const body = await request.json();
     const { tenant_id, location_id, email, full_name, role, password } = body;
@@ -85,7 +91,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get tenant UUID
     const tenantResult = await query(
       `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
       [String(tenant_id)]
@@ -98,7 +103,6 @@ export async function POST(request: NextRequest) {
     }
     const tenantUuid = tenantResult.rows[0].id;
 
-    // Check if email already exists for this tenant
     const existingUser = await query(
       'SELECT id FROM users WHERE email = $1 AND tenant_id = $2',
       [email.toLowerCase().trim(), tenantUuid]
@@ -110,7 +114,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Password handling
     let userPassword = password;
     if (userPassword) {
       if (!isPasswordStrong(userPassword)) {
@@ -120,15 +123,14 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
-      // Generate random password
       userPassword = Math.random().toString(36).slice(-6).toUpperCase() + Math.random().toString(36).slice(-6) + '!1';
     }
     const passwordHash = await bcrypt.hash(userPassword, 10);
 
     const result = await query(
-      `INSERT INTO users 
-        (tenant_id, location_id, email, password_hash, full_name, role, is_active) 
-       VALUES ($1, $2, $3, $4, $5, $6, true) 
+      `INSERT INTO users
+        (tenant_id, location_id, email, password_hash, full_name, role, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, true)
        RETURNING id, tenant_id, location_id, email, full_name, role, is_active`,
       [
         tenantUuid,
@@ -143,7 +145,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       user: result.rows[0],
-      password: userPassword, // Shown only once!
+      password: userPassword,
     });
   } catch (error) {
     console.error('[admin/users POST] error:', error);

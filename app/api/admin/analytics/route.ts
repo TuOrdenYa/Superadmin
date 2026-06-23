@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUsageStats, getTenantUpgradeSuggestions } from '@/lib/usage-analytics';
+import { checkAdminAuth } from '@/lib/superadmin-auth';
 
 // GET /api/admin/analytics - Get usage analytics and upgrade suggestions
 export async function GET(request: NextRequest) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenant_id');

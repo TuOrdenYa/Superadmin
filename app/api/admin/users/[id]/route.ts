@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
+import { checkAdminAuth } from '@/lib/superadmin-auth';
 
 // PUT /api/admin/users/[id] - Update user (activate/deactivate)
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -16,7 +20,6 @@ export async function PUT(
       return NextResponse.json({ ok: false, error: 'tenant_id is required' }, { status: 400 });
     }
 
-    // Get tenant UUID
     const tenantResult = await query(
       `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
       [String(tenant_id)]
@@ -26,7 +29,6 @@ export async function PUT(
     }
     const tenantUuid = tenantResult.rows[0].id;
 
-    // Build dynamic update
     const updates: string[] = [];
     const values: any[] = [];
     let paramCount = 1;
@@ -70,6 +72,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
@@ -79,7 +84,6 @@ export async function DELETE(
       return NextResponse.json({ ok: false, error: 'tenant_id is required' }, { status: 400 });
     }
 
-    // Get tenant UUID
     const tenantResult = await query(
       `SELECT id FROM tenants WHERE tax_id = $1 OR id::text = $1 LIMIT 1`,
       [String(tenant_id)]
@@ -89,7 +93,6 @@ export async function DELETE(
     }
     const tenantUuid = tenantResult.rows[0].id;
 
-    // Prevent deleting admin users
     const userCheck = await query(
       `SELECT role FROM users WHERE id::text = $1 AND tenant_id = $2`,
       [String(id), tenantUuid]

@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { checkAdminAuth } from "@/lib/superadmin-auth";
 
 // GET /api/admin/tenants/[id] - Get tenant by ID or tax_id
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
-    
     const result = await query(
       `SELECT id, name, slug, product_tier, subscription_status, ad_free
        FROM tenants
@@ -16,14 +19,12 @@ export async function GET(
        LIMIT 1`,
       [String(id)]
     );
-
     if (result.rowCount === 0) {
       return NextResponse.json(
         { ok: false, error: "Tenant not found" },
         { status: 404 }
       );
     }
-
     return NextResponse.json({
       ok: true,
       tenant: result.rows[0],
@@ -42,11 +43,13 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
     const { id } = await params;
     const body = await request.json();
     const { product_tier, subscription_status, ad_free } = body;
-
     const validTiers = ['light', 'plus', 'pro'];
     if (product_tier && !validTiers.includes(product_tier)) {
       return NextResponse.json(
@@ -54,44 +57,36 @@ export async function PUT(
         { status: 400 }
       );
     }
-
     const updates = [];
     const values = [];
     let paramCount = 1;
-
     if (product_tier) {
       updates.push(`product_tier = $${paramCount++}`);
       values.push(product_tier);
     }
-
     if (subscription_status) {
       updates.push(`subscription_status = $${paramCount++}`);
       values.push(subscription_status);
     }
-
     if (typeof ad_free === 'boolean') {
       updates.push(`ad_free = $${paramCount++}`);
       values.push(ad_free);
     }
-
     updates.push(`updated_at = NOW()`);
     values.push(String(id));
-
     const result = await query(
-      `UPDATE tenants 
+      `UPDATE tenants
        SET ${updates.join(', ')}
        WHERE tax_id = $${paramCount} OR id::text = $${paramCount}
        RETURNING id, name, slug, product_tier, subscription_status, ad_free`,
       values
     );
-
     if (result.rowCount === 0) {
       return NextResponse.json(
         { ok: false, error: "Tenant not found" },
         { status: 404 }
       );
     }
-
     return NextResponse.json({
       ok: true,
       tenant: result.rows[0],

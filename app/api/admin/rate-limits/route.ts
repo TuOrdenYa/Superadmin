@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { checkAdminAuth } from '@/lib/superadmin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const auth = checkAdminAuth(request);
+  if (auth) return auth;
+
   try {
-    // Get current rate limit status from the view
     const result = await query(`
-      SELECT 
+      SELECT
         tenant_id,
         tenant_name,
         product_tier,
@@ -19,7 +22,6 @@ export async function GET(request: NextRequest) {
       ORDER BY request_count DESC
       LIMIT 50
     `);
-
     return NextResponse.json({
       ok: true,
       rate_limits: result.rows,
