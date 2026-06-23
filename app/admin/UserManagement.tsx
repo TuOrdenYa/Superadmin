@@ -29,21 +29,22 @@ interface Location {
 
 interface UserManagementProps {
   tenants: Tenant[];
+  adminFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export default function UserManagement({ tenants }: UserManagementProps) {
+export default function UserManagement({ tenants, adminFetch }: UserManagementProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
-  
+
   // Filter state
   const [filterTenant, setFilterTenant] = useState<string>('');
   const [filterRole, setFilterRole] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
-  
+
   // Form state
   const [formData, setFormData] = useState({
     tenant_id: '',
@@ -53,13 +54,12 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     role: 'admin',
   });
 
-  // Fetch all users
   const fetchUsers = async (tenantId?: number) => {
     try {
-      const url = tenantId 
+      const url = tenantId
         ? `/api/admin/users?tenant_id=${tenantId}`
         : '/api/admin/users';
-      const res = await fetch(url);
+      const res = await adminFetch(url);
       const data = await res.json();
       if (data.ok) {
         setUsers(data.users);
@@ -69,7 +69,6 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   };
 
-  // Fetch locations when tenant changes
   const fetchLocations = async (tenantId: number) => {
     try {
       const res = await fetch(`/api/tenants/${tenantId}/locations`);
@@ -82,12 +81,10 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   };
 
-  // Load users on mount
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Fetch locations when tenant selected in form
   useEffect(() => {
     if (formData.tenant_id) {
       fetchLocations(parseInt(formData.tenant_id));
@@ -97,35 +94,24 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   }, [formData.tenant_id]);
 
-  // Create user
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setGeneratedPassword(null);
-
     try {
-      const res = await fetch('/api/admin/users', {
+      const res = await adminFetch('/api/admin/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           tenant_id: parseInt(formData.tenant_id),
           location_id: formData.location_id ? parseInt(formData.location_id) : null,
         }),
       });
-
       const data = await res.json();
-      
       if (data.ok) {
         setGeneratedPassword(data.password);
         alert(`User created! Password: ${data.password}\n\nSave this password - it won't be shown again!`);
-        setFormData({
-          tenant_id: '',
-          location_id: '',
-          email: '',
-          full_name: '',
-          role: 'admin',
-        });
+        setFormData({ tenant_id: '', location_id: '', email: '', full_name: '', role: 'admin' });
         fetchUsers();
       } else {
         alert(`Error: ${data.error}`);
@@ -138,17 +124,13 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   };
 
-  // Reset password
   const handleResetPassword = async (userId: number, userName: string) => {
     if (!confirm(`Reset password for ${userName}?`)) return;
-
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
+      const res = await adminFetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reset_password: true }),
       });
-
       const data = await res.json();
       if (data.ok) {
         alert(`New password for ${userName}:\n\n${data.password}\n\nSave this password - it won't be shown again!`);
@@ -161,15 +143,12 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   };
 
-  // Toggle user active status
   const handleToggleActive = async (user: User) => {
     try {
-      const res = await fetch(`/api/admin/users/${user.id}`, {
+      const res = await adminFetch(`/api/admin/users/${user.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: !user.is_active }),
       });
-
       const data = await res.json();
       if (data.ok) {
         fetchUsers();
@@ -182,42 +161,20 @@ export default function UserManagement({ tenants }: UserManagementProps) {
     }
   };
 
-  // Filter users based on criteria
   const filteredUsers = users.filter(user => {
-    // Tenant filter
-    if (filterTenant && user.tenant_id !== parseInt(filterTenant)) {
-      return false;
-    }
-    
-    // Role filter
-    if (filterRole && user.role !== filterRole) {
-      return false;
-    }
-    
-    // Status filter
-    if (filterStatus === 'active' && !user.is_active) {
-      return false;
-    }
-    if (filterStatus === 'inactive' && user.is_active) {
-      return false;
-    }
-    
-    // Search by name or email
+    if (filterTenant && user.tenant_id !== parseInt(filterTenant)) return false;
+    if (filterRole && user.role !== filterRole) return false;
+    if (filterStatus === 'active' && !user.is_active) return false;
+    if (filterStatus === 'inactive' && user.is_active) return false;
     if (searchText) {
       const search = searchText.toLowerCase();
-      const matchName = user.full_name.toLowerCase().includes(search);
-      const matchEmail = user.email.toLowerCase().includes(search);
-      if (!matchName && !matchEmail) {
-        return false;
-      }
+      if (!user.full_name.toLowerCase().includes(search) && !user.email.toLowerCase().includes(search)) return false;
     }
-    
     return true;
   });
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-black">User Management</h2>
         <button
@@ -228,7 +185,6 @@ export default function UserManagement({ tenants }: UserManagementProps) {
         </button>
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
@@ -241,7 +197,6 @@ export default function UserManagement({ tenants }: UserManagementProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 text-black"
             />
           </div>
-          
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">Filter by Tenant</label>
             <select
@@ -255,7 +210,6 @@ export default function UserManagement({ tenants }: UserManagementProps) {
               ))}
             </select>
           </div>
-          
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">Filter by Role</label>
             <select
@@ -269,7 +223,6 @@ export default function UserManagement({ tenants }: UserManagementProps) {
               <option value="waiter">Waiter</option>
             </select>
           </div>
-          
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">Filter by Status</label>
             <select
@@ -282,37 +235,27 @@ export default function UserManagement({ tenants }: UserManagementProps) {
               <option value="inactive">Inactive Only</option>
             </select>
           </div>
-          
           <div className="flex items-end">
             <button
-              onClick={() => {
-                setSearchText('');
-                setFilterTenant('');
-                setFilterRole('');
-                setFilterStatus('');
-              }}
+              onClick={() => { setSearchText(''); setFilterTenant(''); setFilterRole(''); setFilterStatus(''); }}
               className="w-full px-3 py-2 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 font-semibold"
             >
               Clear Filters
             </button>
           </div>
         </div>
-        
         <div className="mt-2 text-sm text-gray-600">
           Showing {filteredUsers.length} of {users.length} users
         </div>
       </div>
 
-      {/* Create User Form */}
       {showForm && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-bold text-black mb-4">Create New User</h3>
           <form onSubmit={handleCreateUser} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Tenant (Restaurant) *
-                </label>
+                <label className="block text-sm font-bold text-black mb-1">Tenant *</label>
                 <select
                   value={formData.tenant_id}
                   onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value })}
@@ -321,17 +264,12 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                 >
                   <option value="">Select tenant...</option>
                   {tenants.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} (ID: {t.id})
-                    </option>
+                    <option key={t.id} value={t.id}>{t.name} (ID: {t.id})</option>
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Role *
-                </label>
+                <label className="block text-sm font-bold text-black mb-1">Role *</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -343,12 +281,9 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   <option value="waiter">Waiter (Orders Only)</option>
                 </select>
               </div>
-
               {(formData.role === 'manager' || formData.role === 'waiter') && (
                 <div>
-                  <label className="block text-sm font-bold text-black mb-1">
-                    Location * (Required for Manager/Waiter)
-                  </label>
+                  <label className="block text-sm font-bold text-black mb-1">Location *</label>
                   <select
                     value={formData.location_id}
                     onChange={(e) => setFormData({ ...formData, location_id: e.target.value })}
@@ -358,18 +293,13 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   >
                     <option value="">Select location...</option>
                     {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>
-                        {loc.name}
-                      </option>
+                      <option key={loc.id} value={loc.id}>{loc.name}</option>
                     ))}
                   </select>
                 </div>
               )}
-
               <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Full Name *
-                </label>
+                <label className="block text-sm font-bold text-black mb-1">Full Name *</label>
                 <input
                   type="text"
                   value={formData.full_name}
@@ -379,11 +309,8 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-black mb-1">
-                  Email *
-                </label>
+                <label className="block text-sm font-bold text-black mb-1">Email *</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -394,13 +321,11 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                 />
               </div>
             </div>
-
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
               <p className="text-sm text-yellow-800 font-semibold">
-                ℹ️ A random password will be generated automatically. Save it when shown!
+                Se generará una contraseña aleatoria automáticamente. ¡Guárdala cuando aparezca!
               </p>
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -412,7 +337,6 @@ export default function UserManagement({ tenants }: UserManagementProps) {
         </div>
       )}
 
-      {/* Users Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -436,45 +360,46 @@ export default function UserManagement({ tenants }: UserManagementProps) {
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                <tr key={user.id} className={!user.is_active ? 'opacity-50' : ''}>
-                  <td className="px-4 py-3 text-sm text-black font-semibold">{user.full_name}</td>
-                  <td className="px-4 py-3 text-sm text-black">{user.email}</td>
-                  <td className="px-4 py-3 text-sm text-black">{user.tenant_name || `ID: ${user.tenant_id}`}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                      user.role === 'manager' ? 'bg-orange-100 text-blue-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-black">{user.location_name || '-'}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm space-x-2">
-                    <button
-                      onClick={() => handleResetPassword(user.id, user.full_name)}
-                      className="text-orange-600 hover:text-blue-800 font-semibold"
-                    >
-                      Reset Pwd
-                    </button>
-                    <button
-                      onClick={() => handleToggleActive(user)}
-                      className={`font-semibold ${
-                        user.is_active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'
-                      }`}
-                    >
-                      {user.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </td>
-                </tr>
-              )))}
+                  <tr key={user.id} className={!user.is_active ? 'opacity-50' : ''}>
+                    <td className="px-4 py-3 text-sm text-black font-semibold">{user.full_name}</td>
+                    <td className="px-4 py-3 text-sm text-black">{user.email}</td>
+                    <td className="px-4 py-3 text-sm text-black">{user.tenant_name || `ID: ${user.tenant_id}`}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${
+                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                        user.role === 'manager' ? 'bg-orange-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-black">{user.location_name || '-'}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${
+                        user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm space-x-2">
+                      <button
+                        onClick={() => handleResetPassword(user.id, user.full_name)}
+                        className="text-orange-600 hover:text-orange-800 font-semibold"
+                      >
+                        Reset Pwd
+                      </button>
+                      <button
+                        onClick={() => handleToggleActive(user)}
+                        className={`font-semibold ${
+                          user.is_active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'
+                        }`}
+                      >
+                        {user.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
