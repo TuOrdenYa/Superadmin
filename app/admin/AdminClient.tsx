@@ -35,24 +35,20 @@ export default function AdminClient() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('tenants');
 
-  // Auth
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [savedPassword, setSavedPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
-  // Filtros
   const [search, setSearch] = useState('');
   const [filterTier, setFilterTier] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
-  // Crear tenant
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantSlug, setNewTenantSlug] = useState('');
   const [newTenantId, setNewTenantId] = useState('');
   const [newTenantTier, setNewTenantTier] = useState<'light' | 'plus' | 'pro'>('light');
 
-  // Editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTier, setEditTier] = useState<'light' | 'plus' | 'pro'>('light');
 
@@ -180,6 +176,27 @@ export default function AdminClient() {
     }
   };
 
+  const handleImpersonate = async (tenant: Tenant) => {
+    if (!confirm(`¿Entrar al backoffice de ${tenant.name}?`)) return;
+    try {
+      const res = await adminFetch('/api/superadmin/impersonate', {
+        method: 'POST',
+        body: JSON.stringify({ tax_id: tenant.tax_id || tenant.id }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.open(`/backoffice/${data.user.tenant_tax_id}`, '_blank');
+      } else {
+        alert('Error: ' + (data.error || 'No se pudo impersonar'));
+      }
+    } catch (error) {
+      console.error('Error impersonando:', error);
+      alert('Error de conexión');
+    }
+  };
+
   const filteredTenants = tenants.filter(t => {
     if (search && !t.name.toLowerCase().includes(search.toLowerCase()) &&
         !t.slug.toLowerCase().includes(search.toLowerCase()) &&
@@ -189,7 +206,6 @@ export default function AdminClient() {
     return true;
   });
 
-  // Métricas globales
   const totalOrders = tenants.reduce((s, t) => s + (t.orders_this_month || 0), 0);
   const inactive = tenants.filter(t => {
     if (!t.last_order_at) return true;
@@ -265,7 +281,6 @@ export default function AdminClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold text-black">TuOrdenYa · Superadmin</h1>
@@ -278,7 +293,6 @@ export default function AdminClient() {
 
       <div className="max-w-7xl mx-auto px-6 py-6">
 
-        {/* Métricas */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { label: 'Tenants activos', value: tenants.filter(t => t.is_active !== false).length, sub: `de ${tenants.length} totales` },
@@ -294,7 +308,6 @@ export default function AdminClient() {
           ))}
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
           {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (
             <button
@@ -307,10 +320,8 @@ export default function AdminClient() {
           ))}
         </div>
 
-        {/* Tab: Tenants */}
         {activeTab === 'tenants' && (
           <div>
-            {/* Filtros */}
             <div className="flex gap-3 mb-4 flex-wrap">
               <input
                 type="text"
@@ -334,7 +345,6 @@ export default function AdminClient() {
               </select>
             </div>
 
-            {/* Tabla */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -393,6 +403,9 @@ export default function AdminClient() {
                                 <button onClick={() => handleToggleActive(tenant)} className={`text-xs px-2 py-1 rounded font-semibold ${tenant.is_active !== false ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
                                   {tenant.is_active !== false ? 'Desactivar' : 'Activar'}
                                 </button>
+                                <button onClick={() => handleImpersonate(tenant)} className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-semibold">
+                                  Entrar
+                                </button>
                               </>
                             )}
                           </div>
@@ -404,17 +417,14 @@ export default function AdminClient() {
               </div>
             </div>
 
-            {/* User Management */}
             <div className="mt-6">
               <UserManagement tenants={tenants} adminFetch={adminFetch} />
             </div>
           </div>
         )}
 
-        {/* Tab: Pipeline */}
         {activeTab === 'pipeline' && (
           <div>
-            {/* Resumen */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
                 { label: 'Perfil configurado', value: tenants.filter(t => t.pipeline_profile).length, total: tenants.length },
@@ -431,7 +441,6 @@ export default function AdminClient() {
               ))}
             </div>
 
-            {/* Tabla pipeline */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -468,7 +477,6 @@ export default function AdminClient() {
           </div>
         )}
 
-        {/* Tab: Crear tenant */}
         {activeTab === 'crear' && (
           <div className="max-w-lg">
             <div className="bg-white rounded-lg border border-gray-200 p-6">
