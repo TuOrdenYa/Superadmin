@@ -110,7 +110,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
     } catch { alert('Error al actualizar variante'); }
   };
 
-  const toggleOptionOnItem = async (groupId: string, optionId: string, currentlyActive: boolean) => {
+  const toggleOptionOnItem = async (optionId: string, currentlyActive: boolean) => {
     if (!selectedItem) return;
     setTogglingOption(optionId);
     try {
@@ -119,7 +119,6 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenant_id: tenantId,
-          group_template_id: groupId,
           active: !currentlyActive,
         }),
       });
@@ -130,7 +129,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
     finally { setTogglingOption(null); }
   };
 
-  const saveOptionPrice = async (groupId: string, optionId: string) => {
+  const saveOptionPrice = async (optionId: string) => {
     if (!selectedItem) return;
     try {
       const res = await fetch(`/api/items/${selectedItem}/variant-options/${optionId}`, {
@@ -138,8 +137,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenant_id: tenantId,
-          group_template_id: groupId,
-          price_delta: parseFloat(editPriceValue) || 0,
+          price_delta_override: parseFloat(editPriceValue) || 0,
         }),
       });
       const data = await res.json();
@@ -278,7 +276,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                         </button>
                       </div>
 
-                      {/* Options — price + active toggle */}
+                      {/* Options */}
                       {isActive && assigned && assigned.options.length > 0 && (
                         <div className="space-y-1.5 mt-2 pt-2 border-t border-blue-100">
                           <p className="text-xs text-blue-600 font-semibold mb-2">
@@ -291,10 +289,10 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                                 key={opt.option_id}
                                 className={`flex items-center justify-between rounded-lg px-2 py-1.5 transition ${optActive ? 'bg-white' : 'bg-gray-100 opacity-60'}`}
                               >
-                                {/* Option name + active toggle */}
+                                {/* Toggle + name */}
                                 <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => toggleOptionOnItem(group.id, opt.option_id, optActive)}
+                                    onClick={() => toggleOptionOnItem(opt.option_id, optActive)}
                                     disabled={togglingOption === opt.option_id}
                                     className={`relative flex-shrink-0 w-8 h-4 rounded-full transition-colors focus:outline-none ${optActive ? 'bg-blue-500' : 'bg-gray-300'}`}
                                   >
@@ -305,7 +303,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                                   </span>
                                 </div>
 
-                                {/* Price edit */}
+                                {/* Price edit — solo si activa */}
                                 {optActive && (
                                   editingPrice === opt.option_id ? (
                                     <div className="flex items-center gap-1">
@@ -317,7 +315,7 @@ export default function VariantsView({ tenantId, items, locale }: Props) {
                                         autoFocus
                                       />
                                       <button
-                                        onClick={() => saveOptionPrice(group.id, opt.option_id)}
+                                        onClick={() => saveOptionPrice(opt.option_id)}
                                         className="text-xs bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-700"
                                       >✓</button>
                                       <button
