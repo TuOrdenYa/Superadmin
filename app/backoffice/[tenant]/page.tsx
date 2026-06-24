@@ -146,7 +146,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   const fetchTeamUsers = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/users?tenant_id=${tenantId}`);
+      const res = await fetch(`/api/backoffice/team?tenant_id=${tenantId}`);
       const data = await res.json();
       if (data.ok) setTeamUsers(data.users);
     } catch (error) { console.error('Error fetching team users:', error); }
@@ -372,7 +372,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, ...newUser }) });
+      const res = await fetch('/api/backoffice/team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, ...newUser }) });
       const data = await res.json();
       if (data.ok) {
         fetchTeamUsers();
@@ -386,7 +386,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
 
   const handleToggleUserActive = async (userId: string, currentActive: boolean) => {
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, is_active: !currentActive }) });
+      const res = await fetch(`/api/backoffice/team/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, is_active: !currentActive }) });
       const data = await res.json();
       if (data.ok) fetchTeamUsers();
       else alert(data.error || 'Error updating user');
