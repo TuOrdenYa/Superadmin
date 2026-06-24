@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const sql = `
       SELECT it.id, it.tenant_id, it.category_id,
              COALESCE(c.name, ct.name) AS category_name,
-             it.name, it.description, it.price, it.active
+             it.name, it.description, it.price, it.active, it.image_url
         FROM menu_items it
         LEFT JOIN categories c ON c.id = it.category_id
         LEFT JOIN category_templates ct ON ct.id = it.category_id
