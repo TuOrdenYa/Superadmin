@@ -25,6 +25,7 @@ interface MenuItem {
   price: string;
   category_id: string;
   active: boolean;
+  image_url?: string;
 }
 
 interface Table {
@@ -90,6 +91,9 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const [profile, setProfile] = useState<TenantProfile>({ name: '', logo_url: '', primary_color: '#f97316', secondary_color: '#1d4ed8', description: '', instagram: '', whatsapp: '' });
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingItemImage, setUploadingItemImage] = useState(false);
+  const [newItemImage, setNewItemImage] = useState('');
+  const [editItemImage, setEditItemImage] = useState('');
 
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showItemForm, setShowItemForm] = useState(false);
@@ -266,6 +270,26 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     finally { setUploadingLogo(false); }
   };
 
+  const handleUploadItemImage = async (e: React.ChangeEvent<HTMLInputElement>, mode: 'new' | 'edit') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingItemImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', `tuordenya/${tenantId}/items`);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.ok) {
+        if (mode === 'new') setNewItemImage(data.url);
+        else setEditItemImage(data.url);
+      } else {
+        alert(data.error || 'Error subiendo imagen');
+      }
+    } catch { alert('Error subiendo imagen'); }
+    finally { setUploadingItemImage(false); }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -300,9 +324,9 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, ...newItem, price: parseFloat(newItem.price) }) });
+      const res = await fetch('/api/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, ...newItem, price: parseFloat(newItem.price), image_url: newItemImage || null }) });
       const data = await res.json();
-      if (data.ok) { fetchItems(); setNewItem({ name: '', description: '', price: '', category_id: '' }); setShowItemForm(false); }
+      if (data.ok) { fetchItems(); setNewItem({ name: '', description: '', price: '', category_id: '' }); setNewItemImage(''); setShowItemForm(false); }
       else alert(data.error || 'Error creating item');
     } catch { console.error('Error creating item'); }
   };
@@ -311,9 +335,10 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
     e.preventDefault();
     if (!editingItem) return;
     try {
-      const res = await fetch(`/api/items/${editingItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, ...editForm, price: parseFloat(editForm.price) }) });
+      const finalImageUrl = editItemImage === '__remove__' ? null : (editItemImage || editingItem.image_url || null);
+      const res = await fetch(`/api/items/${editingItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, ...editForm, price: parseFloat(editForm.price), image_url: finalImageUrl }) });
       const data = await res.json();
-      if (data.ok) { fetchItems(); setEditingItem(null); }
+      if (data.ok) { fetchItems(); setEditingItem(null); setEditItemImage(''); }
       else alert(data.error || 'Error updating item');
     } catch { console.error('Error updating item'); }
   };
@@ -396,7 +421,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (!confirm(locale === 'es' ? `¿Eliminar usuario "${userName}"?` : `Delete user "${userName}"?`)) return;
     try {
-      const res = await fetch(`/api/admin/users/${userId}?tenant_id=${tenantId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/backoffice/team/${userId}?tenant_id=${tenantId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.ok) fetchTeamUsers();
       else alert(data.error || 'Error deleting user');
@@ -478,7 +503,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       {/* Edit Item Modal */}
       {editingItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-screen overflow-y-auto">
             <h3 className="text-lg font-bold text-black mb-4">{locale === 'es' ? 'Editar Item' : 'Edit Item'}</h3>
             <form onSubmit={handleUpdateItem} className="space-y-4">
               <div>
@@ -500,9 +525,24 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                 <label className="block text-sm font-bold text-black mb-2">{t('menuItems.price')} *</label>
                 <input type="number" step="0.01" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required />
               </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Foto del producto' : 'Product photo'}</label>
+                {(editItemImage && editItemImage !== '__remove__') || (!editItemImage && editingItem?.image_url) ? (
+                  <img src={editItemImage && editItemImage !== '__remove__' ? editItemImage : editingItem?.image_url} alt="preview" className="w-24 h-24 object-cover rounded-lg mb-2" />
+                ) : null}
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-semibold inline-block">
+                    {uploadingItemImage ? (locale === 'es' ? 'Subiendo...' : 'Uploading...') : (locale === 'es' ? 'Cambiar foto' : 'Change photo')}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadItemImage(e, 'edit')} disabled={uploadingItemImage} />
+                  </label>
+                  {((editItemImage && editItemImage !== '__remove__') || (!editItemImage && editingItem?.image_url)) && (
+                    <button type="button" onClick={() => setEditItemImage('__remove__')} className="text-sm text-red-500 hover:text-red-700">{locale === 'es' ? 'Quitar foto' : 'Remove photo'}</button>
+                  )}
+                </div>
+              </div>
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">{locale === 'es' ? 'Guardar' : 'Save'}</button>
-                <button type="button" onClick={() => setEditingItem(null)} className="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold">{t('common.cancel')}</button>
+                <button type="button" onClick={() => { setEditingItem(null); setEditItemImage(''); }} className="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold">{t('common.cancel')}</button>
               </div>
             </form>
           </div>
@@ -918,9 +958,18 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     <label className="block text-sm font-bold text-black mb-2">{t('menuItems.price')} *</label>
                     <input type="number" step="0.01" value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black font-semibold" required />
                   </div>
+                  <div>
+                    <label className="block text-sm font-bold text-black mb-2">{locale === 'es' ? 'Foto del producto' : 'Product photo'}</label>
+                    {newItemImage && <img src={newItemImage} alt="preview" className="w-24 h-24 object-cover rounded-lg mb-2" />}
+                    <label className="cursor-pointer px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-semibold inline-block">
+                      {uploadingItemImage ? (locale === 'es' ? 'Subiendo...' : 'Uploading...') : (locale === 'es' ? 'Subir foto' : 'Upload photo')}
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadItemImage(e, 'new')} disabled={uploadingItemImage} />
+                    </label>
+                    {newItemImage && <button type="button" onClick={() => setNewItemImage('')} className="ml-2 text-sm text-red-500 hover:text-red-700">{locale === 'es' ? 'Quitar' : 'Remove'}</button>}
+                  </div>
                   <div className="flex gap-2">
                     <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">{locale === 'es' ? 'Crear Item' : 'Create Item'}</button>
-                    <button type="button" onClick={() => setShowItemForm(false)} className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold">{t('common.cancel')}</button>
+                    <button type="button" onClick={() => { setShowItemForm(false); setNewItemImage(''); }} className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold">{t('common.cancel')}</button>
                   </div>
                 </form>
               </div>
@@ -928,6 +977,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredItems.map((item) => (
                 <div key={item.id} className="bg-white rounded-lg shadow overflow-hidden">
+                  {item.image_url && <img src={item.image_url} alt={item.name} className="w-full h-48 object-cover" />}
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-bold text-black">{item.name}</h3>
@@ -942,7 +992,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
                     </div>
                     {user?.role === 'admin' && (
                       <div className="flex gap-2 pt-3 border-t border-gray-100">
-                        <button onClick={() => { setEditingItem(item); setEditForm({ name: item.name, description: item.description || '', price: item.price, category_id: item.category_id }); }} className="flex-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 text-sm font-semibold">✏️ {locale === 'es' ? 'Editar' : 'Edit'}</button>
+                        <button onClick={() => { setEditingItem(item); setEditForm({ name: item.name, description: item.description || '', price: item.price, category_id: item.category_id }); setEditItemImage(''); }} className="flex-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 text-sm font-semibold">✏️ {locale === 'es' ? 'Editar' : 'Edit'}</button>
                         <button onClick={() => handleDeleteItem(item.id, item.name)} className="flex-1 px-3 py-1.5 bg-red-50 text-red-700 rounded hover:bg-red-100 text-sm font-semibold">🗑️ {locale === 'es' ? 'Eliminar' : 'Delete'}</button>
                       </div>
                     )}
