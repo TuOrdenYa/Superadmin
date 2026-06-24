@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import UserManagement from './UserManagement';
+import VariantesGlobales from './VariantesGlobales';
 
 interface Tenant {
   id: string;
@@ -311,7 +312,8 @@ export default function AdminClient() {
         </div>
 
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
-          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['variantes', 'Variantes globales'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (          <button
+          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['variantes', 'Variantes globales'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (
+            <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm rounded-md font-semibold transition ${activeTab === tab ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-black'}`}
@@ -476,6 +478,10 @@ export default function AdminClient() {
               </table>
             </div>
           </div>
+        )}
+
+        {activeTab === 'variantes' && (
+          <VariantesGlobales adminFetch={adminFetch} key={savedPassword} />
         )}
 
         {activeTab === 'crear' && (
