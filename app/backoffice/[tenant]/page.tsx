@@ -206,12 +206,12 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       fetchProfile();
       const fetchTenantInfo = async () => {
         try {
-          const res = await fetch(`/api/admin/tenants/${tenantId}`);
+          const res = await fetch(`/api/admin/tenants/${tenantId}/profile`);
           const data = await res.json();
           if (data.ok) {
-            setTenantName(data.tenant.name);
-            setTenantSlug(data.tenant.slug || '');
-            setTenantAdFree(!!data.tenant.ad_free);
+            setTenantName(data.profile.name);
+            setTenantSlug(data.profile.slug || '');
+            setTenantAdFree(!!data.profile.ad_free);
           }
         } catch (error) { console.error('Error fetching tenant info:', error); }
       };
