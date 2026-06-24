@@ -28,7 +28,7 @@ interface Tenant {
   pipeline_first_order?: boolean;
 }
 
-type Tab = 'tenants' | 'pipeline' | 'crear';
+type Tab = 'tenants' | 'pipeline' | 'crear' | 'variantes';
 
 export default function AdminClient() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -311,8 +311,7 @@ export default function AdminClient() {
         </div>
 
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
-          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (
-            <button
+          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['variantes', 'Variantes globales'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (          <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm rounded-md font-semibold transition ${activeTab === tab ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-black'}`}
