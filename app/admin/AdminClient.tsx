@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import UserManagement from './UserManagement';
 import VariantesGlobales from './VariantesGlobales';
+import NotasInternas from './NotasInternas';
 
 interface Tenant {
   id: string;
@@ -29,7 +30,7 @@ interface Tenant {
   pipeline_first_order?: boolean;
 }
 
-type Tab = 'tenants' | 'pipeline' | 'crear' | 'variantes';
+type Tab = 'tenants' | 'pipeline' | 'crear' | 'variantes' | 'notas';
 
 export default function AdminClient() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -312,7 +313,7 @@ export default function AdminClient() {
         </div>
 
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
-          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['variantes', 'Variantes globales'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (
+          {([['tenants', 'Tenants'], ['pipeline', 'Pipeline'], ['variantes', 'Variantes globales'], ['notas', 'Notas'], ['crear', '+ Nuevo tenant']] as [Tab, string][]).map(([tab, label]) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -482,6 +483,10 @@ export default function AdminClient() {
 
         {activeTab === 'variantes' && (
           <VariantesGlobales adminFetch={adminFetch} key={savedPassword} />
+        )}
+
+        {activeTab === 'notas' && (
+          <NotasInternas adminFetch={adminFetch} tenants={tenants} />
         )}
 
         {activeTab === 'crear' && (
