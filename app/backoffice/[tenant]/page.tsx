@@ -206,7 +206,7 @@ export default function BackofficePage({ params }: { params: Promise<{ tenant: s
       fetchProfile();
       const fetchTenantInfo = async () => {
         try {
-          const res = await fetch(`/api/admin/tenants/${tenantId}/profile`);
+          const res = await fetch(`/api/tenants/${tenantId}/profile`);
           const data = await res.json();
           if (data.ok) {
             setTenantName(data.profile.name);
