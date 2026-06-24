@@ -50,7 +50,8 @@ export async function PUT(
   try {
     const { itemId } = await params;
     const body = await request.json();
-    const { tenant_id, name, description, price, category_id } = body;
+    const { tenant_id, name, description, price, category_id, image_url } = body;
+if (image_url !== undefined) { updates.push(`image_url = $${paramCount++}`); values.push(image_url); }
 
     if (!tenant_id) {
       return NextResponse.json({ error: "tenant_id is required" }, { status: 400 });
@@ -73,6 +74,7 @@ export async function PUT(
     if (description !== undefined) { updates.push(`description = $${paramCount++}`); values.push(description); }
     if (price !== undefined) { updates.push(`price = $${paramCount++}`); values.push(price); }
     if (category_id !== undefined) { updates.push(`category_id = $${paramCount++}`); values.push(String(category_id)); }
+if (image_url !== undefined) { updates.push(`image_url = $${paramCount++}`); values.push(image_url); }
 
     if (updates.length === 0) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 });
