@@ -74,8 +74,10 @@ export default function AdminClient() {
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/admin/tenants', {
-      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
     });
     if (res.ok) {
       setSavedPassword(password);
